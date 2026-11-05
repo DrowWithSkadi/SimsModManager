@@ -55,6 +55,19 @@ public static class ThemeService
     [DllImport("dwmapi.dll")]
     private static extern int DwmExtendFrameIntoClientArea(IntPtr hwnd, ref Margins margins);
 
+    [DllImport("user32.dll", EntryPoint = "GetWindowLongPtrW")]
+    private static extern IntPtr GetWindowLongPtr(IntPtr hwnd, int index);
+
+    [DllImport("user32.dll", EntryPoint = "SetWindowLongPtrW")]
+    private static extern IntPtr SetWindowLongPtr(IntPtr hwnd, int index, IntPtr value);
+
+    [DllImport("user32.dll")]
+    private static extern bool SetWindowPos(IntPtr hwnd, IntPtr after, int x, int y, int cx, int cy, uint flags);
+
+    private const int GwlStyle = -16;
+    private const long WsSysMenu = 0x00080000;
+    private const uint SwpFrameChanged = 0x0020, SwpNoMove = 0x0002, SwpNoSize = 0x0001, SwpNoZOrder = 0x0004, SwpNoActivate = 0x0010;
+
     private const int DwmUseImmersiveDarkMode = 20;
     private const int DwmWindowCornerPreference = 33;
     private const int DwmBorderColor = 34;
@@ -79,6 +92,17 @@ public static class ThemeService
 
         try
         {
+            // Когда стекло растянуто на всё окно, Windows рисует поверх свои кнопки
+            // «свернуть/развернуть/закрыть» — получаются двойные. Без WS_SYSMENU она их не рисует,
+            // а наши кнопки в заголовке работают как обычно.
+            var style = (long)GetWindowLongPtr(hwnd, GwlStyle);
+            var newStyle = glass ? style & ~WsSysMenu : style | WsSysMenu;
+            if (newStyle != style)
+            {
+                SetWindowLongPtr(hwnd, GwlStyle, (IntPtr)newStyle);
+                SetWindowPos(hwnd, IntPtr.Zero, 0, 0, 0, 0, SwpFrameChanged | SwpNoMove | SwpNoSize | SwpNoZOrder | SwpNoActivate);
+            }
+
             if (HwndSource.FromHwnd(hwnd) is { CompositionTarget: { } target })
                 target.BackgroundColor = glass ? Colors.Transparent : Colors.Black;
 
