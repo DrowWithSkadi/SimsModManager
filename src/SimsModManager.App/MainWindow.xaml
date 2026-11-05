@@ -9,18 +9,17 @@
         Icon="pack://application:,,,/Assets/app.ico"
         Width="1100" Height="720" MinWidth="820" MinHeight="520"
         WindowStartupLocation="CenterScreen"
-        Background="{StaticResource B.Background}"
-        Foreground="{StaticResource B.Text}"
+        Background="{DynamicResource B.Window}"
+        Foreground="{DynamicResource B.Text}"
         FontFamily="{StaticResource Font.Ui}"
         TextOptions.TextFormattingMode="Ideal"
         UseLayoutRounding="True"
         AllowDrop="True"
         DragEnter="OnDragEnter" DragOver="OnDragOver" DragLeave="OnDragLeave" Drop="OnDrop">
 
-    <!-- Своя рамка окна: тёмный заголовок как в макете -->
+    <!-- Своя рамка окна (тёмный заголовок как в макете) — WindowChrome задаёт ThemeService -->
     <WindowChrome.WindowChrome>
-        <WindowChrome CaptionHeight="28" ResizeBorderThickness="6" GlassFrameThickness="0" CornerRadius="0"
-                      UseAeroCaptionButtons="False" />
+        <WindowChrome CaptionHeight="28" ResizeBorderThickness="6" GlassFrameThickness="0" CornerRadius="0" UseAeroCaptionButtons="False" />
     </WindowChrome.WindowChrome>
 
     <Window.DataContext>
@@ -37,16 +36,16 @@
             </Grid.RowDefinitions>
 
             <!-- ═══ Заголовок окна ═══ -->
-            <Grid Background="{StaticResource B.Surface}">
+            <Grid Background="{DynamicResource B.TitleBar}">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0,0,0">
                     <Image Source="pack://application:,,,/Assets/logo-mark.png" Width="14" Height="14" Margin="0,0,8,0"
                            RenderOptions.BitmapScalingMode="HighQuality" />
-                    <TextBlock Text="Sims Mod Manager" FontSize="11" Foreground="{StaticResource B.TextMuted}" VerticalAlignment="Center" />
+                    <TextBlock Text="Sims Mod Manager" FontSize="11" Foreground="{DynamicResource B.TextMuted}" VerticalAlignment="Center" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" WindowChrome.IsHitTestVisibleInChrome="True">
-                    <Button Style="{StaticResource Btn.Caption}" Background="{StaticResource B.Hover}" ctl:Btn.Icon="{StaticResource Icon.Minus}"
+                    <Button Style="{StaticResource Btn.Caption}" Background="{DynamicResource B.Hover}" ctl:Btn.Icon="{StaticResource Icon.Minus}"
                             Click="OnMinimize" ToolTip="Свернуть" />
-                    <Button x:Name="MaxButton" Style="{StaticResource Btn.Caption}" Background="{StaticResource B.Hover}"
+                    <Button x:Name="MaxButton" Style="{StaticResource Btn.Caption}" Background="{DynamicResource B.Hover}"
                             ctl:Btn.Icon="{StaticResource Icon.Square}" Click="OnMaximize" ToolTip="Развернуть" />
                     <Button Style="{StaticResource Btn.Caption}" Background="#C42B1C" ctl:Btn.Icon="{StaticResource Icon.X}"
                             Click="OnClose" ToolTip="Закрыть" />
@@ -54,14 +53,14 @@
             </Grid>
 
             <!-- ═══ Шапка приложения ═══ -->
-            <Border Grid.Row="1" Height="72" BorderBrush="{StaticResource B.Hover}" BorderThickness="0,0,0,1" Padding="24,0">
+            <Border Grid.Row="1" Height="72" BorderBrush="{DynamicResource B.Hover}" BorderThickness="0,0,0,1" Padding="24,0">
                 <Grid>
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,16,0">
                     <Image Source="pack://application:,,,/Assets/logo-mark.png" Width="34" Height="34" Margin="0,0,12,0" VerticalAlignment="Center"
                            RenderOptions.BitmapScalingMode="HighQuality" />
                     <StackPanel VerticalAlignment="Center">
                         <TextBlock Text="Sims Mod Manager" Style="{StaticResource T.Title}" />
-                        <TextBlock Text="{Binding SimsFolder}" FontSize="11" Foreground="{StaticResource B.TextMuted}" Margin="0,4,0,0"
+                        <TextBlock Text="{Binding SimsFolder}" FontSize="11" Foreground="{DynamicResource B.TextMuted}" Margin="0,4,0,0"
                                    TextTrimming="CharacterEllipsis" Visibility="{Binding HasGame, Converter={StaticResource BoolToVisibility}}" />
                     </StackPanel>
                     </StackPanel>
@@ -79,9 +78,9 @@
                                 Command="{Binding OpenSettingsCommand}"
                                 Visibility="{Binding IsCompact, Converter={StaticResource BoolToVisibility}}" />
                     </StackPanel>
-                    <Border Style="{StaticResource Tag}" Background="{StaticResource B.AccentSubtle}" HorizontalAlignment="Right"
+                    <Border Style="{StaticResource Tag}" Background="{DynamicResource B.AccentSubtle}" HorizontalAlignment="Right"
                             Visibility="{Binding HasGame, Converter={StaticResource InverseBoolToVisibility}}">
-                        <TextBlock Style="{StaticResource TagText}" Text="Первый запуск" Foreground="{StaticResource B.Accent}" />
+                        <TextBlock Style="{StaticResource TagText}" Text="Первый запуск" Foreground="{DynamicResource B.Accent}" />
                     </Border>
                 </Grid>
             </Border>
@@ -95,10 +94,10 @@
                 <views:EditorPage b:Anim.Show="{Binding IsEditorPage}" />
 
                 <!-- Панель выбора нескольких модов -->
-                <Border VerticalAlignment="Bottom" Background="#1E2B27" BorderBrush="{StaticResource B.Accent}" BorderThickness="0,1,0,0"
+                <Border VerticalAlignment="Bottom" Background="{DynamicResource B.SelectionBar}" BorderBrush="{DynamicResource B.Accent}" BorderThickness="0,1,0,0"
                         Padding="24,10" b:Anim.Show="{Binding IsMultiSelect}" b:Anim.Offset="16">
                     <Grid>
-                        <TextBlock Text="{Binding SelectionText}" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource B.Accent}" VerticalAlignment="Center" />
+                        <TextBlock Text="{Binding SelectionText}" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource B.Accent}" VerticalAlignment="Center" />
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                             <Button Style="{StaticResource Btn.Secondary}" ctl:Btn.Icon="{StaticResource Icon.Shirt}" Content="Настроить одежду"
                                     Command="{Binding EditSelectedCommand}" Margin="0,0,8,0"
@@ -129,48 +128,62 @@
             </Grid>
 
             <!-- ═══ Строка состояния ═══ -->
-            <Grid Grid.Row="3" Background="{StaticResource B.Surface}">
+            <Grid Grid.Row="3" Background="{DynamicResource B.StatusBar}">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
-                    <Ellipse Width="5" Height="5" Fill="{StaticResource B.Accent}" Margin="0,0,8,0" />
-                    <TextBlock Text="{Binding LastActionText}" FontSize="10" Foreground="{StaticResource B.TextSecondary}" />
+                    <Ellipse Width="5" Height="5" Fill="{DynamicResource B.Accent}" Margin="0,0,8,0" />
+                    <TextBlock FontSize="10" Foreground="{DynamicResource B.TextSecondary}">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Text" Value="{Binding LastActionText}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsEditorPage}" Value="True">
+                                        <Setter Property="Text" Value="{Binding Editor.ChangeSummary}" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding IsCardPage}" Value="True">
+                                        <Setter Property="Text" Value="Изменения применяются к файлам в папке Mods" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
                 </StackPanel>
-                <TextBlock Text="{Binding SummaryText}" FontSize="11" Foreground="{StaticResource B.TextSecondary}" HorizontalAlignment="Right"
+                <TextBlock Text="{Binding SummaryText}" FontSize="11" Foreground="{DynamicResource B.TextSecondary}" HorizontalAlignment="Right"
                            VerticalAlignment="Center" Margin="0,0,24,0" Visibility="{Binding HasGame, Converter={StaticResource BoolToVisibility}}" />
-                <TextBlock Text="Данные остаются на вашем компьютере" FontSize="11" Foreground="{StaticResource B.TextSecondary}" HorizontalAlignment="Right"
+                <TextBlock Text="Данные остаются на вашем компьютере" FontSize="11" Foreground="{DynamicResource B.TextSecondary}" HorizontalAlignment="Right"
                            VerticalAlignment="Center" Margin="0,0,24,0" Visibility="{Binding HasGame, Converter={StaticResource InverseBoolToVisibility}}" />
             </Grid>
 
             <!-- ═══ Перетаскивание файлов ═══ -->
-            <Grid Grid.Row="1" Grid.RowSpan="3" Background="{StaticResource B.DropOverlay}" IsHitTestVisible="False"
+            <Grid Grid.Row="1" Grid.RowSpan="3" Background="{DynamicResource B.DropOverlay}" IsHitTestVisible="False"
                   b:Anim.Show="{Binding IsDragOver}" b:Anim.Offset="0">
-                <Rectangle Margin="32" RadiusX="12" RadiusY="12" Stroke="{StaticResource B.Accent}" StrokeThickness="1.5" StrokeDashArray="6 4"
-                           Fill="#14FFFFFF" />
+                <Rectangle Margin="32" RadiusX="12" RadiusY="12" Stroke="{DynamicResource B.Accent}" StrokeThickness="1.5" StrokeDashArray="6 4"
+                           Fill="{DynamicResource B.DropFill}" />
                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                    <ctl:IconView Data="{StaticResource Icon.Download}" Foreground="{StaticResource B.Accent}" Width="36" Height="36" />
-                    <TextBlock Text="Отпустите, чтобы установить" FontSize="24" FontWeight="SemiBold" Foreground="{StaticResource B.Text}"
+                    <ctl:IconView Data="{StaticResource Icon.Download}" Foreground="{DynamicResource B.Accent}" Width="36" Height="36" />
+                    <TextBlock Text="Отпустите, чтобы установить" FontSize="24" FontWeight="SemiBold" Foreground="{DynamicResource B.Text}"
                                HorizontalAlignment="Center" Margin="0,18,0,12" />
-                    <Border Style="{StaticResource Tag}" Background="{StaticResource B.AccentSubtle}" HorizontalAlignment="Center" Height="22" Padding="10,0">
-                        <TextBlock Style="{StaticResource TagText}" Text="{Binding DragCountText}" Foreground="{StaticResource B.Accent}" FontSize="11" />
+                    <Border Style="{StaticResource Tag}" Background="{DynamicResource B.AccentSubtle}" HorizontalAlignment="Center" Height="22" Padding="10,0">
+                        <TextBlock Style="{StaticResource TagText}" Text="{Binding DragCountText}" Foreground="{DynamicResource B.Accent}" FontSize="11" />
                     </Border>
                     <TextBlock Text="Моды — в Mods, дома и персонажи — в Tray" Style="{StaticResource T.Secondary}" HorizontalAlignment="Center" Margin="0,12,0,0" />
                 </StackPanel>
             </Grid>
 
             <!-- ═══ Идёт установка ═══ -->
-            <Grid Grid.Row="1" Grid.RowSpan="3" Background="{StaticResource B.Overlay}" b:Anim.Show="{Binding IsInstalling}" b:Anim.Offset="0">
-                <Border Style="{StaticResource Card}" Width="400" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="24,22"
+            <Grid Grid.Row="1" Grid.RowSpan="3" Background="{DynamicResource B.Overlay}" b:Anim.Show="{Binding IsInstalling}" b:Anim.Offset="0">
+                <Border Style="{StaticResource Card}" Background="{DynamicResource B.Popup}" Width="400" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="24,22"
                         b:Anim.Show="{Binding IsInstalling}" b:Anim.Scale="0.96">
                     <Border.Effect>
                         <DropShadowEffect BlurRadius="40" ShadowDepth="8" Opacity="0.5" Color="Black" />
                     </Border.Effect>
                     <StackPanel>
                         <StackPanel Orientation="Horizontal">
-                            <ctl:IconView Data="{StaticResource Icon.PackageOpen}" Foreground="{StaticResource B.Accent}" Width="22" Height="22" />
-                            <TextBlock Text="Устанавливаю моды…" FontSize="20" FontWeight="SemiBold" Foreground="{StaticResource B.Text}" Margin="12,0,0,0" />
+                            <ctl:IconView Data="{StaticResource Icon.PackageOpen}" Foreground="{DynamicResource B.Accent}" Width="22" Height="22" />
+                            <TextBlock Text="Устанавливаю моды…" FontSize="20" FontWeight="SemiBold" Foreground="{DynamicResource B.Text}" Margin="12,0,0,0" />
                         </StackPanel>
                         <Grid Margin="0,20,0,8">
                             <TextBlock Text="{Binding InstallCountText}" Style="{StaticResource T.Secondary}" />
-                            <TextBlock Text="{Binding InstallPercentText}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource B.Accent}" HorizontalAlignment="Right" />
+                            <TextBlock Text="{Binding InstallPercentText}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource B.Accent}" HorizontalAlignment="Right" />
                         </Grid>
                         <ProgressBar Style="{StaticResource Progress}" Maximum="100" b:Anim.SmoothValue="{Binding InstallPercent}" />
                         <TextBlock Text="{Binding InstallCurrent}" Style="{StaticResource T.Secondary}" FontSize="11" Margin="0,10,0,0" TextTrimming="CharacterEllipsis" />
@@ -181,9 +194,9 @@
             </Grid>
 
             <!-- ═══ Диалог ═══ -->
-            <Grid Grid.Row="0" Grid.RowSpan="4" Background="{StaticResource B.Overlay}" b:Anim.Show="{Binding HasDialog}" b:Anim.Offset="0"
+            <Grid Grid.Row="0" Grid.RowSpan="4" Background="{DynamicResource B.Overlay}" b:Anim.Show="{Binding HasDialog}" b:Anim.Offset="0"
                   MouseLeftButtonDown="OnOverlayClick">
-                <Border Style="{StaticResource Card}" Width="460" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="20"
+                <Border Style="{StaticResource Card}" Background="{DynamicResource B.Popup}" Width="460" VerticalAlignment="Center" HorizontalAlignment="Center" Padding="20"
                         DataContext="{Binding DisplayedDialog}" b:Anim.Show="{Binding DataContext.HasDialog, RelativeSource={RelativeSource AncestorType=Window}}"
                         b:Anim.Scale="0.96" MouseLeftButtonDown="OnDialogClick">
                     <Border.Effect>
@@ -199,23 +212,23 @@
                             <ctl:IconView x:Name="DialogIcon" Data="{Binding Icon}" Width="18" Height="18" VerticalAlignment="Top" Margin="0,3,12,0">
                                 <ctl:IconView.Style>
                                     <Style TargetType="ctl:IconView" BasedOn="{StaticResource {x:Type ctl:IconView}}">
-                                        <Setter Property="Foreground" Value="{StaticResource B.Accent}" />
+                                        <Setter Property="Foreground" Value="{DynamicResource B.Accent}" />
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding IconIsDanger}" Value="True">
-                                                <Setter Property="Foreground" Value="{StaticResource B.Error}" />
+                                                <Setter Property="Foreground" Value="{DynamicResource B.Error}" />
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>
                                 </ctl:IconView.Style>
                             </ctl:IconView>
-                            <TextBlock Grid.Column="1" Text="{Binding Title}" FontSize="17" FontWeight="SemiBold" Foreground="{StaticResource B.Text}" TextWrapping="Wrap" />
+                            <TextBlock Grid.Column="1" Text="{Binding Title}" FontSize="17" FontWeight="SemiBold" Foreground="{DynamicResource B.Text}" TextWrapping="Wrap" />
                             <Button Grid.Column="2" Style="{StaticResource Btn.IconGhost}" ctl:Btn.Icon="{StaticResource Icon.X}" Command="{Binding CancelCommand}"
                                     Margin="8,-4,-6,0" VerticalAlignment="Top" ToolTip="Закрыть (Esc)" />
                         </Grid>
                         <TextBlock Text="{Binding Message}" Style="{StaticResource T.Secondary}" TextWrapping="Wrap" LineHeight="18" Margin="0,14,0,0"
                                    Visibility="{Binding Message, Converter={StaticResource NullToVisibility}}" />
 
-                        <Border Background="{StaticResource B.Background}" BorderBrush="{StaticResource B.Border}" BorderThickness="1" CornerRadius="6"
+                        <Border Background="{DynamicResource B.Background}" BorderBrush="{DynamicResource B.Border}" BorderThickness="1" CornerRadius="6"
                                 Padding="12,10" Margin="0,14,0,0" Visibility="{Binding HasInfo, Converter={StaticResource BoolToVisibility}}">
                             <StackPanel>
                                 <TextBlock Text="{Binding InfoTitle}" Style="{StaticResource T.Strong}" FontSize="12" TextTrimming="CharacterEllipsis" />
@@ -223,25 +236,32 @@
                             </StackPanel>
                         </Border>
 
-                        <Border Background="{StaticResource B.Background}" BorderBrush="{StaticResource B.Border}" BorderThickness="1" CornerRadius="6"
+                        <Border Background="{DynamicResource B.Background}" BorderBrush="{DynamicResource B.Border}" BorderThickness="1" CornerRadius="6"
                                 Height="32" Padding="10,0" Margin="0,14,0,0" Visibility="{Binding HasPath, Converter={StaticResource BoolToVisibility}}">
-                            <TextBlock Text="{Binding PathText}" FontSize="11" Foreground="{StaticResource B.TextSecondary}" VerticalAlignment="Center"
+                            <TextBlock Text="{Binding PathText}" FontSize="11" Foreground="{DynamicResource B.TextSecondary}" VerticalAlignment="Center"
                                        TextTrimming="CharacterEllipsis" />
                         </Border>
 
-                        <Border Background="{StaticResource B.Background}" BorderBrush="{StaticResource B.Border}" BorderThickness="1" CornerRadius="6"
+                        <Border Background="{DynamicResource B.Background}" BorderBrush="{DynamicResource B.Border}" BorderThickness="1" CornerRadius="6"
                                 Padding="12,10" Margin="0,14,0,0" MaxHeight="160" Visibility="{Binding HasDetails, Converter={StaticResource BoolToVisibility}}">
                             <ScrollViewer VerticalScrollBarVisibility="Auto">
                                 <TextBox Text="{Binding Details, Mode=OneWay}" IsReadOnly="True" BorderThickness="0" Background="Transparent"
-                                         Foreground="{StaticResource B.TextMuted}" FontFamily="Consolas" FontSize="11" TextWrapping="Wrap" />
+                                         Foreground="{DynamicResource B.TextMuted}" FontFamily="Consolas" FontSize="11" TextWrapping="Wrap" />
                             </ScrollViewer>
                         </Border>
+
+                        <StackPanel Margin="0,14,0,0" Visibility="{Binding HasInput, Converter={StaticResource BoolToVisibility}}">
+                            <TextBlock Text="{Binding InputLabel}" Style="{StaticResource T.Muted}" Margin="0,0,0,6" />
+                            <TextBox x:Name="DialogInput" Style="{StaticResource Input}" Text="{Binding InputText, UpdateSourceTrigger=PropertyChanged}"
+                                     IsVisibleChanged="OnDialogInputVisible" />
+                            <TextBlock Text="{Binding InputHint}" Style="{StaticResource T.Muted}" FontSize="10" Margin="0,6,0,0" />
+                        </StackPanel>
 
                         <TextBlock Text="{Binding Message2}" Style="{StaticResource T.Secondary}" TextWrapping="Wrap" LineHeight="18" Margin="0,14,0,0"
                                    Visibility="{Binding HasMessage2, Converter={StaticResource BoolToVisibility}}" />
 
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
-                            <TextBlock Text="Скопировано" Style="{StaticResource T.Muted}" Foreground="{StaticResource B.Accent}" VerticalAlignment="Center"
+                            <TextBlock Text="Скопировано" Style="{StaticResource T.Muted}" Foreground="{DynamicResource B.Accent}" VerticalAlignment="Center"
                                        Margin="0,0,12,0" Visibility="{Binding Copied, Converter={StaticResource BoolToVisibility}}" />
                             <Button Style="{StaticResource Btn.Secondary}" Content="{Binding ExtraText}" Command="{Binding ExtraCommand}" Margin="0,0,8,0"
                                     Visibility="{Binding HasExtra, Converter={StaticResource BoolToVisibility}}" />
@@ -252,9 +272,9 @@
                                     <Style TargetType="Button" BasedOn="{StaticResource Btn.Primary}">
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding PrimaryIsDanger}" Value="True">
-                                                <Setter Property="Background" Value="{StaticResource B.ErrorSubtle}" />
-                                                <Setter Property="BorderBrush" Value="{StaticResource B.ErrorBorder}" />
-                                                <Setter Property="Foreground" Value="{StaticResource B.Error}" />
+                                                <Setter Property="Background" Value="{DynamicResource B.ErrorSubtle}" />
+                                                <Setter Property="BorderBrush" Value="{DynamicResource B.ErrorBorder}" />
+                                                <Setter Property="Foreground" Value="{DynamicResource B.Error}" />
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>

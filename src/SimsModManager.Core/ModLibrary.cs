@@ -179,6 +179,48 @@ public sealed class ModLibrary(SimsPaths paths, IFileDeleter? deleter = null)
         return mod with { Path = target, IsEnabled = enabled, Files = newFiles };
     }
 
+    /// <summary>Переименовать мод: папку или файл в Mods либо запись участка/семьи.</summary>
+    public ModItem Rename(ModItem mod, string newName)
+    {
+        var clean = ModFiles.SanitizeName(newName);
+        if (clean.Equals(mod.Name, StringComparison.Ordinal)) return mod;
+
+        if (mod.IsTray)
+        {
+            var manifest = TrayManifest.Load(paths);
+            var entry = manifest.Entries.FirstOrDefault(e => e.Id == mod.TrayId)
+                        ?? throw new InvalidOperationException("Запись не найдена — обновите список.");
+            entry.Name = clean;
+            manifest.Save(paths);
+            return mod with { Name = clean };
+        }
+
+        var folder = System.IO.Path.GetDirectoryName(mod.Path)!;
+        var target = mod.IsFolder
+            ? System.IO.Path.Combine(folder, clean)
+            : System.IO.Path.Combine(folder, clean + System.IO.Path.GetExtension(mod.Path));
+        var sameIgnoringCase = string.Equals(target, mod.Path, StringComparison.OrdinalIgnoreCase);
+        if (!sameIgnoringCase && (Directory.Exists(target) || File.Exists(target)))
+            throw new InvalidOperationException($"Мод с именем «{clean}» уже есть.");
+
+        if (mod.IsFolder)
+        {
+            if (sameIgnoringCase)
+            {
+                // Windows не различает регистр — переименовываем через временное имя
+                var tmp = target + ".smm-rename";
+                Directory.Move(mod.Path, tmp);
+                Directory.Move(tmp, target);
+            }
+            else Directory.Move(mod.Path, target);
+            var files = mod.Files.Select(f => System.IO.Path.Combine(target, System.IO.Path.GetRelativePath(mod.Path, f))).ToList();
+            return mod with { Name = clean, Path = target, Files = files };
+        }
+
+        File.Move(mod.Path, target);
+        return mod with { Name = clean, Path = target, Files = [target] };
+    }
+
     /// <summary>Выключенный участок/семья переезжает в «Tray (выключенные)» — игра его не видит.</summary>
     private ModItem SetTrayEnabled(ModItem mod, bool enabled)
     {

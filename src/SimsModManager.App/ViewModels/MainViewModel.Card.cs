@@ -39,6 +39,94 @@ public sealed partial class MainViewModel
     }
 
     [RelayCommand]
+    private async Task RenameMod()
+    {
+        if (Card is null || _library is null) return;
+        var mod = Card.Mod;
+        var dialog = new DialogViewModel
+        {
+            Title = "Дайте моду понятное имя",
+            Icon = (System.Windows.Media.Geometry)System.Windows.Application.Current.FindResource("Icon.Pencil"),
+            Message = $"Имя «{mod.Name}» изменится в библиотеке и у папки мода. На игру это не влияет.",
+            InputLabel = "Название мода",
+            InputHint = "Исходное имя: " + mod.Name,
+            InputText = mod.Name,
+            PrimaryText = "Сохранить",
+            SecondaryText = "Отмена",
+        };
+        if (await ShowDialogAsync(dialog) != DialogResult.Primary) return;
+        var newName = dialog.InputText.Trim();
+        if (newName.Length == 0 || newName == mod.Name) return;
+        if (!mod.Model.IsTray && !await EnsureGameClosedAsync("переименовать мод")) return;
+
+        try
+        {
+            var oldName = mod.Name;
+            var renamed = _library.Rename(mod.Model, newName);
+            _originals.Rename(oldName, renamed.Name);
+            ShowToast($"Мод переименован в «{renamed.Name}»", Icons.Check);
+            SetLastAction("мод переименован");
+            await RefreshAsync();
+            var fresh = Mods.FirstOrDefault(m => string.Equals(m.Model.Path, renamed.Path, StringComparison.OrdinalIgnoreCase)
+                                                 && m.Name == renamed.Name);
+            if (fresh is not null) await OpenCard(fresh);
+            else Page = AppPage.Library;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException)
+        {
+            await ShowDialogAsync(new DialogViewModel
+            {
+                Title = "Не удалось переименовать",
+                Icon = Icons.Files,
+                Message = ex.Message,
+                PrimaryText = "Понятно",
+            });
+        }
+    }
+
+    /// <summary>«Вернуть как было у автора» из экрана настройки — для всех модов, которые там настраиваются.</summary>
+    [RelayCommand]
+    private async Task RestoreFromEditor()
+    {
+        if (Editor is null) return;
+        var mods = Editor.TargetMods.Where(m => m.IsModified).ToList();
+        if (mods.Count == 0)
+        {
+            ShowToast("Эти вещи ещё не менялись — они и так как у автора", Icons.Info);
+            return;
+        }
+        var answer = await ShowDialogAsync(new DialogViewModel
+        {
+            Title = "Вернуть как было у автора?",
+            Icon = (System.Windows.Media.Geometry)System.Windows.Application.Current.FindResource("Icon.RotateCcw"),
+            Message = mods.Count == 1
+                ? $"Все изменения настроек «{mods[0].Name}» будут отменены."
+                : $"Будут отменены изменения в {Text.Plural(mods.Count, "моде", "модах", "модах")}.",
+            PrimaryText = "Вернуть",
+            SecondaryText = "Отмена",
+        });
+        if (answer != DialogResult.Primary || !await EnsureGameClosedAsync("изменить моды")) return;
+
+        try
+        {
+            await Task.Run(() =>
+            {
+                foreach (var m in mods) _originals.Restore(m.Name, m.Model.Files);
+            });
+            foreach (var m in mods) m.IsModified = false;
+            ShowToast("Авторские настройки восстановлены", Icons.Check);
+            SetLastAction("восстановлены авторские настройки");
+            Editor = null;
+            if (_editorFromCard && Card is not null) await OpenCard(Card.Mod);
+            else Page = AppPage.Library;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            await ShowErrorAsync("Не удалось вернуть оригинал", "Файлы мода заняты другой программой.", ex);
+        }
+    }
+
+    [RelayCommand]
     private async Task RestoreOriginal()
     {
         if (Card is null) return;
@@ -86,7 +174,7 @@ public sealed partial class MainViewModel
     private void EditAllItems()
     {
         if (Card is null || Card.Items.Count == 0) return;
-        Editor = new ClothingEditorViewModel(Card.Items.ToList(), Card.Image);
+        Editor = new ClothingEditorViewModel(Card.Items.ToList(), Card.Image, Card.Mod.Name, Card.Items.Count);
         _editorFromCard = true;
         Page = AppPage.Editor;
     }
@@ -109,6 +197,7 @@ public sealed partial class MainViewModel
             ShowToast("Среди выбранных модов нет одежды, причёсок или макияжа", Icons.Info);
             return;
         }
+        foreach (var t in targets.Take(2)) await t.LoadSwatchesAsync(); // превью для левой колонки
         Editor = new ClothingEditorViewModel(targets, null);
         _editorFromCard = false;
         Page = AppPage.Editor;

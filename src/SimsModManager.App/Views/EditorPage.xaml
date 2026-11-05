@@ -4,7 +4,7 @@
              xmlns:ctl="clr-namespace:SimsModManager.App.Controls"
              xmlns:b="clr-namespace:SimsModManager.App.Behaviors">
     <UserControl.Resources>
-        <!-- Набор флажков-чипов (возрасты, категории) -->
+        <!-- Ряд чипов-флажков (возрасты, категории). Tag = «изменено» → точка у чипа -->
         <DataTemplate x:Key="OptionChips">
             <ItemsControl ItemsSource="{Binding}">
                 <ItemsControl.ItemsPanel>
@@ -14,15 +14,24 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <ToggleButton Style="{StaticResource Chip}" Content="{Binding Name}" IsChecked="{Binding IsChecked}" Margin="0,0,6,6" />
+                        <ToggleButton Style="{StaticResource Chip}" Content="{Binding Name}" IsChecked="{Binding IsChecked}"
+                                      Tag="{Binding IsChanged}" Margin="0,0,6,6" Height="30" Padding="11,0" FontSize="13" />
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </DataTemplate>
+
+        <!-- Подпись ряда: «Пол •» — точка, если в ряду что-то изменено -->
+        <Style x:Key="RowLabel" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Foreground" Value="{DynamicResource B.TextSecondary}" />
+            <Setter Property="VerticalAlignment" Value="Top" />
+            <Setter Property="Margin" Value="0,7,0,0" />
+        </Style>
     </UserControl.Resources>
 
     <!-- DataContext — MainViewModel, редактор — в свойстве Editor -->
-    <Grid Margin="24,20,24,16" DataContext="{Binding Editor}">
+    <Grid DataContext="{Binding Editor}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
@@ -30,119 +39,236 @@
         </Grid.RowDefinitions>
 
         <!-- Заголовок -->
-        <StackPanel Orientation="Horizontal" Margin="0,0,0,18">
-            <Button Style="{StaticResource Btn.Icon}" ctl:Btn.Icon="{StaticResource Icon.ArrowLeft}" ToolTip="Назад (Esc)" VerticalAlignment="Top" Margin="0,2,16,0"
-                    Command="{Binding DataContext.CloseEditorCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" />
-            <StackPanel>
-                <TextBlock Text="Настройка одежды" Style="{StaticResource T.Page}" />
-                <TextBlock Text="Кому и когда игра может надевать эту вещь" Style="{StaticResource T.Secondary}" Margin="0,4,0,0" />
+        <Grid Margin="24,20,24,18">
+            <StackPanel Orientation="Horizontal">
+                <Button Style="{StaticResource Btn.Icon}" ctl:Btn.Icon="{StaticResource Icon.ArrowLeft}" ToolTip="Назад (Esc)" VerticalAlignment="Top" Margin="0,4,16,0"
+                        Command="{Binding DataContext.CloseEditorCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+                <StackPanel>
+                    <TextBlock Text="{Binding PageTitle}" Style="{StaticResource T.Page}" />
+                    <TextBlock Text="{Binding Subtitle}" Style="{StaticResource T.Secondary}" Margin="0,4,0,0" />
+                </StackPanel>
             </StackPanel>
-        </StackPanel>
+            <Border Style="{StaticResource Tag}" Background="{DynamicResource B.AccentSubtle}" HorizontalAlignment="Right" VerticalAlignment="Top"
+                    Margin="0,8,0,0" b:Anim.Show="{Binding HasChanges}" b:Anim.Offset="0">
+                <TextBlock Style="{StaticResource TagText}" Text="Есть изменения" Foreground="{DynamicResource B.Accent}" />
+            </Border>
+        </Grid>
 
-        <Grid Grid.Row="1">
+        <Grid Grid.Row="1" Margin="24,0,24,0">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="240" />
+                <ColumnDefinition Width="290" />
                 <ColumnDefinition Width="24" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
-            <!-- Слева: что настраиваем и быстрые наборы -->
-            <StackPanel b:Anim.Appear="True">
-                <Border Height="220" CornerRadius="8" Background="{StaticResource B.Surface}" BorderBrush="{StaticResource B.Border}" BorderThickness="1"
-                        ClipToBounds="True">
+            <!-- ═══ Слева: одна вещь ═══ -->
+            <StackPanel Visibility="{Binding IsSingle, Converter={StaticResource BoolToVisibility}}" b:Anim.Appear="True">
+                <Border Height="285" CornerRadius="8" Background="{DynamicResource B.Surface}" ClipToBounds="True">
                     <Grid>
-                        <ctl:IconView Data="{StaticResource Icon.Shirt}" Width="40" Height="40" Foreground="{StaticResource B.TextMuted}"
+                        <ctl:IconView Data="{StaticResource Icon.Shirt}" Width="40" Height="40" Foreground="{DynamicResource B.TextMuted}"
                                       Visibility="{Binding HasPreview, Converter={StaticResource InverseBoolToVisibility}}" />
-                        <Image Source="{Binding Preview}" Stretch="Uniform" Margin="10" RenderOptions.BitmapScalingMode="HighQuality" />
+                        <Image Source="{Binding Preview}" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality" />
                     </Grid>
                 </Border>
-                <TextBlock Text="{Binding Title}" Style="{StaticResource T.Strong}" Margin="0,12,0,0" TextWrapping="Wrap" />
-                <TextBlock Text="{Binding Subtitle}" Style="{StaticResource T.Muted}" Margin="0,4,0,0" TextWrapping="Wrap" />
-
-                <TextBlock Text="БЫСТРЫЕ НАБОРЫ" Style="{StaticResource T.Caption}" FontSize="10" Margin="0,22,0,8" />
-                <Button Style="{StaticResource Btn.Secondary}" ctl:Btn.Icon="{StaticResource Icon.Venus}" Content="Только женское" ToolTip="Только для женщин и не для случайных симов"
-                        HorizontalAlignment="Stretch" Command="{Binding PresetCommand}" CommandParameter="women" />
-                <Button Style="{StaticResource Btn.Secondary}" ctl:Btn.Icon="{StaticResource Icon.Mars}" Content="Только мужское" ToolTip="Только для мужчин и не для случайных симов"
-                        HorizontalAlignment="Stretch" Margin="0,6,0,0" Command="{Binding PresetCommand}" CommandParameter="men" />
-                <Button Style="{StaticResource Btn.Secondary}" ctl:Btn.Icon="{StaticResource Icon.Sparkles}" Content="Только парадная" ToolTip="Вещь будет только в парадных нарядах"
-                        HorizontalAlignment="Stretch" Margin="0,6,0,0" Command="{Binding PresetCommand}" CommandParameter="formal" />
-                <Button Style="{StaticResource Btn.Secondary}" ctl:Btn.Icon="{StaticResource Icon.Users}" Content="Подростки и старше" ToolTip="Подростки, молодые, взрослые и пожилые"
-                        HorizontalAlignment="Stretch" Margin="0,6,0,0" Command="{Binding PresetCommand}" CommandParameter="adults" />
+                <TextBlock Text="{Binding Title}" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource B.Text}" Margin="0,16,0,0"
+                           TextTrimming="CharacterEllipsis" />
+                <StackPanel Orientation="Horizontal" Margin="0,10,0,0" ToolTip="Тип вещи задаёт автор, его менять нельзя">
+                    <ctl:IconView Data="{StaticResource Icon.Lock}" Width="14" Height="14" Foreground="{DynamicResource B.TextSecondary}" Margin="0,0,8,0" />
+                    <TextBlock Text="{Binding BodyTypeName}" Style="{StaticResource T.Secondary}" FontSize="13" />
+                </StackPanel>
+                <ItemsControl ItemsSource="{Binding Swatches}" Margin="0,14,0,0">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <RadioButton GroupName="Swatch" IsChecked="{Binding IsSelected, Mode=OneWay}" Cursor="Hand" Margin="0,0,7,7"
+                                         Command="{Binding DataContext.SelectSwatchCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                         CommandParameter="{Binding}" FocusVisualStyle="{x:Null}">
+                                <RadioButton.Template>
+                                    <ControlTemplate TargetType="RadioButton">
+                                        <Border x:Name="Frame" Width="26" Height="26" CornerRadius="5" BorderThickness="1.5"
+                                                BorderBrush="{DynamicResource B.Border}" Background="{DynamicResource B.Control}" ClipToBounds="True">
+                                            <Image Source="{Binding Image}" Stretch="UniformToFill" />
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsChecked" Value="True">
+                                                <Setter TargetName="Frame" Property="BorderBrush" Value="{DynamicResource B.Accent}" />
+                                            </Trigger>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="Frame" Property="BorderBrush" Value="{DynamicResource B.BorderHover}" />
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </RadioButton.Template>
+                            </RadioButton>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <TextBlock Text="{Binding SwatchText}" Style="{StaticResource T.Muted}" FontSize="12" Margin="0,2,0,0" />
+                <CheckBox Style="{StaticResource CheckRow}" Content="Применить ко всем расцветкам" IsChecked="{Binding ApplyToAllSwatches}" Margin="0,14,0,0" />
             </StackPanel>
 
-            <!-- Справа: настройки -->
+            <!-- ═══ Слева: много вещей ═══ -->
+            <StackPanel Visibility="{Binding IsBulk, Converter={StaticResource BoolToVisibility}}" b:Anim.Appear="True">
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <ItemsControl ItemsSource="{Binding BulkPreviews}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <UniformGrid Columns="2" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Height="146" CornerRadius="6" Background="{DynamicResource B.Control}" Margin="0,0,6,0" ClipToBounds="True">
+                                        <Image Source="{Binding}" Stretch="Uniform" RenderOptions.BitmapScalingMode="HighQuality" />
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Text="{Binding BulkCountText}" FontSize="20" FontWeight="SemiBold" Foreground="{DynamicResource B.Text}" Margin="0,14,0,0" />
+                        <TextBlock Text="{Binding BulkDescription}" Style="{StaticResource T.Secondary}" FontSize="13" TextWrapping="Wrap" Margin="0,8,0,0" />
+                        <Border Style="{StaticResource Tag}" Background="{DynamicResource B.WarningSubtle}" HorizontalAlignment="Left" Margin="0,14,0,0" Height="22"
+                                Visibility="{Binding HasMixedValues, Converter={StaticResource BoolToVisibility}}">
+                            <TextBlock Style="{StaticResource TagText}" Text="Смешанные значения" Foreground="{DynamicResource B.Warning}" FontSize="11" />
+                        </Border>
+                        <TextBlock Style="{StaticResource T.Muted}" FontSize="12" TextWrapping="Wrap" Margin="0,10,0,0"
+                                   Text="«—» — значения различаются. Нетронутые параметры останутся как у автора." />
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+
+            <!-- ═══ Справа: настройки ═══ -->
             <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto">
                 <StackPanel>
-                    <!-- Пол -->
-                    <Border Style="{StaticResource Card}" Margin="0,0,0,12" b:Anim.Appear="True">
-                        <StackPanel>
-                            <TextBlock Text="Для кого" Style="{StaticResource T.Section}" />
-                            <TextBlock Style="{StaticResource T.Muted}" TextWrapping="Wrap" Margin="0,4,0,12"
-                                       Text="Если выбрать одно, игра не будет надевать вещь на симов другого пола — в том числе случайным прохожим." />
-                            <StackPanel Orientation="Horizontal">
-                                <RadioButton Style="{StaticResource ChipRadio}" Content="Женщины" GroupName="Gender"
-                                             IsChecked="{Binding Gender, Converter={StaticResource Equals}, ConverterParameter=Female}" />
-                                <RadioButton Style="{StaticResource ChipRadio}" Content="Мужчины" GroupName="Gender" Margin="6,0,0,0"
-                                             IsChecked="{Binding Gender, Converter={StaticResource Equals}, ConverterParameter=Male}" />
-                                <RadioButton Style="{StaticResource ChipRadio}" Content="Все" GroupName="Gender" Margin="6,0,0,0"
-                                             IsChecked="{Binding Gender, Converter={StaticResource Equals}, ConverterParameter=Both}" />
-                                <TextBlock Text="сейчас по-разному" Style="{StaticResource T.Muted}" VerticalAlignment="Center" Margin="12,0,0,0"
-                                           Visibility="{Binding GenderIsMixed, Converter={StaticResource BoolToVisibility}}" />
-                            </StackPanel>
-                        </StackPanel>
-                    </Border>
-
-                    <!-- Возраст -->
-                    <Border Style="{StaticResource Card}" Margin="0,0,0,12" b:Anim.Appear="True">
-                        <StackPanel>
-                            <TextBlock Text="Возраст" Style="{StaticResource T.Section}" />
-                            <TextBlock Style="{StaticResource T.Muted}" Margin="0,4,0,12" Text="Кому вещь доступна в редакторе персонажа." />
-                            <ContentPresenter Content="{Binding Ages}" ContentTemplate="{StaticResource OptionChips}" />
-                        </StackPanel>
-                    </Border>
-
-                    <!-- Категории одежды -->
-                    <Border Style="{StaticResource Card}" Margin="0,0,0,12" b:Anim.Appear="True">
-                        <StackPanel>
-                            <TextBlock Text="Категории одежды" Style="{StaticResource T.Section}" />
-                            <TextBlock Style="{StaticResource T.Muted}" TextWrapping="Wrap" Margin="0,4,0,12"
-                                       Text="В каких нарядах игра может использовать вещь. Например, уберите «Повседневная», чтобы вечернее платье не появлялось в обычной одежде." />
-                            <ContentPresenter Content="{Binding Outfits}" ContentTemplate="{StaticResource OptionChips}" />
-                        </StackPanel>
-                    </Border>
-
-                    <!-- Случайные симы -->
-                    <Border Style="{StaticResource Card}" Margin="0,0,0,12" b:Anim.Appear="True">
+                    <Border Style="{StaticResource Card}" Padding="18,16" b:Anim.Appear="True">
                         <Grid>
-                            <StackPanel Margin="0,0,60,0">
-                                <TextBlock Text="Для случайных симов" Style="{StaticResource T.Section}" />
-                                <TextBlock Style="{StaticResource T.Muted}" TextWrapping="Wrap" Margin="0,4,0,0"
-                                           Text="Игра может сама надевать вещь на прохожих, новых жителей и при кнопке «случайно» в редакторе. Выключите, чтобы вещь носили только ваши симы." />
-                                <TextBlock Text="Сейчас у выбранных вещей по-разному" Style="{StaticResource T.Muted}" Foreground="{StaticResource B.Accent}" Margin="0,6,0,0"
-                                           Visibility="{Binding RandomIsMixed, Converter={StaticResource BoolToVisibility}}" />
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="118" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+
+                            <!-- Пол -->
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="Пол" Style="{StaticResource RowLabel}" />
+                                <Ellipse Width="5" Height="5" Fill="{DynamicResource B.Accent}" Margin="6,13,0,0" VerticalAlignment="Top"
+                                         Visibility="{Binding GenderChanged, Converter={StaticResource BoolToVisibility}}" />
                             </StackPanel>
-                            <CheckBox Style="{StaticResource Switch}" IsChecked="{Binding RandomOn}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                            <WrapPanel Grid.Column="1" Margin="0,0,0,6">
+                                <RadioButton Style="{StaticResource ChipRadio}" Content="Женщины" GroupName="Gender" Height="30" Padding="11,0" FontSize="13" Margin="0,0,6,6"
+                                             IsChecked="{Binding Gender, Converter={StaticResource Equals}, ConverterParameter=Female}" />
+                                <RadioButton Style="{StaticResource ChipRadio}" Content="Мужчины" GroupName="Gender" Height="30" Padding="11,0" FontSize="13" Margin="0,0,6,6"
+                                             IsChecked="{Binding Gender, Converter={StaticResource Equals}, ConverterParameter=Male}" />
+                                <RadioButton Height="30" Padding="11,0" FontSize="13" Margin="0,0,6,6" GroupName="Gender"
+                                             IsChecked="{Binding Gender, Converter={StaticResource Equals}, ConverterParameter=Both}">
+                                    <RadioButton.Style>
+                                        <Style TargetType="RadioButton" BasedOn="{StaticResource ChipRadio}">
+                                            <Setter Property="Content" Value="Оба" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding GenderIsMixed}" Value="True">
+                                                    <Setter Property="Content" Value="Оба —" />
+                                                    <Setter Property="ToolTip" Value="Сейчас у выбранных вещей по-разному" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </RadioButton.Style>
+                                </RadioButton>
+                            </WrapPanel>
+
+                            <!-- Возраст -->
+                            <StackPanel Grid.Row="1" Orientation="Horizontal">
+                                <TextBlock Text="Возраст" Style="{StaticResource RowLabel}" />
+                                <Ellipse Width="5" Height="5" Fill="{DynamicResource B.Accent}" Margin="6,13,0,0" VerticalAlignment="Top"
+                                         Visibility="{Binding AgesChanged, Converter={StaticResource BoolToVisibility}}" />
+                            </StackPanel>
+                            <ContentPresenter Grid.Row="1" Grid.Column="1" Content="{Binding Ages}" ContentTemplate="{StaticResource OptionChips}" Margin="0,0,0,6" />
+
+                            <!-- Категории -->
+                            <StackPanel Grid.Row="2" Orientation="Horizontal">
+                                <TextBlock Text="Категории" Style="{StaticResource RowLabel}" />
+                                <Ellipse Width="5" Height="5" Fill="{DynamicResource B.Accent}" Margin="6,13,0,0" VerticalAlignment="Top"
+                                         Visibility="{Binding OutfitsChanged, Converter={StaticResource BoolToVisibility}}" />
+                            </StackPanel>
+                            <ContentPresenter Grid.Row="2" Grid.Column="1" Content="{Binding Outfits}" ContentTemplate="{StaticResource OptionChips}" Margin="0,0,0,6" />
+
+                            <!-- Погода -->
+                            <TextBlock Grid.Row="3" Text="Погода" Style="{StaticResource RowLabel}" />
+                            <WrapPanel Grid.Row="3" Grid.Column="1" Margin="0,0,0,6"
+                                       ToolTip="Скоро: номера меток погоды ещё не подтверждены. Сейчас менеджер их не меняет — авторские метки сохраняются.">
+                                <ToggleButton Style="{StaticResource Chip}" Content="Жаркая" IsEnabled="False" Height="30" Padding="11,0" FontSize="13" Margin="0,0,6,6" />
+                                <ToggleButton Style="{StaticResource Chip}" Content="Холодная" IsEnabled="False" Height="30" Padding="11,0" FontSize="13" Margin="0,0,6,6" />
+                                <Border Style="{StaticResource Tag}" Margin="2,0,0,6">
+                                    <TextBlock Style="{StaticResource TagText}" Text="Времена года" />
+                                </Border>
+                            </WrapPanel>
+
+                            <Border Grid.Row="4" Grid.ColumnSpan="2" Height="1" Background="{DynamicResource B.Hover}" Margin="0,8,0,14" />
+
+                            <!-- Случайные симы -->
+                            <Grid Grid.Row="5" Grid.ColumnSpan="2">
+                                <StackPanel Margin="0,0,60,0">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Случайные симы" Style="{StaticResource T.Strong}" FontSize="14" />
+                                        <Ellipse Width="5" Height="5" Fill="{DynamicResource B.Accent}" Margin="6,2,0,0" VerticalAlignment="Center"
+                                                 Visibility="{Binding RandomChanged, Converter={StaticResource BoolToVisibility}}" />
+                                    </StackPanel>
+                                    <TextBlock Style="{StaticResource T.Secondary}" TextWrapping="Wrap" Margin="0,6,0,0"
+                                               Text="Разрешить игре надевать вещь на автоматически созданных симов." />
+                                </StackPanel>
+                                <CheckBox Style="{StaticResource Switch}" IsChecked="{Binding RandomOn}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                            </Grid>
                         </Grid>
                     </Border>
+
+                    <TextBlock Text="БЫСТРЫЕ ПРЕСЕТЫ" Style="{StaticResource T.Caption}" Margin="0,20,0,10" />
+                    <WrapPanel>
+                        <Button Style="{StaticResource Btn.Secondary}" ctl:Btn.Icon="{StaticResource Icon.WandSparkles}" Content="Только женское, не для случайных"
+                                Height="36" FontSize="13" Margin="0,0,8,8" Command="{Binding PresetCommand}" CommandParameter="women" />
+                        <Button Style="{StaticResource Btn.Secondary}" Content="Только парадная" Height="36" FontSize="13" Margin="0,0,8,8"
+                                Command="{Binding PresetCommand}" CommandParameter="formal" />
+                    </WrapPanel>
+                    <TextBlock Style="{StaticResource T.Muted}" FontSize="12" Margin="0,6,0,0"
+                               Visibility="{Binding IsBulk, Converter={StaticResource BoolToVisibility}}">
+                        <Run Text="Изменённые параметры будут применены ко всем" />
+                        <Run Text="{Binding BulkCountText, Mode=OneWay}" /><Run Text=". Остальные значения сохранятся." />
+                    </TextBlock>
                 </StackPanel>
             </ScrollViewer>
         </Grid>
 
-        <!-- Сохранение -->
-        <Grid Grid.Row="2" Margin="0,16,0,0">
-            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                <ctl:IconView Data="{StaticResource Icon.Info}" Foreground="{StaticResource B.TextMuted}" Width="14" Height="14" Margin="0,0,8,0" />
-                <TextBlock Text="Перед изменением сохраняется копия оригинала — её можно вернуть в карточке мода." Style="{StaticResource T.Muted}" />
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                <Button Style="{StaticResource Btn.Ghost}" Content="Сбросить" Command="{Binding ResetCommand}" Margin="0,0,8,0"
-                        IsEnabled="{Binding HasChanges}" />
-                <Button Style="{StaticResource Btn.Secondary}" Content="Отмена" Margin="0,0,8,0"
-                        Command="{Binding DataContext.CloseEditorCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" />
-                <Button Style="{StaticResource Btn.Primary}" ctl:Btn.Icon="{StaticResource Icon.Check}" Content="Сохранить"
-                        Command="{Binding DataContext.SaveEditorCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                        IsEnabled="{Binding HasChanges}" />
-            </StackPanel>
-        </Grid>
+        <!-- Нижняя панель: сохранение -->
+        <Border Grid.Row="2" BorderBrush="{DynamicResource B.Hover}" BorderThickness="0,1,0,0" Padding="24,14" Margin="0,16,0,0">
+            <Grid>
+                <StackPanel VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal">
+                        <ctl:IconView Data="{StaticResource Icon.ShieldCheck}" Foreground="{DynamicResource B.Accent}" Width="16" Height="16" Margin="0,0,10,0" />
+                        <TextBlock Text="Перед изменением сохраняется копия оригинала" Style="{StaticResource T.Body}" FontSize="13" />
+                    </StackPanel>
+                    <TextBlock Text="Можно вернуться к авторским настройкам в любой момент." Style="{StaticResource T.Muted}" FontSize="12" Margin="0,4,0,0" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <Button Style="{StaticResource Btn.Secondary}" Content="Вернуть как было у автора" Height="36" FontSize="13" Margin="0,0,8,0"
+                            Command="{Binding DataContext.RestoreFromEditorCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                            IsEnabled="{Binding CanRestoreAuthor}"
+                            ToolTip="Вернуть файлы мода к тому, как их сделал автор" />
+                    <Button Style="{StaticResource Btn.Secondary}" Content="Отменить" Height="36" FontSize="13" Margin="0,0,8,0"
+                            Command="{Binding DataContext.CloseEditorCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+                    <Button Style="{StaticResource Btn.Primary}" ctl:Btn.Icon="{StaticResource Icon.Check}" Content="Сохранить" Height="36" FontSize="13"
+                            Command="{Binding DataContext.SaveEditorCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                            IsEnabled="{Binding HasChanges}" />
+                </StackPanel>
+            </Grid>
+        </Border>
     </Grid>
 </UserControl>

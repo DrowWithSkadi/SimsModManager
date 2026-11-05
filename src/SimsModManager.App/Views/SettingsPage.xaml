@@ -3,6 +3,40 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:ctl="clr-namespace:SimsModManager.App.Controls"
              xmlns:b="clr-namespace:SimsModManager.App.Behaviors">
+    <UserControl.Resources>
+        <!-- Плитка выбора темы: мини-превью + название, выбранная — с акцентной рамкой -->
+        <Style x:Key="ThemeOption" TargetType="RadioButton">
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="Bd" CornerRadius="8" BorderThickness="1.5" BorderBrush="{DynamicResource B.Border}"
+                                Background="{DynamicResource B.Control}" Padding="6">
+                            <StackPanel>
+                                <ContentPresenter Content="{TemplateBinding Tag}" Height="44" />
+                                <TextBlock x:Name="Label" Text="{TemplateBinding Content}" FontSize="11" Margin="2,6,0,0"
+                                           Foreground="{DynamicResource B.TextSecondary}" />
+                            </StackPanel>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource B.BorderHover}" />
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{DynamicResource B.Accent}" />
+                                <Setter TargetName="Label" Property="Foreground" Value="{DynamicResource B.Accent}" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.4" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <Grid Margin="24,24,24,16">
             <Grid.RowDefinitions>
@@ -34,20 +68,20 @@
                         <StackPanel>
                             <Grid>
                                 <TextBlock Text="Папка The Sims 4" Style="{StaticResource T.Section}" />
-                                <Border Style="{StaticResource Tag}" Background="{StaticResource B.AccentSubtle}" HorizontalAlignment="Right"
+                                <Border Style="{StaticResource Tag}" Background="{DynamicResource B.AccentSubtle}" HorizontalAlignment="Right"
                                         Visibility="{Binding FolderLooksValid, Converter={StaticResource BoolToVisibility}}">
-                                    <TextBlock Style="{StaticResource TagText}" Text="Найдена" Foreground="{StaticResource B.Accent}" />
+                                    <TextBlock Style="{StaticResource TagText}" Text="Найдена" Foreground="{DynamicResource B.Accent}" />
                                 </Border>
-                                <Border Style="{StaticResource Tag}" Background="{StaticResource B.WarningSubtle}" HorizontalAlignment="Right"
+                                <Border Style="{StaticResource Tag}" Background="{DynamicResource B.WarningSubtle}" HorizontalAlignment="Right"
                                         Visibility="{Binding FolderLooksValid, Converter={StaticResource InverseBoolToVisibility}}">
-                                    <TextBlock Style="{StaticResource TagText}" Text="Не подтверждена" Foreground="{StaticResource B.Warning}" />
+                                    <TextBlock Style="{StaticResource TagText}" Text="Не подтверждена" Foreground="{DynamicResource B.Warning}" />
                                 </Border>
                             </Grid>
-                            <Border Background="{StaticResource B.Background}" BorderBrush="{StaticResource B.Border}" BorderThickness="1"
+                            <Border Background="{DynamicResource B.Background}" BorderBrush="{DynamicResource B.Border}" BorderThickness="1"
                                     CornerRadius="6" Height="32" Padding="10,0" Margin="0,14,0,12">
                                 <StackPanel Orientation="Horizontal">
-                                    <ctl:IconView Data="{StaticResource Icon.Folder}" Foreground="{StaticResource B.Accent}" Margin="0,0,10,0" />
-                                    <TextBlock Text="{Binding SimsFolder}" FontSize="12" Foreground="{StaticResource B.Text}" VerticalAlignment="Center"
+                                    <ctl:IconView Data="{StaticResource Icon.Folder}" Foreground="{DynamicResource B.Accent}" Margin="0,0,10,0" />
+                                    <TextBlock Text="{Binding SimsFolder}" FontSize="12" Foreground="{DynamicResource B.Text}" VerticalAlignment="Center"
                                                TextTrimming="CharacterEllipsis" />
                                 </StackPanel>
                             </Border>
@@ -72,7 +106,7 @@
                                 <CheckBox Style="{StaticResource Switch}" HorizontalAlignment="Right" IsChecked="{Binding GameModsEnabled}"
                                           IsEnabled="{Binding OptionsFileFound}" />
                             </Grid>
-                            <Border Height="1" Background="{StaticResource B.Hover}" Margin="0,12" />
+                            <Border Height="1" Background="{DynamicResource B.Hover}" Margin="0,12" />
                             <Grid>
                                 <StackPanel>
                                     <TextBlock Text="Скриптовые моды" Style="{StaticResource T.Strong}" FontSize="12" />
@@ -81,7 +115,7 @@
                                 <CheckBox Style="{StaticResource Switch}" HorizontalAlignment="Right" IsChecked="{Binding GameScriptsEnabled}"
                                           IsEnabled="{Binding OptionsFileFound}" />
                             </Grid>
-                            <TextBlock Style="{StaticResource T.Muted}" TextWrapping="Wrap" Margin="0,12,0,0" Foreground="{StaticResource B.Warning}"
+                            <TextBlock Style="{StaticResource T.Muted}" TextWrapping="Wrap" Margin="0,12,0,0" Foreground="{DynamicResource B.Warning}"
                                        Text="Файла Options.ini пока нет — запустите игру один раз, и настройки станут доступны."
                                        Visibility="{Binding OptionsFileFound, Converter={StaticResource InverseBoolToVisibility}}" />
                         </StackPanel>
@@ -99,7 +133,7 @@
                                 <Button Style="{StaticResource Btn.Secondary}" ctl:Btn.Icon="{StaticResource Icon.BrushCleaning}" Content="Очистить кэш"
                                         HorizontalAlignment="Right" Command="{Binding ClearCacheCommand}" />
                             </Grid>
-                            <Border Height="1" Background="{StaticResource B.Hover}" Margin="0,12" />
+                            <Border Height="1" Background="{DynamicResource B.Hover}" Margin="0,12" />
                             <Grid>
                                 <TextBlock Text="Очищать кэш после установки" Style="{StaticResource T.Strong}" FontSize="12" VerticalAlignment="Center" />
                                 <CheckBox Style="{StaticResource Switch}" HorizontalAlignment="Right" IsChecked="{Binding AutoClearCache}" />
@@ -124,22 +158,65 @@
                     </Border>
 
                     <Border Style="{StaticResource Card}" Margin="0,0,0,12" b:Anim.Appear="True">
-                        <Grid>
-                            <StackPanel VerticalAlignment="Center">
-                                <TextBlock Text="Оформление" Style="{StaticResource T.Section}" />
-                                <TextBlock Text="Тёмное · графит" Style="{StaticResource T.Secondary}" Margin="0,4,0,0" />
-                            </StackPanel>
-                            <Border HorizontalAlignment="Right" Width="46" Height="30" CornerRadius="6" BorderThickness="1.5"
-                                    BorderBrush="{StaticResource B.Accent}" Background="{StaticResource B.Background}">
-                                <Grid Margin="5">
-                                    <Border Width="5" HorizontalAlignment="Left" Background="{StaticResource B.Control}" CornerRadius="1" />
-                                    <StackPanel Margin="9,1,0,0">
-                                        <Border Height="3" Background="{StaticResource B.TextSecondary}" CornerRadius="1" Width="22" HorizontalAlignment="Left" />
-                                        <Border Height="6" Background="{StaticResource B.Accent}" CornerRadius="1" Width="16" HorizontalAlignment="Left" Margin="0,4,0,0" />
-                                    </StackPanel>
-                                </Grid>
-                            </Border>
-                        </Grid>
+                        <StackPanel>
+                            <TextBlock Text="Оформление" Style="{StaticResource T.Section}" />
+                            <TextBlock Text="{Binding ThemeLabel}" Style="{StaticResource T.Secondary}" Margin="0,4,0,12" />
+                            <UniformGrid Columns="3">
+                                <!-- Тёмная -->
+                                <RadioButton Style="{StaticResource ThemeOption}" GroupName="Theme" Content="Тёмная" Margin="0,0,6,0"
+                                             IsChecked="{Binding Theme, Converter={StaticResource Equals}, ConverterParameter=Dark, Mode=OneWay}"
+                                             Command="{Binding SetThemeCommand}" CommandParameter="Dark">
+                                    <RadioButton.Tag>
+                                        <Border Background="#191919" CornerRadius="4" Padding="5">
+                                            <StackPanel>
+                                                <Border Height="4" Width="26" Background="#B8B8B4" CornerRadius="1" HorizontalAlignment="Left" />
+                                                <Border Height="10" Background="#2B2B2B" CornerRadius="2" Margin="0,4,0,0" />
+                                                <Border Height="6" Width="18" Background="#77E1C7" CornerRadius="1" HorizontalAlignment="Left" Margin="0,4,0,0" />
+                                            </StackPanel>
+                                        </Border>
+                                    </RadioButton.Tag>
+                                </RadioButton>
+                                <!-- Светлая -->
+                                <RadioButton Style="{StaticResource ThemeOption}" GroupName="Theme" Content="Светлая" Margin="3,0,3,0"
+                                             IsChecked="{Binding Theme, Converter={StaticResource Equals}, ConverterParameter=Light, Mode=OneWay}"
+                                             Command="{Binding SetThemeCommand}" CommandParameter="Light">
+                                    <RadioButton.Tag>
+                                        <Border Background="#F4F1EA" CornerRadius="4" Padding="5">
+                                            <StackPanel>
+                                                <Border Height="4" Width="26" Background="#5F5B53" CornerRadius="1" HorizontalAlignment="Left" />
+                                                <Border Height="10" Background="#FBFAF6" BorderBrush="#DCD5C7" BorderThickness="1" CornerRadius="2" Margin="0,4,0,0" />
+                                                <Border Height="6" Width="18" Background="#2B9C82" CornerRadius="1" HorizontalAlignment="Left" Margin="0,4,0,0" />
+                                            </StackPanel>
+                                        </Border>
+                                    </RadioButton.Tag>
+                                </RadioButton>
+                                <!-- Стекло -->
+                                <RadioButton Style="{StaticResource ThemeOption}" GroupName="Theme" Content="Стекло" Margin="6,0,0,0"
+                                             IsEnabled="{Binding GlassSupported}"
+                                             IsChecked="{Binding Theme, Converter={StaticResource Equals}, ConverterParameter=Glass, Mode=OneWay}"
+                                             Command="{Binding SetThemeCommand}" CommandParameter="Glass">
+                                    <RadioButton.Tag>
+                                        <Border CornerRadius="4" Padding="5">
+                                            <Border.Background>
+                                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                                    <GradientStop Color="#3B4C5A" Offset="0" />
+                                                    <GradientStop Color="#2A3B36" Offset="0.55" />
+                                                    <GradientStop Color="#4A3B52" Offset="1" />
+                                                </LinearGradientBrush>
+                                            </Border.Background>
+                                            <StackPanel>
+                                                <Border Height="4" Width="26" Background="#CCFFFFFF" CornerRadius="1" HorizontalAlignment="Left" />
+                                                <Border Height="10" Background="#26FFFFFF" BorderBrush="#40FFFFFF" BorderThickness="1" CornerRadius="2" Margin="0,4,0,0" />
+                                                <Border Height="6" Width="18" Background="#82EACF" CornerRadius="1" HorizontalAlignment="Left" Margin="0,4,0,0" />
+                                            </StackPanel>
+                                        </Border>
+                                    </RadioButton.Tag>
+                                </RadioButton>
+                            </UniformGrid>
+                            <TextBlock Style="{StaticResource T.Muted}" TextWrapping="Wrap" Margin="0,10,0,0"
+                                       Text="«Стекло» — полупрозрачное окно с размытием фона. Нужна Windows 11."
+                                       Visibility="{Binding GlassSupported, Converter={StaticResource InverseBoolToVisibility}}" />
+                        </StackPanel>
                     </Border>
 
                     <Border Style="{StaticResource Card}" b:Anim.Appear="True">

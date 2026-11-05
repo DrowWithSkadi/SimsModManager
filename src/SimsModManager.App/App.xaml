@@ -5,8 +5,9 @@
              DispatcherUnhandledException="OnUnhandledException">
     <Application.Resources>
         <ResourceDictionary>
-            <!-- Цепочка: Templates → Theme → Icons, Converters. Каждый словарь сам подключает то, на что ссылается. -->
+            <!-- Первым идёт палитра (её подменяет ThemeService), затем стили: Templates → Theme → Icons, Converters. -->
             <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Themes/Palettes/Dark.xaml" />
                 <ResourceDictionary Source="Themes/Templates.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>

@@ -64,7 +64,7 @@
                             Content="{Binding TypeFilterLabel}" Command="{Binding ToggleTypeMenuCommand}" />
                     <Popup IsOpen="{Binding IsTypeMenuOpen}" StaysOpen="False" PlacementTarget="{Binding ElementName=TypeButton}"
                            Placement="Bottom" VerticalOffset="4" AllowsTransparency="True" PopupAnimation="Fade">
-                        <Border Background="{StaticResource B.Surface}" BorderBrush="{StaticResource B.Border}" BorderThickness="1"
+                        <Border Background="{DynamicResource B.Popup}" BorderBrush="{DynamicResource B.Border}" BorderThickness="1"
                                 CornerRadius="8" Padding="4" MinWidth="170">
                             <StackPanel>
                                 <RadioButton Style="{StaticResource MenuOption}" Content="Все типы" GroupName="TypeMenu"
@@ -95,7 +95,7 @@
                                 Content="{Binding SortLabel}" Command="{Binding ToggleSortMenuCommand}" />
                         <Popup IsOpen="{Binding IsSortMenuOpen}" StaysOpen="False" PlacementTarget="{Binding ElementName=SortButton}"
                                Placement="Bottom" VerticalOffset="4" AllowsTransparency="True" PopupAnimation="Fade">
-                            <Border Background="{StaticResource B.Surface}" BorderBrush="{StaticResource B.Border}" BorderThickness="1"
+                            <Border Background="{DynamicResource B.Popup}" BorderBrush="{DynamicResource B.Border}" BorderThickness="1"
                                     CornerRadius="8" Padding="4" MinWidth="190">
                                 <StackPanel>
                                     <TextBlock Text="Сортировать" Style="{StaticResource T.Muted}" Margin="8,6,8,4" />
@@ -108,10 +108,10 @@
                                     <RadioButton Style="{StaticResource MenuOption}" Content="По размеру" GroupName="Sort"
                                                  IsChecked="{Binding SortBy, Converter={StaticResource Equals}, ConverterParameter=size, Mode=OneWay}"
                                                  Command="{Binding SetSortCommand}" CommandParameter="size" />
-                                    <Border Height="1" Background="{StaticResource B.Hover}" Margin="4" />
+                                    <Border Height="1" Background="{DynamicResource B.Hover}" Margin="4" />
                                     <Button Style="{StaticResource Btn.Ghost}" HorizontalContentAlignment="Left" Height="30"
                                             ctl:Btn.Icon="{StaticResource Icon.ArrowUp}" Content="Обратный порядок"
-                                            Command="{Binding ToggleSortDirectionCommand}" Foreground="{StaticResource B.Text}" FontWeight="Normal" />
+                                            Command="{Binding ToggleSortDirectionCommand}" Foreground="{DynamicResource B.Text}" FontWeight="Normal" />
                                 </StackPanel>
                             </Border>
                         </Popup>
@@ -128,7 +128,7 @@
 
         <!-- ═══ Зона установки ═══ -->
         <Grid Grid.Row="1" Margin="24,0,24,8" Height="40">
-            <Rectangle RadiusX="6" RadiusY="6" Fill="{StaticResource B.Surface}" Stroke="{StaticResource B.Border}"
+            <Rectangle RadiusX="6" RadiusY="6" Fill="{DynamicResource B.Surface}" Stroke="{DynamicResource B.Border}"
                        StrokeThickness="1" StrokeDashArray="4 3" SnapsToDevicePixels="True" />
             <Grid Margin="12,0,4,0">
                 <Grid.ColumnDefinitions>
@@ -137,10 +137,10 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <ctl:IconView Data="{StaticResource Icon.Upload}" Foreground="{StaticResource B.Accent}" />
-                <TextBlock Grid.Column="1" Text="Перетащите архивы сюда" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource B.Text}"
+                <ctl:IconView Data="{StaticResource Icon.Upload}" Foreground="{DynamicResource B.Accent}" />
+                <TextBlock Grid.Column="1" Text="Перетащите архивы сюда" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource B.Text}"
                            VerticalAlignment="Center" Margin="12,0,0,0" />
-                <TextBlock Grid.Column="2" Text="ZIP / RAR / 7z / .package / .ts4script / дома и семьи" FontSize="10" Foreground="{StaticResource B.TextMuted}"
+                <TextBlock Grid.Column="2" Text="ZIP / RAR / 7z / .package / .ts4script / дома и семьи" FontSize="10" Foreground="{DynamicResource B.TextMuted}"
                            VerticalAlignment="Center" Margin="12,0,0,0" TextTrimming="CharacterEllipsis" />
                 <Button Grid.Column="3" Style="{StaticResource Btn.Secondary}" Content="Выбрать файлы" Command="{Binding BrowseFilesCommand}" />
             </Grid>
@@ -148,7 +148,7 @@
 
         <!-- ═══ Плашки-предупреждения ═══ -->
         <StackPanel Grid.Row="2" Margin="24,0,24,0">
-            <Border b:Anim.Show="{Binding HasOptionsWarning}" Background="{StaticResource B.WarningSubtle}" BorderBrush="{StaticResource B.WarningBorder}"
+            <Border b:Anim.Show="{Binding HasOptionsWarning}" Background="{DynamicResource B.WarningSubtle}" BorderBrush="{DynamicResource B.WarningBorder}"
                     BorderThickness="1" CornerRadius="6" Padding="12,10" Margin="0,0,0,8">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -156,26 +156,26 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <ctl:IconView Data="{StaticResource Icon.TriangleAlert}" Foreground="{StaticResource B.Warning}" Margin="0,0,12,0" />
+                    <ctl:IconView Data="{StaticResource Icon.TriangleAlert}" Foreground="{DynamicResource B.Warning}" Margin="0,0,12,0" />
                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                        <TextBlock Text="{Binding OptionsWarning}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource B.Text}" />
-                        <TextBlock Text="{Binding OptionsWarningDetail}" FontSize="11" Foreground="{StaticResource B.Warning}" Margin="0,2,0,0"
+                        <TextBlock Text="{Binding OptionsWarning}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource B.Text}" />
+                        <TextBlock Text="{Binding OptionsWarningDetail}" FontSize="11" Foreground="{DynamicResource B.Warning}" Margin="0,2,0,0"
                                    Visibility="{Binding HasOptionsWarningDetail, Converter={StaticResource BoolToVisibility}}" />
                     </StackPanel>
                     <Button Grid.Column="2" Style="{StaticResource Btn.Primary}" Content="Включить моды" Command="{Binding FixOptionsCommand}" />
                 </Grid>
             </Border>
 
-            <Border b:Anim.Show="{Binding IsGameRunning}" Background="{StaticResource B.Surface}" BorderBrush="{StaticResource B.Border}"
+            <Border b:Anim.Show="{Binding IsGameRunning}" Background="{DynamicResource B.Surface}" BorderBrush="{DynamicResource B.Border}"
                     BorderThickness="1" CornerRadius="6" Padding="12,10" Margin="0,0,0,8">
                 <StackPanel Orientation="Horizontal">
-                    <ctl:IconView Data="{StaticResource Icon.Info}" Foreground="{StaticResource B.TextSecondary}" Margin="0,0,12,0" />
-                    <TextBlock Text="Игра запущена — изменения применятся после перезапуска" FontSize="12" Foreground="{StaticResource B.Text}"
+                    <ctl:IconView Data="{StaticResource Icon.Info}" Foreground="{DynamicResource B.TextSecondary}" Margin="0,0,12,0" />
+                    <TextBlock Text="Игра запущена — изменения применятся после перезапуска" FontSize="12" Foreground="{DynamicResource B.Text}"
                                VerticalAlignment="Center" />
                 </StackPanel>
             </Border>
 
-            <Border b:Anim.Show="{Binding HasDuplicates}" Background="{StaticResource B.WarningSubtle}" BorderBrush="{StaticResource B.WarningBorder}"
+            <Border b:Anim.Show="{Binding HasDuplicates}" Background="{DynamicResource B.WarningSubtle}" BorderBrush="{DynamicResource B.WarningBorder}"
                     BorderThickness="1" CornerRadius="6" Padding="12,6" Margin="0,0,0,8">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -183,14 +183,14 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <ctl:IconView Data="{StaticResource Icon.TriangleAlert}" Foreground="{StaticResource B.Warning}" Margin="0,0,12,0" />
-                    <TextBlock Grid.Column="1" Text="{Binding DuplicateText}" FontSize="12" Foreground="{StaticResource B.Text}" VerticalAlignment="Center"
+                    <ctl:IconView Data="{StaticResource Icon.TriangleAlert}" Foreground="{DynamicResource B.Warning}" Margin="0,0,12,0" />
+                    <TextBlock Grid.Column="1" Text="{Binding DuplicateText}" FontSize="12" Foreground="{DynamicResource B.Text}" VerticalAlignment="Center"
                                TextTrimming="CharacterEllipsis" />
                     <Button Grid.Column="2" Style="{StaticResource Btn.Secondary}" Content="Показать" Command="{Binding ShowDuplicatesCommand}" />
                 </Grid>
             </Border>
 
-            <Border b:Anim.Show="{Binding DuplicatesOnly}" Background="{StaticResource B.Surface}" BorderBrush="{StaticResource B.Border}"
+            <Border b:Anim.Show="{Binding DuplicatesOnly}" Background="{DynamicResource B.Surface}" BorderBrush="{DynamicResource B.Border}"
                     BorderThickness="1" CornerRadius="6" Padding="12,6" Margin="0,0,0,8">
                 <Grid>
                     <Grid.ColumnDefinitions>
@@ -198,8 +198,8 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <ctl:IconView Data="{StaticResource Icon.Files}" Foreground="{StaticResource B.TextSecondary}" Margin="0,0,12,0" />
-                    <TextBlock Grid.Column="1" FontSize="12" Foreground="{StaticResource B.Text}" VerticalAlignment="Center" TextWrapping="Wrap"
+                    <ctl:IconView Data="{StaticResource Icon.Files}" Foreground="{DynamicResource B.TextSecondary}" Margin="0,0,12,0" />
+                    <TextBlock Grid.Column="1" FontSize="12" Foreground="{DynamicResource B.Text}" VerticalAlignment="Center" TextWrapping="Wrap"
                                Text="Показаны моды с одинаковыми файлами. Наведите на ⚠, чтобы увидеть, с чем совпадает. Лишний мод можно выключить или удалить." />
                     <Button Grid.Column="2" Style="{StaticResource Btn.Secondary}" Content="Показать все" Command="{Binding ResetFiltersCommand}" Margin="12,0,0,0" />
                 </Grid>
@@ -213,11 +213,11 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
             <TextBlock Text="МОЯ БИБЛИОТЕКА" Style="{StaticResource T.Caption}" VerticalAlignment="Center" />
-            <TextBlock Text="{Binding ListHeaderText}" FontSize="10" Foreground="{StaticResource B.TextMuted}" HorizontalAlignment="Right"
+            <TextBlock Text="{Binding ListHeaderText}" FontSize="10" Foreground="{DynamicResource B.TextMuted}" HorizontalAlignment="Right"
                        VerticalAlignment="Center" />
 
             <!-- Список -->
-            <Border Grid.Row="1" Background="{StaticResource B.Surface}" CornerRadius="6" ClipToBounds="True" Margin="0,0,0,12"
+            <Border Grid.Row="1" Background="{DynamicResource B.Surface}" CornerRadius="6" ClipToBounds="True" Margin="0,0,0,12"
                     b:Anim.Show="{Binding ShowList}" b:Anim.Offset="0">
                 <Grid>
                     <ListBox x:Name="ModList" ItemsSource="{Binding ModsView}" ItemTemplate="{StaticResource ModRow}"
@@ -231,7 +231,7 @@
 
                     <ListBox x:Name="ModGrid" ItemsSource="{Binding ModsView}" ItemTemplate="{StaticResource ModTile}"
                              ItemContainerStyle="{StaticResource ModTileContainer}" SelectionMode="Extended"
-                             Background="{StaticResource B.Background}" BorderThickness="0" Padding="0,4,0,0"
+                             Background="{DynamicResource B.Background}" BorderThickness="0" Padding="0,4,0,0"
                              ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="OnSelectionChanged"
                              PreviewMouseLeftButtonUp="OnItemClick" KeyDown="OnListKeyDown"
                              Visibility="{Binding IsGridView, Converter={StaticResource BoolToVisibility}}">
@@ -245,7 +245,7 @@
             </Border>
 
             <!-- Заглушка при загрузке -->
-            <Border Grid.Row="1" Background="{StaticResource B.Surface}" CornerRadius="6" ClipToBounds="True" Margin="0,0,0,12"
+            <Border Grid.Row="1" Background="{DynamicResource B.Surface}" CornerRadius="6" ClipToBounds="True" Margin="0,0,0,12"
                     b:Anim.Show="{Binding IsLoading}" b:Anim.Offset="0">
                 <ItemsControl>
                     <ItemsControl.ItemsSource>
@@ -257,7 +257,7 @@
                     </ItemsControl.ItemsSource>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Border Height="48" BorderBrush="{StaticResource B.Hover}" BorderThickness="0,0,0,1" Padding="12,0">
+                            <Border Height="48" BorderBrush="{DynamicResource B.Hover}" BorderThickness="0,0,0,1" Padding="12,0">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="Auto" />
@@ -280,9 +280,9 @@
             <!-- Модов ещё нет -->
             <StackPanel Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="460"
                         b:Anim.Show="{Binding HasNoMods}">
-                <Border Width="48" Height="48" CornerRadius="8" Background="{StaticResource B.Control}" BorderBrush="{StaticResource B.Border}"
+                <Border Width="48" Height="48" CornerRadius="8" Background="{DynamicResource B.Control}" BorderBrush="{DynamicResource B.Border}"
                         BorderThickness="1" HorizontalAlignment="Center">
-                    <ctl:IconView Data="{StaticResource Icon.FolderPlus}" Foreground="{StaticResource B.Accent}" />
+                    <ctl:IconView Data="{StaticResource Icon.FolderPlus}" Foreground="{DynamicResource B.Accent}" />
                 </Border>
                 <TextBlock Text="Перетащите архивы с модами в это окно" Style="{StaticResource T.Section}" FontSize="20" TextAlignment="Center"
                            TextWrapping="Wrap" Margin="0,20,0,10" />
@@ -295,9 +295,9 @@
             <!-- Ничего не найдено -->
             <StackPanel Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="520"
                         b:Anim.Show="{Binding HasNoResults}">
-                <Border Width="48" Height="48" CornerRadius="8" Background="{StaticResource B.Control}" BorderBrush="{StaticResource B.Border}"
+                <Border Width="48" Height="48" CornerRadius="8" Background="{DynamicResource B.Control}" BorderBrush="{DynamicResource B.Border}"
                         BorderThickness="1" HorizontalAlignment="Center">
-                    <ctl:IconView Data="{StaticResource Icon.Search}" Foreground="{StaticResource B.Accent}" />
+                    <ctl:IconView Data="{StaticResource Icon.Search}" Foreground="{DynamicResource B.Accent}" />
                 </Border>
                 <TextBlock Text="{Binding NoResultsTitle}" Style="{StaticResource T.Section}" FontSize="20" TextAlignment="Center"
                            TextWrapping="Wrap" Margin="0,20,0,10" />

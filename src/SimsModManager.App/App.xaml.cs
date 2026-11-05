@@ -15,6 +15,7 @@ public partial class App : Application
 
         var app = new App();
         app.InitializeComponent();
+        Services.ThemeService.Apply(Core.AppSettings.Load().Theme);
         app.Run();
     }
 

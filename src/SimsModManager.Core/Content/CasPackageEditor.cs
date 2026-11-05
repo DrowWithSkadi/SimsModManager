@@ -44,6 +44,55 @@ public static class CasPackageEditor
         return items;
     }
 
+    private const uint CasThumbnailType = 0x3C1AF1F2;
+
+    /// <summary>
+    /// Миниатюры нескольких расцветок за одно открытие файла — важно для сборников на сотни вещей.
+    /// Ключ — номер CASP; у миниатюры расцветки тот же номер.
+    /// </summary>
+    public static IReadOnlyDictionary<ulong, ModThumbnail> ReadSwatchThumbnails(string packagePath, IEnumerable<ulong> instances)
+    {
+        var result = new Dictionary<ulong, ModThumbnail>();
+        try
+        {
+            using var pkg = DbpfPackage.Open(packagePath);
+            var thumbs = pkg.Entries.Where(e => e.Key.Type == CasThumbnailType && !e.IsDeleted)
+                .GroupBy(e => e.Key.Instance)
+                .ToDictionary(g => g.Key, g => g.OrderByDescending(e => e.MemorySize).First());
+            foreach (var instance in instances.Distinct())
+            {
+                if (!thumbs.TryGetValue(instance, out var entry)) continue;
+                try
+                {
+                    if (ModAnalyzer.ParseThumbnail(pkg.Read(entry)) is { } t) result[instance] = t;
+                }
+                catch (Exception ex) when (ex is InvalidDataException or EndOfStreamException) { }
+            }
+        }
+        catch (Exception ex) when (ex is InvalidDataException or EndOfStreamException or IOException or UnauthorizedAccessException) { }
+        return result;
+    }
+
+    /// <summary>
+    /// Автор по названию: «[Автор] Платье» или первая часть внутреннего имени «автор_yfTop_…».
+    /// Внутренние имена игры начинаются с кода возраста и пола (yf, am, cu…) — их пропускаем.
+    /// </summary>
+    public static string? GuessAuthor(string modName, IEnumerable<string> partNames)
+    {
+        var bracket = System.Text.RegularExpressions.Regex.Match(modName, @"^\s*[\[(]([^\])]{2,40})[\])]");
+        if (bracket.Success) return bracket.Groups[1].Value.Trim();
+
+        foreach (var name in partNames)
+        {
+            var first = name.Split('_', 2)[0];
+            if (first.Length < 3 || first.Length > 30) continue;
+            if (System.Text.RegularExpressions.Regex.IsMatch(first, "^[ytacpe][fmu][A-Z]")) continue;
+            if (!first.Any(char.IsLetter)) continue;
+            return first;
+        }
+        return null;
+    }
+
     /// <summary>Миниатюра конкретной расцветки (у неё тот же номер, что у CASP).</summary>
     public static ModThumbnail? ReadSwatchThumbnail(CasSwatch swatch)
     {
@@ -153,6 +202,18 @@ public sealed class OriginalsStore(string? folder = null)
     }
 
     /// <summary>Мод удалили или переустановили — старые копии больше не нужны.</summary>
+    /// <summary>Мод переименовали — копии оригинала переезжают под новое имя.</summary>
+    public void Rename(string oldName, string newName)
+    {
+        var from = Path.Combine(_folder, ModFiles.SanitizeName(oldName));
+        var to = Path.Combine(_folder, ModFiles.SanitizeName(newName));
+        try
+        {
+            if (Directory.Exists(from) && !Directory.Exists(to)) Directory.Move(from, to);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
+    }
+
     public void Forget(string modName)
     {
         var dir = Path.Combine(_folder, ModFiles.SanitizeName(modName));

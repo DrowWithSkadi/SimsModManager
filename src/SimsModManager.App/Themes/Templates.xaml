@@ -12,11 +12,11 @@
     <!-- ═══════════ Превью мода (картинка или значок) ═══════════ -->
     <DataTemplate x:Key="ModPreview" DataType="{x:Type vm:ModItemViewModel}">
         <Grid>
-            <Border x:Name="Placeholder" CornerRadius="4" BorderThickness="1" BorderBrush="{StaticResource B.Border}" Background="{StaticResource B.Surface}">
-                <ctl:IconView x:Name="PlaceholderIcon" Data="{StaticResource Icon.Image}" Foreground="{StaticResource B.TextMuted}"
+            <Border x:Name="Placeholder" CornerRadius="4" BorderThickness="1" BorderBrush="{DynamicResource B.Border}" Background="{DynamicResource B.Surface}">
+                <ctl:IconView x:Name="PlaceholderIcon" Data="{StaticResource Icon.Image}" Foreground="{DynamicResource B.TextMuted}"
                               Width="14" Height="14" />
             </Border>
-            <Border x:Name="Pic" CornerRadius="4" Background="{StaticResource B.Control}" Visibility="Collapsed" ClipToBounds="True">
+            <Border x:Name="Pic" CornerRadius="4" Background="{DynamicResource B.Control}" Visibility="Collapsed" ClipToBounds="True">
                 <Image Source="{Binding Thumbnail}" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality" />
             </Border>
         </Grid>
@@ -46,22 +46,22 @@
         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
             <Border Background="Transparent" Padding="2" Margin="0,0,6,0" ToolTip="{Binding ProblemsText}" ToolTipService.InitialShowDelay="200"
                     Visibility="{Binding HasProblems, Converter={StaticResource BoolToVisibility}}">
-                <ctl:IconView Data="{StaticResource Icon.TriangleAlert}" Foreground="{StaticResource B.Warning}" Width="14" Height="14" />
+                <ctl:IconView Data="{StaticResource Icon.TriangleAlert}" Foreground="{DynamicResource B.Warning}" Width="14" Height="14" />
             </Border>
             <Border Style="{StaticResource Tag}" Visibility="{Binding ShowCategory, Converter={StaticResource BoolToVisibility}}">
                 <TextBlock Style="{StaticResource TagText}" Text="{Binding CategoryLabel}" />
             </Border>
             <Border Style="{StaticResource Tag}" Margin="4,0,0,0" ToolTip="Настройки вещей изменены в менеджере. Оригинал сохранён."
                     Visibility="{Binding IsModified, Converter={StaticResource BoolToVisibility}}">
-                <TextBlock Style="{StaticResource TagText}" Text="Изменён" Foreground="{StaticResource B.Accent}" />
+                <TextBlock Style="{StaticResource TagText}" Text="Изменён" Foreground="{DynamicResource B.Accent}" />
             </Border>
-            <Border Style="{StaticResource Tag}" Background="{StaticResource B.AccentSubtle}" Margin="4,0,0,0"
+            <Border Style="{StaticResource Tag}" Background="{DynamicResource B.AccentSubtle}" Margin="4,0,0,0"
                     Visibility="{Binding ShowScriptBadge, Converter={StaticResource BoolToVisibility}}">
-                <TextBlock Style="{StaticResource TagText}" Text="Скрипт" Foreground="{StaticResource B.Accent}" />
+                <TextBlock Style="{StaticResource TagText}" Text="Скрипт" Foreground="{DynamicResource B.Accent}" />
             </Border>
             <Border Style="{StaticResource Tag}" Margin="4,0,0,0"
                     Visibility="{Binding IsEnabled, Converter={StaticResource InverseBoolToVisibility}}">
-                <TextBlock Style="{StaticResource TagText}" Text="Выключен" Foreground="{StaticResource B.TextMuted}" />
+                <TextBlock Style="{StaticResource TagText}" Text="Выключен" Foreground="{DynamicResource B.TextMuted}" />
             </Border>
         </StackPanel>
     </DataTemplate>
@@ -87,9 +87,9 @@
                               Width="36" Height="36" Margin="0,0,12,0" />
 
             <StackPanel x:Name="Texts" Grid.Column="2" VerticalAlignment="Center">
-                <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource B.Text}"
+                <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource B.Text}"
                            TextTrimming="CharacterEllipsis" ToolTip="{Binding Name}" />
-                <TextBlock Text="{Binding DetailsText}" FontSize="10" Foreground="{StaticResource B.TextMuted}" Margin="0,2,0,0"
+                <TextBlock Text="{Binding DetailsText}" FontSize="10" Foreground="{DynamicResource B.TextMuted}" Margin="0,2,0,0"
                            TextTrimming="CharacterEllipsis" />
             </StackPanel>
 
@@ -144,7 +144,7 @@
             <CheckBox Style="{StaticResource SelectBox}" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="8"
                       IsChecked="{Binding IsSelected}"
                       Visibility="{Binding DataContext.IsMultiSelect, RelativeSource={RelativeSource AncestorType=ListBox}, Converter={StaticResource BoolToVisibility}}" />
-            <TextBlock x:Name="Title" Grid.Row="1" Text="{Binding Name}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource B.Text}"
+            <TextBlock x:Name="Title" Grid.Row="1" Text="{Binding Name}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource B.Text}"
                        TextTrimming="CharacterEllipsis" Margin="0,10,0,6" ToolTip="{Binding Name}" />
             <Grid Grid.Row="2">
                 <ContentPresenter Content="{Binding}" ContentTemplate="{StaticResource ModTags}" HorizontalAlignment="Left" />
@@ -169,9 +169,9 @@
             <Setter.Value>
                 <ControlTemplate TargetType="ListBoxItem">
                     <Grid>
-                        <Border Background="{StaticResource B.Surface}" BorderBrush="{StaticResource B.Hover}" BorderThickness="0,0,0,1" />
-                        <Border x:Name="HoverBg" Background="{StaticResource B.Control}" Opacity="0" Margin="0,0,0,1" />
-                        <Border x:Name="SelBg" Background="{StaticResource B.AccentSubtle}" BorderBrush="{StaticResource B.Accent}"
+                        <Border Background="{DynamicResource B.Surface}" BorderBrush="{DynamicResource B.Hover}" BorderThickness="0,0,0,1" />
+                        <Border x:Name="HoverBg" Background="{DynamicResource B.Control}" Opacity="0" Margin="0,0,0,1" />
+                        <Border x:Name="SelBg" Background="{DynamicResource B.AccentSubtle}" BorderBrush="{DynamicResource B.Accent}"
                                 BorderThickness="1" CornerRadius="2" Opacity="0" />
                         <ContentPresenter Margin="{TemplateBinding Padding}" VerticalAlignment="Center" />
                     </Grid>
@@ -241,9 +241,9 @@
             <Setter.Value>
                 <ControlTemplate TargetType="ListBoxItem">
                     <Grid>
-                        <Border Background="{StaticResource B.Surface}" BorderBrush="{StaticResource B.Border}" BorderThickness="1" CornerRadius="8" />
-                        <Border x:Name="HoverBg" Background="{StaticResource B.Control}" BorderBrush="#555555" BorderThickness="1" CornerRadius="8" Opacity="0" />
-                        <Border x:Name="SelBg" Background="{StaticResource B.AccentSubtle}" BorderBrush="{StaticResource B.Accent}" BorderThickness="1"
+                        <Border Background="{DynamicResource B.Surface}" BorderBrush="{DynamicResource B.Border}" BorderThickness="1" CornerRadius="8" />
+                        <Border x:Name="HoverBg" Background="{DynamicResource B.Control}" BorderBrush="{DynamicResource B.BorderHover}" BorderThickness="1" CornerRadius="8" Opacity="0" />
+                        <Border x:Name="SelBg" Background="{DynamicResource B.AccentSubtle}" BorderBrush="{DynamicResource B.Accent}" BorderThickness="1"
                                 CornerRadius="8" Opacity="0" />
                         <ContentPresenter Margin="{TemplateBinding Padding}" />
                     </Grid>
@@ -290,7 +290,7 @@
 
     <!-- Строка-заглушка, пока читаем папку Mods (мягко «дышит») -->
     <Style x:Key="SkeletonBar" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource B.Control}" />
+        <Setter Property="Background" Value="{DynamicResource B.Control}" />
         <Setter Property="CornerRadius" Value="4" />
         <Style.Triggers>
             <EventTrigger RoutedEvent="Loaded">
@@ -311,30 +311,30 @@
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
-                <ctl:IconView x:Name="Icon" Data="{Binding Icon}" Foreground="{StaticResource B.Accent}" VerticalAlignment="Top" Margin="0,2,20,0" />
+                <ctl:IconView x:Name="Icon" Data="{Binding Icon}" Foreground="{DynamicResource B.Accent}" VerticalAlignment="Top" Margin="0,2,20,0" />
                 <StackPanel Grid.Column="1">
                     <TextBlock Text="{Binding Title}" Style="{StaticResource T.Strong}" TextTrimming="CharacterEllipsis" />
-                    <TextBlock x:Name="Msg" Text="{Binding Message}" FontSize="11" Foreground="{StaticResource B.Accent}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                    <TextBlock x:Name="Msg" Text="{Binding Message}" FontSize="11" Foreground="{DynamicResource B.Accent}" TextWrapping="Wrap" Margin="0,4,0,0" />
                 </StackPanel>
             </Grid>
         </Border>
         <DataTemplate.Triggers>
             <DataTrigger Binding="{Binding Status}" Value="Skipped">
-                <Setter TargetName="Icon" Property="Foreground" Value="{StaticResource B.TextSecondary}" />
-                <Setter TargetName="Msg" Property="Foreground" Value="{StaticResource B.TextSecondary}" />
+                <Setter TargetName="Icon" Property="Foreground" Value="{DynamicResource B.TextSecondary}" />
+                <Setter TargetName="Msg" Property="Foreground" Value="{DynamicResource B.TextSecondary}" />
             </DataTrigger>
             <DataTrigger Binding="{Binding Status}" Value="Failed">
-                <Setter TargetName="Icon" Property="Foreground" Value="{StaticResource B.Error}" />
-                <Setter TargetName="Msg" Property="Foreground" Value="{StaticResource B.Error}" />
-                <Setter TargetName="Card" Property="BorderBrush" Value="{StaticResource B.ErrorBorder}" />
-                <Setter TargetName="Card" Property="Background" Value="#2A2223" />
+                <Setter TargetName="Icon" Property="Foreground" Value="{DynamicResource B.Error}" />
+                <Setter TargetName="Msg" Property="Foreground" Value="{DynamicResource B.Error}" />
+                <Setter TargetName="Card" Property="BorderBrush" Value="{DynamicResource B.ErrorBorder}" />
+                <Setter TargetName="Card" Property="Background" Value="{DynamicResource B.ErrorCard}" />
             </DataTrigger>
         </DataTemplate.Triggers>
     </DataTemplate>
 
     <!-- ═══════════ Уведомление ═══════════ -->
     <DataTemplate x:Key="ToastItem" DataType="{x:Type vm:ToastViewModel}">
-        <Border Style="{StaticResource Card}" Background="{StaticResource B.Control}" Padding="14,0,6,0" Height="40" Margin="0,8,0,0"
+        <Border Style="{StaticResource Card}" Background="{DynamicResource B.Popup}" Padding="14,0,6,0" Height="40" Margin="0,8,0,0"
                 b:Anim.Show="{Binding IsVisible}" b:Anim.Appear="True" MinWidth="320" HorizontalAlignment="Center">
             <Border.Effect>
                 <DropShadowEffect BlurRadius="24" ShadowDepth="4" Opacity="0.4" Color="Black" />
@@ -346,8 +346,8 @@
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <ctl:IconView Data="{Binding Icon}" Foreground="{StaticResource B.Accent}" Margin="0,0,10,0" />
-                <TextBlock Grid.Column="1" Text="{Binding Message}" FontSize="12" Foreground="{StaticResource B.Text}" VerticalAlignment="Center"
+                <ctl:IconView Data="{Binding Icon}" Foreground="{DynamicResource B.Accent}" Margin="0,0,10,0" />
+                <TextBlock Grid.Column="1" Text="{Binding Message}" FontSize="12" Foreground="{DynamicResource B.Text}" VerticalAlignment="Center"
                            TextTrimming="CharacterEllipsis" MaxWidth="460" />
                 <Button Grid.Column="2" Style="{StaticResource Btn.Link}" Content="Отменить" Command="{Binding UndoCommand}" Margin="16,0,0,0"
                         Visibility="{Binding CanUndo, Converter={StaticResource BoolToVisibility}}" />

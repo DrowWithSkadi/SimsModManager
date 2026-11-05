@@ -1,0 +1,37 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- Палитра «Стекло · размытие Windows 11». Все цвета программы берутся отсюда через DynamicResource, поэтому тема меняется на лету. -->
+    <SolidColorBrush x:Key="B.Window" Color="#00000000" />
+    <SolidColorBrush x:Key="B.TitleBar" Color="#00000000" />
+    <SolidColorBrush x:Key="B.StatusBar" Color="#14FFFFFF" />
+    <SolidColorBrush x:Key="B.Background" Color="#29000000" />
+    <SolidColorBrush x:Key="B.Surface" Color="#12FFFFFF" />
+    <SolidColorBrush x:Key="B.Popup" Color="#F2262626" />
+    <SolidColorBrush x:Key="B.Control" Color="#1AFFFFFF" />
+    <SolidColorBrush x:Key="B.Hover" Color="#24FFFFFF" />
+    <SolidColorBrush x:Key="B.Pressed" Color="#30FFFFFF" />
+    <SolidColorBrush x:Key="B.Border" Color="#2EFFFFFF" />
+    <SolidColorBrush x:Key="B.BorderHover" Color="#4DFFFFFF" />
+    <SolidColorBrush x:Key="B.Text" Color="#F6F6F4" />
+    <SolidColorBrush x:Key="B.TextSecondary" Color="#CFCFCA" />
+    <SolidColorBrush x:Key="B.TextMuted" Color="#A0A09B" />
+    <SolidColorBrush x:Key="B.Accent" Color="#82EACF" />
+    <SolidColorBrush x:Key="B.AccentSubtle" Color="#3377E1C7" />
+    <SolidColorBrush x:Key="B.OnAccent" Color="#0F2A23" />
+    <SolidColorBrush x:Key="B.Error" Color="#F5A3A3" />
+    <SolidColorBrush x:Key="B.ErrorSubtle" Color="#33F18B8B" />
+    <SolidColorBrush x:Key="B.ErrorBorder" Color="#66F18B8B" />
+    <SolidColorBrush x:Key="B.ErrorCard" Color="#24F18B8B" />
+    <SolidColorBrush x:Key="B.Warning" Color="#F0CC8A" />
+    <SolidColorBrush x:Key="B.WarningSubtle" Color="#2EE7BE78" />
+    <SolidColorBrush x:Key="B.WarningBorder" Color="#66E7BE78" />
+    <SolidColorBrush x:Key="B.Overlay" Color="#A6000000" />
+    <SolidColorBrush x:Key="B.DropOverlay" Color="#D9101010" />
+    <SolidColorBrush x:Key="B.DropFill" Color="#1477E1C7" />
+    <SolidColorBrush x:Key="B.HoverOverlay" Color="#FFFFFF" />
+    <SolidColorBrush x:Key="B.SelectionBar" Color="#4D1E2B27" />
+    <SolidColorBrush x:Key="B.SuccessTag" Color="#3377E1C7" />
+    <SolidColorBrush x:Key="B.Thumb" Color="#40FFFFFF" />
+    <SolidColorBrush x:Key="B.ThumbHover" Color="#66FFFFFF" />
+    <SolidColorBrush x:Key="B.ThumbDrag" Color="#80FFFFFF" />
+</ResourceDictionary>

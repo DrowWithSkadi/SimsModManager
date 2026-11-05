@@ -28,6 +28,12 @@ public sealed partial class DialogViewModel : ObservableObject
     /// <summary>Путь к папке — в рамке, как поле.</summary>
     public string? PathText { get; init; }
 
+    /// <summary>Поле ввода (например, новое имя мода).</summary>
+    public string? InputLabel { get; init; }
+    public string? InputHint { get; init; }
+    [ObservableProperty] private string _inputText = "";
+    public bool HasInput => InputLabel is not null;
+
     public required string PrimaryText { get; init; }
     public bool PrimaryIsDanger { get; init; }
     public string? SecondaryText { get; init; }

@@ -11,6 +11,8 @@ public sealed class AppSettings
     public bool GridView { get; set; }
     public string SortBy { get; set; } = "name";
     public bool SortDescending { get; set; }
+    /// <summary>Тема оформления: Dark, Light или Glass.</summary>
+    public string Theme { get; set; } = "Dark";
 
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
 

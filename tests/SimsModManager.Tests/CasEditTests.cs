@@ -1,3 +1,4 @@
+using SimsModManager.Core;
 using System.Buffers.Binary;
 using SimsModManager.Core.Content;
 using SimsModManager.Core.Dbpf;
@@ -95,5 +96,60 @@ public class CasEditTests
         Assert.Equal(1, store.Restore("Мод", [file]));
         Assert.Equal("author", File.ReadAllText(file));
         Assert.False(store.HasBackup("Мод"));
+    }
+}
+
+public class RenameAndAuthorTests
+{
+    [Fact]
+    public void RenamesFolderModAndKeepsFiles()
+    {
+        using var t = new TestFolder();
+        var paths = new SimsPaths(t.Sims);
+        var lib = new ModLibrary(paths);
+        Directory.CreateDirectory(Path.Combine(paths.Mods, "dl_8f3a2"));
+        File.WriteAllText(Path.Combine(paths.Mods, "dl_8f3a2", "x.package"), "x");
+
+        var renamed = lib.Rename(Assert.Single(lib.Scan()), "Льняное платье");
+
+        Assert.Equal("Льняное платье", renamed.Name);
+        Assert.True(File.Exists(Path.Combine(paths.Mods, "Льняное платье", "x.package")));
+        Assert.Equal("Льняное платье", Assert.Single(lib.Scan()).Name);
+    }
+
+    [Fact]
+    public void RenameRefusesExistingName()
+    {
+        using var t = new TestFolder();
+        var paths = new SimsPaths(t.Sims);
+        var lib = new ModLibrary(paths);
+        foreach (var n in new[] { "A", "B" })
+        {
+            Directory.CreateDirectory(Path.Combine(paths.Mods, n));
+            File.WriteAllText(Path.Combine(paths.Mods, n, n + ".package"), "x");
+        }
+        var a = lib.Scan().First(m => m.Name == "A");
+        Assert.ThrowsAny<InvalidOperationException>(() => lib.Rename(a, "B"));
+    }
+
+    [Fact]
+    public void GuessesAuthor()
+    {
+        Assert.Equal("Simstrouble", CasPackageEditor.GuessAuthor("[Simstrouble] Wonderland Dress", []));
+        Assert.Equal("linavees", CasPackageEditor.GuessAuthor("Training top", ["linavees_yfTop_Black_1"]));
+        Assert.Null(CasPackageEditor.GuessAuthor("Top", ["yfTop_Black_1"]));
+    }
+
+    [Fact]
+    public void ReadsSwatchThumbnailsByInstance()
+    {
+        using var t = new TestFolder();
+        var path = Fake.Package(Path.Combine(t.Downloads, "x.package"),
+            new(new ResourceKey(CasPart.ResourceType, 0, 7), Fake.CasPart(CasPart.BodyTop, AgeGender.Female | AgeGender.Adult)),
+            new(new ResourceKey(0x3C1AF1F2, 0, 7), Fake.Thumbnail(), Compress: false));
+
+        var thumbs = CasPackageEditor.ReadSwatchThumbnails(path, [7UL, 8UL]);
+        Assert.Single(thumbs);
+        Assert.True(thumbs.ContainsKey(7));
     }
 }

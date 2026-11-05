@@ -16,6 +16,7 @@
     <StreamGeometry x:Key="Icon.ChevronDown">M 6,9 L 12,15 L 18,9</StreamGeometry>
     <StreamGeometry x:Key="Icon.ChevronUp">M 18,15 L 12,9 L 6,15</StreamGeometry>
     <StreamGeometry x:Key="Icon.ChevronRight">M 9,18 L 15,12 L 9,6</StreamGeometry>
+    <StreamGeometry x:Key="Icon.ChevronLeft">M 15,18 L 9,12 L 15,6</StreamGeometry>
     <StreamGeometry x:Key="Icon.List">M 3,5 L 3.01,5 M 3,12 L 3.01,12 M 3,19 L 3.01,19 M 8,5 L 21,5 M 8,12 L 21,12 M 8,19 L 21,19</StreamGeometry>
     <StreamGeometry x:Key="Icon.LayoutGrid">M 4,3 H 9 A 1,1 0 0 1 10,4 V 9 A 1,1 0 0 1 9,10 H 4 A 1,1 0 0 1 3,9 V 4 A 1,1 0 0 1 4,3 Z M 15,3 H 20 A 1,1 0 0 1 21,4 V 9 A 1,1 0 0 1 20,10 H 15 A 1,1 0 0 1 14,9 V 4 A 1,1 0 0 1 15,3 Z M 15,14 H 20 A 1,1 0 0 1 21,15 V 20 A 1,1 0 0 1 20,21 H 15 A 1,1 0 0 1 14,20 V 15 A 1,1 0 0 1 15,14 Z M 4,14 H 9 A 1,1 0 0 1 10,15 V 20 A 1,1 0 0 1 9,21 H 4 A 1,1 0 0 1 3,20 V 15 A 1,1 0 0 1 4,14 Z</StreamGeometry>
     <StreamGeometry x:Key="Icon.RefreshCw">M 3,12 A 9,9 0 0,1 12,3 A 9.75,9.75 0 0,1 18.74,5.74 L 21,8 M 21,3 L 21,8 L 16,8 M 21,12 A 9,9 0 0,1 12,21 A 9.75,9.75 0 0,1 5.26,18.26 L 3,16 M 8,16 L 3,16 L 3,21</StreamGeometry>
@@ -53,4 +54,7 @@
     <StreamGeometry x:Key="Icon.Venus">M 12,15 L 12,22 M 9,19 L 15,19 M 6,9 A 6,6 0 1 0 18,9 A 6,6 0 1 0 6,9 Z</StreamGeometry>
     <StreamGeometry x:Key="Icon.Mars">M 16,3 L 21,3 L 21,8 M 21,3 L 14.25,9.75 M 4,14 A 6,6 0 1 0 16,14 A 6,6 0 1 0 4,14 Z</StreamGeometry>
     <StreamGeometry x:Key="Icon.File">M 6,22 A 2,2 0 0,1 4,20 L 4,4 A 2,2 0 0,1 6,2 L 14,2 A 2.4,2.4 0 0,1 15.704,2.706 L 19.292,6.294 A 2.4,2.4 0 0,1 20,8 L 20,20 A 2,2 0 0,1 18,22 L 6,22 Z M 14,2 L 14,7 A 1,1 0 0,0 15,8 L 20,8</StreamGeometry>
+    <StreamGeometry x:Key="Icon.Lock">M 5,11 H 19 A 2,2 0 0 1 21,13 V 20 A 2,2 0 0 1 19,22 H 5 A 2,2 0 0 1 3,20 V 13 A 2,2 0 0 1 5,11 Z M 7,11 L 7,7 A 5,5 0 0,1 17,7 L 17,11</StreamGeometry>
+    <StreamGeometry x:Key="Icon.WandSparkles">M 21.64,3.64 L 20.36,2.36 A 1.21,1.21 0 0,0 18.64,2.36 L 2.36,18.64 A 1.21,1.21 0 0,0 2.36,20.36 L 3.64,21.64 A 1.2,1.2 0 0,0 5.36,21.64 L 21.64,5.36 A 1.2,1.2 0 0,0 21.64,3.64 M 14,7 L 17,10 M 5,6 L 5,10 M 19,14 L 19,18 M 10,2 L 10,4 M 7,8 L 3,8 M 21,16 L 17,16 M 11,3 L 9,3</StreamGeometry>
+    <StreamGeometry x:Key="Icon.ShieldCheck">M 20,13 C 20,18 16.5,20.5 12.34,21.95 A 1,1 0 0,1 11.67,21.94 C 7.5,20.5 4,18 4,13 L 4,6 A 1,1 0 0,1 5,5 C 7,5 9.5,3.8 11.24,2.28 A 1.17,1.17 0 0,1 12.76,2.28 C 14.51,3.81 17,5 19,5 A 1,1 0 0,1 20,6 L 20,13 Z M 9,12 L 11,14 L 15,10</StreamGeometry>
 </ResourceDictionary>

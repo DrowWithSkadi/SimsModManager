@@ -28,9 +28,36 @@ public sealed partial class MainViewModel
     [ObservableProperty] private bool _isCheckingUpdates;
     [ObservableProperty] private bool _folderLooksValid;
 
+    // ---------- Оформление ----------
+
+    [ObservableProperty] private string _theme = Services.ThemeService.Current;
+
+    public bool GlassSupported => Services.ThemeService.GlassSupported;
+
+    [RelayCommand]
+    private void SetTheme(string name) => Theme = name;
+
+    partial void OnThemeChanged(string value)
+    {
+        if (_loadingSettings) return;
+        Services.ThemeService.Apply(value);
+        _settings.Theme = Services.ThemeService.Current;
+        SaveSettings();
+        OnPropertyChanged(nameof(ThemeLabel));
+    }
+
+    public string ThemeLabel => Theme switch
+    {
+        Services.ThemeService.Light => "Светлая · слоновая кость",
+        Services.ThemeService.Glass => "Стекло · размытие Windows 11",
+        _ => "Тёмная · графит",
+    };
+
+
     private void InitSettingsPage()
     {
         _loadingSettings = true;
+        Theme = Services.ThemeService.Current;
         AutoClearCache = _settings.AutoClearCache;
         DeleteToRecycleBin = _settings.DeleteToRecycleBin;
         _loadingSettings = false;

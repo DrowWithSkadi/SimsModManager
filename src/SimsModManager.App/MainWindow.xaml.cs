@@ -1,8 +1,6 @@
 using System.ComponentModel;
-using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Interop;
 using SimsModManager.App.ViewModels;
 
 namespace SimsModManager.App;
@@ -39,27 +37,8 @@ public partial class MainWindow : Window
         MaxButton.ToolTip = WindowState == WindowState.Maximized ? "Восстановить" : "Развернуть";
     }
 
-    [DllImport("dwmapi.dll")]
-    private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
-
-    /// <summary>Скругление углов (Windows 11) и тёмная системная рамка.</summary>
-    private void ApplyWindowsStyle()
-    {
-        var hwnd = new WindowInteropHelper(this).Handle;
-        try
-        {
-            var dark = 1;
-            DwmSetWindowAttribute(hwnd, 20, ref dark, sizeof(int));      // DWMWA_USE_IMMERSIVE_DARK_MODE
-            var round = 2;
-            DwmSetWindowAttribute(hwnd, 33, ref round, sizeof(int));     // DWMWA_WINDOW_CORNER_PREFERENCE = ROUND
-            var border = 0x00414141;
-            DwmSetWindowAttribute(hwnd, 34, ref border, sizeof(int));    // DWMWA_BORDER_COLOR (0x00BBGGRR)
-        }
-        catch (Exception ex) when (ex is DllNotFoundException or EntryPointNotFoundException)
-        {
-            // На старых Windows этих настроек нет — окно просто будет с прямыми углами.
-        }
-    }
+    /// <summary>Скругление углов, тёмная/светлая рамка и размытие — по текущей теме.</summary>
+    private void ApplyWindowsStyle() => Services.ThemeService.ApplyWindow(this);
 
     protected override void OnClosing(CancelEventArgs e)
     {
@@ -114,6 +93,17 @@ public partial class MainWindow : Window
     private void OnOverlayClick(object sender, MouseButtonEventArgs e) => ViewModel.Dialog?.CancelCommand.Execute(null);
 
     private void OnDialogClick(object sender, MouseButtonEventArgs e) => e.Handled = true;
+
+    /// <summary>Поле ввода в диалоге сразу получает фокус, текст выделен — можно печатать новое имя.</summary>
+    private void OnDialogInputVisible(object sender, DependencyPropertyChangedEventArgs e)
+    {
+        if (e.NewValue is true && sender is System.Windows.Controls.TextBox box)
+            Dispatcher.InvokeAsync(() =>
+            {
+                box.Focus();
+                box.SelectAll();
+            }, System.Windows.Threading.DispatcherPriority.Input);
+    }
 
     // ---------- Перетаскивание файлов ----------
 

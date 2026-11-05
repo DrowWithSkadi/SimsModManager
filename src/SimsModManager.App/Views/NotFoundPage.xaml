@@ -12,13 +12,13 @@
 
         <!-- Слева: объяснение -->
         <StackPanel VerticalAlignment="Center" MaxWidth="440" HorizontalAlignment="Left" b:Anim.Appear="True">
-            <Border Width="56" Height="56" CornerRadius="10" Background="{StaticResource B.AccentSubtle}" BorderBrush="{StaticResource B.Accent}"
+            <Border Width="56" Height="56" CornerRadius="10" Background="{DynamicResource B.AccentSubtle}" BorderBrush="{DynamicResource B.Accent}"
                     BorderThickness="1" HorizontalAlignment="Left">
-                <ctl:IconView Data="{StaticResource Icon.FolderSearch}" Foreground="{StaticResource B.Accent}" Width="22" Height="22" />
+                <ctl:IconView Data="{StaticResource Icon.FolderSearch}" Foreground="{DynamicResource B.Accent}" Width="22" Height="22" />
             </Border>
-            <TextBlock Text="Не нашёл папку The Sims 4" FontSize="30" FontWeight="SemiBold" Foreground="{StaticResource B.Text}"
+            <TextBlock Text="Не нашёл папку The Sims 4" FontSize="30" FontWeight="SemiBold" Foreground="{DynamicResource B.Text}"
                        TextWrapping="Wrap" Margin="0,28,0,14" LineHeight="38" />
-            <TextBlock Style="{StaticResource T.Body}" Foreground="{StaticResource B.TextSecondary}" TextWrapping="Wrap" LineHeight="19"
+            <TextBlock Style="{StaticResource T.Body}" Foreground="{DynamicResource B.TextSecondary}" TextWrapping="Wrap" LineHeight="19"
                        Text="Покажите, где игра хранит ваши данные. Нужна папка с Mods, saves или файлом Options.ini — не папка установки игры." />
             <TextBlock Text="ОБЫЧНО ОНА НАХОДИТСЯ ЗДЕСЬ" Style="{StaticResource T.Caption}" FontSize="10" Margin="0,20,0,4" />
             <TextBlock Text="C:\Users\Имя\Documents\Electronic Arts\The Sims 4" Style="{StaticResource T.Secondary}" />
@@ -42,7 +42,7 @@
                         <Border x:Name="Card" Style="{StaticResource Card}" Margin="0,0,0,12">
                             <StackPanel>
                                 <StackPanel Orientation="Horizontal">
-                                    <ctl:IconView x:Name="Icon" Data="{StaticResource Icon.Folder}" Foreground="{StaticResource B.TextSecondary}" Margin="0,0,10,0" />
+                                    <ctl:IconView x:Name="Icon" Data="{StaticResource Icon.Folder}" Foreground="{DynamicResource B.TextSecondary}" Margin="0,0,10,0" />
                                     <TextBlock Text="{Binding Label}" Style="{StaticResource T.Strong}" FontSize="12" VerticalAlignment="Center" />
                                 </StackPanel>
                                 <TextBlock Text="{Binding Path}" Style="{StaticResource T.Secondary}" FontSize="11" Margin="0,8,0,4" TextTrimming="CharacterEllipsis" />
@@ -58,9 +58,9 @@
                             </DataTrigger>
                             <DataTrigger Binding="{Binding LooksValid}" Value="True">
                                 <Setter TargetName="Status" Property="Text" Value="Есть папка · похожа на папку игры" />
-                                <Setter TargetName="Card" Property="Background" Value="{StaticResource B.AccentSubtle}" />
-                                <Setter TargetName="Card" Property="BorderBrush" Value="{StaticResource B.Accent}" />
-                                <Setter TargetName="Icon" Property="Foreground" Value="{StaticResource B.Accent}" />
+                                <Setter TargetName="Card" Property="Background" Value="{DynamicResource B.AccentSubtle}" />
+                                <Setter TargetName="Card" Property="BorderBrush" Value="{DynamicResource B.Accent}" />
+                                <Setter TargetName="Icon" Property="Foreground" Value="{DynamicResource B.Accent}" />
                             </DataTrigger>
                             <DataTrigger Binding="{Binding Label}" Value="Документы OneDrive">
                                 <Setter TargetName="Icon" Property="Data" Value="{StaticResource Icon.Cloud}" />
