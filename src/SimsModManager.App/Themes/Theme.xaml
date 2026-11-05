@@ -277,8 +277,11 @@
                         <Border x:Name="Bg" CornerRadius="6" BorderThickness="1" Background="{StaticResource B.Surface}" BorderBrush="{StaticResource B.Border}" />
                         <Border x:Name="SelBg" CornerRadius="6" BorderThickness="1" Background="{StaticResource B.AccentSubtle}"
                                 BorderBrush="{StaticResource B.Accent}" Opacity="0" />
+                        <Border x:Name="MixedBg" CornerRadius="6" BorderThickness="1" BorderBrush="{StaticResource B.Accent}" Opacity="0" />
                         <Border x:Name="Overlay" CornerRadius="6" Background="White" Opacity="0" Margin="1" />
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="{TemplateBinding Padding}">
+                            <ctl:IconView x:Name="MixedMark" Data="{StaticResource Icon.Minus}" Width="12" Height="12"
+                                          Foreground="{StaticResource B.Accent}" Margin="0,0,6,0" Visibility="Collapsed" />
                             <Border x:Name="CheckHolder" Width="0" ClipToBounds="True">
                                 <ctl:IconView x:Name="Check" Data="{StaticResource Icon.Check}" Width="12" Height="12"
                                               Foreground="{StaticResource B.Accent}" HorizontalAlignment="Left" Opacity="0" />
@@ -333,6 +336,12 @@
                                 </BeginStoryboard>
                             </MultiTrigger.ExitActions>
                         </MultiTrigger>
+                        <!-- «По-разному»: у выбранных вещей разные значения -->
+                        <Trigger Property="IsChecked" Value="{x:Null}">
+                            <Setter TargetName="MixedBg" Property="Opacity" Value="0.55" />
+                            <Setter TargetName="MixedMark" Property="Visibility" Value="Visible" />
+                            <Setter Property="ToolTip" Value="У выбранных вещей по-разному. Нажмите, чтобы включить для всех." />
+                        </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter TargetName="Root" Property="Opacity" Value="0.4" />
                         </Trigger>

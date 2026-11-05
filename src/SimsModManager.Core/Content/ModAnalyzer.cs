@@ -30,6 +30,9 @@ public static class ModAnalyzer
 
     private const uint ObjectDefinition = 0xC0DB5AE7;
     private const uint ObjectCatalog = 0x319E4F1D;
+    // Стены (обои) и полы из режима строительства — тоже «объекты»
+    private const uint WallDefinition = 0xD5F0F921;
+    private const uint FloorDefinition = 0xB4F762C9;
 
     public static (ModContent Content, ModThumbnail? Thumbnail) Analyze(IReadOnlyList<string> files)
     {
@@ -58,7 +61,7 @@ public static class ModAnalyzer
 
                 var casEntries = live.Where(e => e.Key.Type == CasPart.ResourceType).ToList();
                 casCount += casEntries.Count;
-                objectCount += live.Count(e => e.Key.Type is ObjectDefinition or ObjectCatalog);
+                objectCount += live.Count(e => e.Key.Type is ObjectDefinition or ObjectCatalog or WallDefinition or FloorDefinition);
 
                 // Тип мода определяем по первым нескольким вещам — читать все сотни не нужно.
                 foreach (var entry in casEntries.Take(8))

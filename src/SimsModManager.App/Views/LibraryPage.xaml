@@ -226,12 +226,14 @@
                              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                              VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling"
                              VirtualizingPanel.ScrollUnit="Pixel" SelectionChanged="OnSelectionChanged"
+                             PreviewMouseLeftButtonUp="OnItemClick" KeyDown="OnListKeyDown"
                              Visibility="{Binding IsGridView, Converter={StaticResource InverseBoolToVisibility}}" />
 
                     <ListBox x:Name="ModGrid" ItemsSource="{Binding ModsView}" ItemTemplate="{StaticResource ModTile}"
                              ItemContainerStyle="{StaticResource ModTileContainer}" SelectionMode="Extended"
                              Background="{StaticResource B.Background}" BorderThickness="0" Padding="0,4,0,0"
                              ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="OnSelectionChanged"
+                             PreviewMouseLeftButtonUp="OnItemClick" KeyDown="OnListKeyDown"
                              Visibility="{Binding IsGridView, Converter={StaticResource BoolToVisibility}}">
                         <ListBox.ItemsPanel>
                             <ItemsPanelTemplate>

@@ -17,7 +17,7 @@ namespace SimsModManager.App.ViewModels;
 
 public enum StateFilter { All, Enabled, Disabled }
 public enum TypeFilter { All, Clothing, Hair, Makeup, Objects, Scripts, Other, Tray }
-public enum AppPage { Library, InstallResult, Settings, NotFound }
+public enum AppPage { Library, InstallResult, Settings, NotFound, Card, Editor }
 
 /// <summary>
 /// Главная модель окна. Разбита на несколько файлов:
@@ -57,13 +57,16 @@ public sealed partial class MainViewModel : ObservableObject
     // ---------- Навигация ----------
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsLibraryPage), nameof(IsInstallResultPage), nameof(IsSettingsPage), nameof(IsNotFoundPage), nameof(ShowLibraryChrome))]
+    [NotifyPropertyChangedFor(nameof(IsLibraryPage), nameof(IsInstallResultPage), nameof(IsSettingsPage), nameof(IsNotFoundPage),
+        nameof(ShowLibraryChrome), nameof(IsCardPage), nameof(IsEditorPage))]
     private AppPage _page = AppPage.Library;
 
     public bool IsLibraryPage => Page == AppPage.Library;
     public bool IsInstallResultPage => Page == AppPage.InstallResult;
     public bool IsSettingsPage => Page == AppPage.Settings;
     public bool IsNotFoundPage => Page == AppPage.NotFound;
+    public bool IsCardPage => Page == AppPage.Card;
+    public bool IsEditorPage => Page == AppPage.Editor;
 
     /// <summary>Поиск, фильтры и зона установки видны в библиотеке и на итоге установки.</summary>
     public bool ShowLibraryChrome => Page is AppPage.Library or AppPage.InstallResult;
@@ -283,6 +286,7 @@ public sealed partial class MainViewModel : ObservableObject
                 vm.Problems = [.. item.Problems, .. dupMessages];
             }
             if (newModNames?.Contains(item.Name) == true) vm.IsNew = true;
+            if (!item.IsTray) vm.IsModified = _originals.HasBackup(item.Name);
             Mods.Add(vm);
         }
 

@@ -51,6 +51,10 @@
             <Border Style="{StaticResource Tag}" Visibility="{Binding ShowCategory, Converter={StaticResource BoolToVisibility}}">
                 <TextBlock Style="{StaticResource TagText}" Text="{Binding CategoryLabel}" />
             </Border>
+            <Border Style="{StaticResource Tag}" Margin="4,0,0,0" ToolTip="Настройки вещей изменены в менеджере. Оригинал сохранён."
+                    Visibility="{Binding IsModified, Converter={StaticResource BoolToVisibility}}">
+                <TextBlock Style="{StaticResource TagText}" Text="Изменён" Foreground="{StaticResource B.Accent}" />
+            </Border>
             <Border Style="{StaticResource Tag}" Background="{StaticResource B.AccentSubtle}" Margin="4,0,0,0"
                     Visibility="{Binding ShowScriptBadge, Converter={StaticResource BoolToVisibility}}">
                 <TextBlock Style="{StaticResource TagText}" Text="Скрипт" Foreground="{StaticResource B.Accent}" />

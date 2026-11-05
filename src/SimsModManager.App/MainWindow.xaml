@@ -82,6 +82,8 @@
                 <views:LibraryPage x:Name="Library" b:Anim.Show="{Binding ShowLibraryChrome}" b:Anim.Offset="0" />
                 <views:SettingsPage b:Anim.Show="{Binding IsSettingsPage}" />
                 <views:NotFoundPage b:Anim.Show="{Binding IsNotFoundPage}" />
+                <views:CardPage b:Anim.Show="{Binding IsCardPage}" DataContext="{Binding}" />
+                <views:EditorPage b:Anim.Show="{Binding IsEditorPage}" />
 
                 <!-- Панель выбора нескольких модов -->
                 <Border VerticalAlignment="Bottom" Background="#1E2B27" BorderBrush="{StaticResource B.Accent}" BorderThickness="0,1,0,0"
@@ -89,6 +91,9 @@
                     <Grid>
                         <TextBlock Text="{Binding SelectionText}" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource B.Accent}" VerticalAlignment="Center" />
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button Style="{StaticResource Btn.Secondary}" ctl:Btn.Icon="{StaticResource Icon.Shirt}" Content="Настроить одежду"
+                                    Command="{Binding EditSelectedCommand}" Margin="0,0,8,0"
+                                    ToolTip="Пол, возраст и категории сразу для всей одежды из выбранных модов" />
                             <Button Style="{StaticResource Btn.Primary}" Content="Включить" Command="{Binding EnableSelectedCommand}" />
                             <Button Style="{StaticResource Btn.Secondary}" Content="Выключить" Margin="8,0,0,0" Command="{Binding DisableSelectedCommand}" />
                             <Button Style="{StaticResource Btn.Danger}" ctl:Btn.Icon="{StaticResource Icon.Trash2}" Content="Удалить" Margin="8,0,0,0"

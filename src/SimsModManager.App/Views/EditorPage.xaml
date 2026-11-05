@@ -1,0 +1,148 @@
+<UserControl x:Class="SimsModManager.App.Views.EditorPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ctl="clr-namespace:SimsModManager.App.Controls"
+             xmlns:b="clr-namespace:SimsModManager.App.Behaviors">
+    <UserControl.Resources>
+        <!-- Набор флажков-чипов (возрасты, категории) -->
+        <DataTemplate x:Key="OptionChips">
+            <ItemsControl ItemsSource="{Binding}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <WrapPanel />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <ToggleButton Style="{StaticResource Chip}" Content="{Binding Name}" IsChecked="{Binding IsChecked}" Margin="0,0,6,6" />
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <!-- DataContext — MainViewModel, редактор — в свойстве Editor -->
+    <Grid Margin="24,20,24,16" DataContext="{Binding Editor}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Заголовок -->
+        <StackPanel Orientation="Horizontal" Margin="0,0,0,18">
+            <Button Style="{StaticResource Btn.Icon}" ctl:Btn.Icon="{StaticResource Icon.ArrowLeft}" ToolTip="Назад (Esc)" VerticalAlignment="Top" Margin="0,2,16,0"
+                    Command="{Binding DataContext.CloseEditorCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+            <StackPanel>
+                <TextBlock Text="Настройка одежды" Style="{StaticResource T.Page}" />
+                <TextBlock Text="Кому и когда игра может надевать эту вещь" Style="{StaticResource T.Secondary}" Margin="0,4,0,0" />
+            </StackPanel>
+        </StackPanel>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="240" />
+                <ColumnDefinition Width="24" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Слева: что настраиваем и быстрые наборы -->
+            <StackPanel b:Anim.Appear="True">
+                <Border Height="220" CornerRadius="8" Background="{StaticResource B.Surface}" BorderBrush="{StaticResource B.Border}" BorderThickness="1"
+                        ClipToBounds="True">
+                    <Grid>
+                        <ctl:IconView Data="{StaticResource Icon.Shirt}" Width="40" Height="40" Foreground="{StaticResource B.TextMuted}"
+                                      Visibility="{Binding HasPreview, Converter={StaticResource InverseBoolToVisibility}}" />
+                        <Image Source="{Binding Preview}" Stretch="Uniform" Margin="10" RenderOptions.BitmapScalingMode="HighQuality" />
+                    </Grid>
+                </Border>
+                <TextBlock Text="{Binding Title}" Style="{StaticResource T.Strong}" Margin="0,12,0,0" TextWrapping="Wrap" />
+                <TextBlock Text="{Binding Subtitle}" Style="{StaticResource T.Muted}" Margin="0,4,0,0" TextWrapping="Wrap" />
+
+                <TextBlock Text="БЫСТРЫЕ НАБОРЫ" Style="{StaticResource T.Caption}" FontSize="10" Margin="0,22,0,8" />
+                <Button Style="{StaticResource Btn.Secondary}" ctl:Btn.Icon="{StaticResource Icon.Venus}" Content="Только женское" ToolTip="Только для женщин и не для случайных симов"
+                        HorizontalAlignment="Stretch" Command="{Binding PresetCommand}" CommandParameter="women" />
+                <Button Style="{StaticResource Btn.Secondary}" ctl:Btn.Icon="{StaticResource Icon.Mars}" Content="Только мужское" ToolTip="Только для мужчин и не для случайных симов"
+                        HorizontalAlignment="Stretch" Margin="0,6,0,0" Command="{Binding PresetCommand}" CommandParameter="men" />
+                <Button Style="{StaticResource Btn.Secondary}" ctl:Btn.Icon="{StaticResource Icon.Sparkles}" Content="Только парадная" ToolTip="Вещь будет только в парадных нарядах"
+                        HorizontalAlignment="Stretch" Margin="0,6,0,0" Command="{Binding PresetCommand}" CommandParameter="formal" />
+                <Button Style="{StaticResource Btn.Secondary}" ctl:Btn.Icon="{StaticResource Icon.Users}" Content="Подростки и старше" ToolTip="Подростки, молодые, взрослые и пожилые"
+                        HorizontalAlignment="Stretch" Margin="0,6,0,0" Command="{Binding PresetCommand}" CommandParameter="adults" />
+            </StackPanel>
+
+            <!-- Справа: настройки -->
+            <ScrollViewer Grid.Column="2" VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+                    <!-- Пол -->
+                    <Border Style="{StaticResource Card}" Margin="0,0,0,12" b:Anim.Appear="True">
+                        <StackPanel>
+                            <TextBlock Text="Для кого" Style="{StaticResource T.Section}" />
+                            <TextBlock Style="{StaticResource T.Muted}" TextWrapping="Wrap" Margin="0,4,0,12"
+                                       Text="Если выбрать одно, игра не будет надевать вещь на симов другого пола — в том числе случайным прохожим." />
+                            <StackPanel Orientation="Horizontal">
+                                <RadioButton Style="{StaticResource ChipRadio}" Content="Женщины" GroupName="Gender"
+                                             IsChecked="{Binding Gender, Converter={StaticResource Equals}, ConverterParameter=Female}" />
+                                <RadioButton Style="{StaticResource ChipRadio}" Content="Мужчины" GroupName="Gender" Margin="6,0,0,0"
+                                             IsChecked="{Binding Gender, Converter={StaticResource Equals}, ConverterParameter=Male}" />
+                                <RadioButton Style="{StaticResource ChipRadio}" Content="Все" GroupName="Gender" Margin="6,0,0,0"
+                                             IsChecked="{Binding Gender, Converter={StaticResource Equals}, ConverterParameter=Both}" />
+                                <TextBlock Text="сейчас по-разному" Style="{StaticResource T.Muted}" VerticalAlignment="Center" Margin="12,0,0,0"
+                                           Visibility="{Binding GenderIsMixed, Converter={StaticResource BoolToVisibility}}" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Возраст -->
+                    <Border Style="{StaticResource Card}" Margin="0,0,0,12" b:Anim.Appear="True">
+                        <StackPanel>
+                            <TextBlock Text="Возраст" Style="{StaticResource T.Section}" />
+                            <TextBlock Style="{StaticResource T.Muted}" Margin="0,4,0,12" Text="Кому вещь доступна в редакторе персонажа." />
+                            <ContentPresenter Content="{Binding Ages}" ContentTemplate="{StaticResource OptionChips}" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Категории одежды -->
+                    <Border Style="{StaticResource Card}" Margin="0,0,0,12" b:Anim.Appear="True">
+                        <StackPanel>
+                            <TextBlock Text="Категории одежды" Style="{StaticResource T.Section}" />
+                            <TextBlock Style="{StaticResource T.Muted}" TextWrapping="Wrap" Margin="0,4,0,12"
+                                       Text="В каких нарядах игра может использовать вещь. Например, уберите «Повседневная», чтобы вечернее платье не появлялось в обычной одежде." />
+                            <ContentPresenter Content="{Binding Outfits}" ContentTemplate="{StaticResource OptionChips}" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Случайные симы -->
+                    <Border Style="{StaticResource Card}" Margin="0,0,0,12" b:Anim.Appear="True">
+                        <Grid>
+                            <StackPanel Margin="0,0,60,0">
+                                <TextBlock Text="Для случайных симов" Style="{StaticResource T.Section}" />
+                                <TextBlock Style="{StaticResource T.Muted}" TextWrapping="Wrap" Margin="0,4,0,0"
+                                           Text="Игра может сама надевать вещь на прохожих, новых жителей и при кнопке «случайно» в редакторе. Выключите, чтобы вещь носили только ваши симы." />
+                                <TextBlock Text="Сейчас у выбранных вещей по-разному" Style="{StaticResource T.Muted}" Foreground="{StaticResource B.Accent}" Margin="0,6,0,0"
+                                           Visibility="{Binding RandomIsMixed, Converter={StaticResource BoolToVisibility}}" />
+                            </StackPanel>
+                            <CheckBox Style="{StaticResource Switch}" IsChecked="{Binding RandomOn}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                        </Grid>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+
+        <!-- Сохранение -->
+        <Grid Grid.Row="2" Margin="0,16,0,0">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <ctl:IconView Data="{StaticResource Icon.Info}" Foreground="{StaticResource B.TextMuted}" Width="14" Height="14" Margin="0,0,8,0" />
+                <TextBlock Text="Перед изменением сохраняется копия оригинала — её можно вернуть в карточке мода." Style="{StaticResource T.Muted}" />
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Style="{StaticResource Btn.Ghost}" Content="Сбросить" Command="{Binding ResetCommand}" Margin="0,0,8,0"
+                        IsEnabled="{Binding HasChanges}" />
+                <Button Style="{StaticResource Btn.Secondary}" Content="Отмена" Margin="0,0,8,0"
+                        Command="{Binding DataContext.CloseEditorCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+                <Button Style="{StaticResource Btn.Primary}" ctl:Btn.Icon="{StaticResource Icon.Check}" Content="Сохранить"
+                        Command="{Binding DataContext.SaveEditorCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                        IsEnabled="{Binding HasChanges}" />
+            </StackPanel>
+        </Grid>
+    </Grid>
+</UserControl>

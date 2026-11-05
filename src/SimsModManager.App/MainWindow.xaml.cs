@@ -94,7 +94,9 @@ public partial class MainWindow : Window
         }
         else if (e.Key == Key.Escape)
         {
-            if (vm.IsSettingsPage || vm.IsInstallResultPage) vm.GoLibraryCommand.Execute(null);
+            if (vm.IsEditorPage) vm.CloseEditorCommand.Execute(null);
+            else if (vm.IsCardPage) vm.CloseCardCommand.Execute(null);
+            else if (vm.IsSettingsPage || vm.IsInstallResultPage) vm.GoLibraryCommand.Execute(null);
             else if (vm.SelectedCount > 0) vm.ClearSelectionCommand.Execute(null);
             else return;
             e.Handled = true;

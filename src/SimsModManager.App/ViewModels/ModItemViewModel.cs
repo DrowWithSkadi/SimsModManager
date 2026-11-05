@@ -91,6 +91,9 @@ public sealed partial class ModItemViewModel : ObservableObject
 
     [ObservableProperty] private bool _isDuplicate;
 
+    /// <summary>Настройки вещей менялись в менеджере (есть копия оригинала).</summary>
+    [ObservableProperty] private bool _isModified;
+
     // ---------- Состояние строки ----------
 
     [ObservableProperty] private bool _isSelected;

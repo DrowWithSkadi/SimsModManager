@@ -100,6 +100,8 @@ public sealed partial class MainViewModel
                         + $"{Text.Plural(ok, "мод готов", "мода готовы", "модов готовы")} к игре";
 
         var installed = results.Where(r => r.Succeeded && r.ModName is not null).Select(r => r.ModName!).ToHashSet();
+        // Новая версия мода — старые копии оригинала больше не относятся к нему.
+        foreach (var name in installed) _originals.Forget(name);
         if (ok > 0)
         {
             SetLastAction("установлено " + Text.Plural(ok, "мод", "мода", "модов"));

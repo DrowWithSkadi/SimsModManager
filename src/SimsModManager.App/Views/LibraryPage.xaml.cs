@@ -1,4 +1,8 @@
+using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Input;
+using System.Windows.Media;
 using SimsModManager.App.ViewModels;
 
 namespace SimsModManager.App.Views;
@@ -34,6 +38,35 @@ public partial class LibraryPage : UserControl
         foreach (var item in e.RemovedItems.OfType<ModItemViewModel>()) item.IsSelected = false;
         if (DataContext is MainViewModel vm && sender is ListBox list)
             vm.SelectedCount = list.SelectedItems.Count;
+    }
+
+    /// <summary>Клик по строке (не по кнопкам и переключателям) открывает карточку мода.</summary>
+    private void OnItemClick(object sender, MouseButtonEventArgs e)
+    {
+        if (DataContext is not MainViewModel vm || vm.IsMultiSelect || Keyboard.Modifiers != ModifierKeys.None) return;
+        for (var d = e.OriginalSource as DependencyObject; d is not null; d = ParentOf(d))
+        {
+            if (d is ButtonBase) return; // кнопки, переключатели, галочки — у них своё действие
+            if (d is ListBoxItem { DataContext: ModItemViewModel mod })
+            {
+                vm.OpenCardCommand.Execute(mod);
+                return;
+            }
+            if (d is ListBox) return;
+        }
+    }
+
+    private static DependencyObject? ParentOf(DependencyObject d) =>
+        d is Visual or System.Windows.Media.Media3D.Visual3D ? VisualTreeHelper.GetParent(d) : LogicalTreeHelper.GetParent(d);
+
+    private void OnListKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.Enter || DataContext is not MainViewModel vm) return;
+        if (sender is ListBox { SelectedItem: ModItemViewModel mod })
+        {
+            vm.OpenCardCommand.Execute(mod);
+            e.Handled = true;
+        }
     }
 
     public void SelectAll()

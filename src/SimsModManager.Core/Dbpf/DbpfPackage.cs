@@ -179,7 +179,15 @@ public sealed class DbpfPackage : IDisposable
 /// <summary>Запись .package. Нужна для изменения настроек одежды и для тестов.</summary>
 public static class DbpfWriter
 {
-    public sealed record Resource(ResourceKey Key, byte[] Data, bool Compress = true);
+    /// <summary>
+    /// Ресурс для записи. Если задано <see cref="StoredCompression"/>, Data уже лежит в сжатом
+    /// (или исходном) виде из другого файла и копируется как есть.
+    /// </summary>
+    public sealed record Resource(ResourceKey Key, byte[] Data, bool Compress = true)
+    {
+        public ushort? StoredCompression { get; init; }
+        public uint MemorySize { get; init; }
+    }
 
     public static void Write(Stream output, IEnumerable<Resource> resources)
     {
@@ -195,7 +203,14 @@ public static class DbpfWriter
             var offset = (uint)output.Position;
             byte[] stored;
             ushort comp;
-            if (res.Compress && res.Data.Length > 0)
+            uint mem = (uint)res.Data.Length;
+            if (res.StoredCompression is { } raw)
+            {
+                stored = res.Data;
+                comp = raw;
+                mem = res.MemorySize;
+            }
+            else if (res.Compress && res.Data.Length > 0)
             {
                 using var ms = new MemoryStream();
                 using (var z = new ZLibStream(ms, CompressionLevel.Optimal, leaveOpen: true))
@@ -209,7 +224,7 @@ public static class DbpfWriter
                 comp = DbpfPackage.CompressionNone;
             }
             w.Write(stored);
-            placed.Add((res.Key, offset, (uint)stored.Length, (uint)res.Data.Length, comp));
+            placed.Add((res.Key, offset, (uint)stored.Length, mem, comp));
         }
 
         var indexPos = (uint)output.Position;

@@ -19,6 +19,16 @@ public enum AgeGender : uint
     Female = 0x2000,
 }
 
+/// <summary>Дополнительные флаги (версия CASP 39+).</summary>
+[Flags]
+public enum CasParamFlags2 : byte
+{
+    None = 0,
+    RestrictOppositeFrame = 1,
+    DefaultForBodyTypeMale = 1 << 1,
+    DefaultForBodyTypeFemale = 1 << 2,
+}
+
 /// <summary>Флаги «где и как можно использовать вещь».</summary>
 [Flags]
 public enum CasParamFlags : byte
@@ -47,6 +57,7 @@ public sealed class CasPart
     public uint Version { get; private init; }
     public string Name { get; private init; } = "";
     public CasParamFlags Flags { get; private init; }
+    public CasParamFlags2 Flags2 { get; private init; }
     public IReadOnlyList<CasTag> Tags { get; private init; } = [];
     public uint BodyType { get; private init; }
     public uint BodySubType { get; private init; }
@@ -75,7 +86,7 @@ public sealed class CasPart
 
         var flagsOffset = (int)ms.Position;
         var flags = (CasParamFlags)r.ReadByte();
-        if (version >= 39) r.ReadByte();
+        var flags2 = version >= 39 ? (CasParamFlags2)r.ReadByte() : CasParamFlags2.None;
         if (version >= 50) r.ReadUInt16();
 
         if (version >= 51)
@@ -119,6 +130,7 @@ public sealed class CasPart
             Version = version,
             Name = name,
             Flags = flags,
+            Flags2 = flags2,
             Tags = tags,
             BodyType = bodyType,
             BodySubType = bodySubType,
