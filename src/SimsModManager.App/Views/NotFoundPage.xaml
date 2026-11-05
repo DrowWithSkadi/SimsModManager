@@ -1,0 +1,74 @@
+<UserControl x:Class="SimsModManager.App.Views.NotFoundPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ctl="clr-namespace:SimsModManager.App.Controls"
+             xmlns:b="clr-namespace:SimsModManager.App.Behaviors">
+    <Grid Margin="48,24">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="48" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- Слева: объяснение -->
+        <StackPanel VerticalAlignment="Center" MaxWidth="440" HorizontalAlignment="Left" b:Anim.Appear="True">
+            <Border Width="56" Height="56" CornerRadius="10" Background="{StaticResource B.AccentSubtle}" BorderBrush="{StaticResource B.Accent}"
+                    BorderThickness="1" HorizontalAlignment="Left">
+                <ctl:IconView Data="{StaticResource Icon.FolderSearch}" Foreground="{StaticResource B.Accent}" Width="22" Height="22" />
+            </Border>
+            <TextBlock Text="Не нашёл папку The Sims 4" FontSize="30" FontWeight="SemiBold" Foreground="{StaticResource B.Text}"
+                       TextWrapping="Wrap" Margin="0,28,0,14" LineHeight="38" />
+            <TextBlock Style="{StaticResource T.Body}" Foreground="{StaticResource B.TextSecondary}" TextWrapping="Wrap" LineHeight="19"
+                       Text="Покажите, где игра хранит ваши данные. Нужна папка с Mods, saves или файлом Options.ini — не папка установки игры." />
+            <TextBlock Text="ОБЫЧНО ОНА НАХОДИТСЯ ЗДЕСЬ" Style="{StaticResource T.Caption}" FontSize="10" Margin="0,20,0,4" />
+            <TextBlock Text="C:\Users\Имя\Documents\Electronic Arts\The Sims 4" Style="{StaticResource T.Secondary}" />
+            <StackPanel Orientation="Horizontal" Margin="0,24,0,0">
+                <Button Style="{StaticResource Btn.Primary}" ctl:Btn.Icon="{StaticResource Icon.FolderOpen}" Content="Указать папку"
+                        Command="{Binding ChooseFolderCommand}" />
+                <Button Style="{StaticResource Btn.Secondary}" ctl:Btn.Icon="{StaticResource Icon.RefreshCw}" Content="Повторить поиск"
+                        Margin="8,0,0,0" Command="{Binding RetrySearchCommand}" />
+            </StackPanel>
+            <TextBlock Style="{StaticResource T.Muted}" Margin="0,18,0,0" TextWrapping="Wrap"
+                       Text="Если папки ещё нет, запустите The Sims 4 один раз и закройте игру." />
+        </StackPanel>
+
+        <!-- Справа: возможные папки -->
+        <StackPanel Grid.Column="2" VerticalAlignment="Center" b:Anim.Appear="True">
+            <TextBlock Text="Возможные папки" Style="{StaticResource T.Section}" FontSize="18" />
+            <TextBlock Text="Проверили документы на этом компьютере и в OneDrive." Style="{StaticResource T.Secondary}" Margin="0,6,0,16" />
+            <ItemsControl ItemsSource="{Binding Candidates}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border x:Name="Card" Style="{StaticResource Card}" Margin="0,0,0,12">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <ctl:IconView x:Name="Icon" Data="{StaticResource Icon.Folder}" Foreground="{StaticResource B.TextSecondary}" Margin="0,0,10,0" />
+                                    <TextBlock Text="{Binding Label}" Style="{StaticResource T.Strong}" FontSize="12" VerticalAlignment="Center" />
+                                </StackPanel>
+                                <TextBlock Text="{Binding Path}" Style="{StaticResource T.Secondary}" FontSize="11" Margin="0,8,0,4" TextTrimming="CharacterEllipsis" />
+                                <TextBlock x:Name="Status" Text="Папки ещё нет" Style="{StaticResource T.Muted}" FontSize="10" />
+                                <Button Style="{StaticResource Btn.Secondary}" Content="Выбрать эту папку" HorizontalAlignment="Left" Margin="0,12,0,0"
+                                        Command="{Binding DataContext.UseCandidateCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding}" />
+                            </StackPanel>
+                        </Border>
+                        <DataTemplate.Triggers>
+                            <DataTrigger Binding="{Binding Exists}" Value="True">
+                                <Setter TargetName="Status" Property="Text" Value="Есть папка · содержимое не подтверждено" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding LooksValid}" Value="True">
+                                <Setter TargetName="Status" Property="Text" Value="Есть папка · похожа на папку игры" />
+                                <Setter TargetName="Card" Property="Background" Value="{StaticResource B.AccentSubtle}" />
+                                <Setter TargetName="Card" Property="BorderBrush" Value="{StaticResource B.Accent}" />
+                                <Setter TargetName="Icon" Property="Foreground" Value="{StaticResource B.Accent}" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Label}" Value="Документы OneDrive">
+                                <Setter TargetName="Icon" Property="Data" Value="{StaticResource Icon.Cloud}" />
+                            </DataTrigger>
+                        </DataTemplate.Triggers>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </StackPanel>
+    </Grid>
+</UserControl>

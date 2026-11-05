@@ -1,0 +1,170 @@
+<UserControl x:Class="SimsModManager.App.Views.SettingsPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ctl="clr-namespace:SimsModManager.App.Controls"
+             xmlns:b="clr-namespace:SimsModManager.App.Behaviors">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <Grid Margin="24,24,24,16">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <!-- Заголовок -->
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+                <Button Style="{StaticResource Btn.Icon}" ctl:Btn.Icon="{StaticResource Icon.ArrowLeft}" ToolTip="Назад (Esc)"
+                        Command="{Binding GoLibraryCommand}" VerticalAlignment="Top" Margin="0,2,16,0" />
+                <StackPanel>
+                    <TextBlock Text="Настройки программы" Style="{StaticResource T.Page}" />
+                    <TextBlock Text="Игра, файлы и поведение менеджера" Style="{StaticResource T.Secondary}" Margin="0,4,0,0" />
+                </StackPanel>
+            </StackPanel>
+
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="20" />
+                    <ColumnDefinition Width="*" MaxWidth="420" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Левая колонка -->
+                <StackPanel>
+                    <!-- Папка игры -->
+                    <Border Style="{StaticResource Card}" Margin="0,0,0,12" b:Anim.Appear="True">
+                        <StackPanel>
+                            <Grid>
+                                <TextBlock Text="Папка The Sims 4" Style="{StaticResource T.Section}" />
+                                <Border Style="{StaticResource Tag}" Background="{StaticResource B.AccentSubtle}" HorizontalAlignment="Right"
+                                        Visibility="{Binding FolderLooksValid, Converter={StaticResource BoolToVisibility}}">
+                                    <TextBlock Style="{StaticResource TagText}" Text="Найдена" Foreground="{StaticResource B.Accent}" />
+                                </Border>
+                                <Border Style="{StaticResource Tag}" Background="{StaticResource B.WarningSubtle}" HorizontalAlignment="Right"
+                                        Visibility="{Binding FolderLooksValid, Converter={StaticResource InverseBoolToVisibility}}">
+                                    <TextBlock Style="{StaticResource TagText}" Text="Не подтверждена" Foreground="{StaticResource B.Warning}" />
+                                </Border>
+                            </Grid>
+                            <Border Background="{StaticResource B.Background}" BorderBrush="{StaticResource B.Border}" BorderThickness="1"
+                                    CornerRadius="6" Height="32" Padding="10,0" Margin="0,14,0,12">
+                                <StackPanel Orientation="Horizontal">
+                                    <ctl:IconView Data="{StaticResource Icon.Folder}" Foreground="{StaticResource B.Accent}" Margin="0,0,10,0" />
+                                    <TextBlock Text="{Binding SimsFolder}" FontSize="12" Foreground="{StaticResource B.Text}" VerticalAlignment="Center"
+                                               TextTrimming="CharacterEllipsis" />
+                                </StackPanel>
+                            </Border>
+                            <StackPanel Orientation="Horizontal">
+                                <Button Style="{StaticResource Btn.Secondary}" ctl:Btn.Icon="{StaticResource Icon.FolderOpen}" Content="Изменить"
+                                        Command="{Binding ChooseFolderCommand}" />
+                                <Button Style="{StaticResource Btn.Secondary}" ctl:Btn.Icon="{StaticResource Icon.Search}" Content="Найти автоматически"
+                                        Command="{Binding AutoFindFolderCommand}" Margin="8,0,0,0" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Моды в игре -->
+                    <Border Style="{StaticResource Card}" Margin="0,0,0,12" b:Anim.Appear="True">
+                        <StackPanel>
+                            <TextBlock Text="Моды в игре" Style="{StaticResource T.Section}" Margin="0,0,0,12" />
+                            <Grid>
+                                <StackPanel>
+                                    <TextBlock Text="Пользовательский контент и моды" Style="{StaticResource T.Strong}" FontSize="12" />
+                                    <TextBlock Text="Изменяет параметр в Options.ini" Style="{StaticResource T.Muted}" Margin="0,3,0,0" />
+                                </StackPanel>
+                                <CheckBox Style="{StaticResource Switch}" HorizontalAlignment="Right" IsChecked="{Binding GameModsEnabled}"
+                                          IsEnabled="{Binding OptionsFileFound}" />
+                            </Grid>
+                            <Border Height="1" Background="{StaticResource B.Hover}" Margin="0,12" />
+                            <Grid>
+                                <StackPanel>
+                                    <TextBlock Text="Скриптовые моды" Style="{StaticResource T.Strong}" FontSize="12" />
+                                    <TextBlock Text="Вступит в силу после перезапуска игры" Style="{StaticResource T.Muted}" Margin="0,3,0,0" />
+                                </StackPanel>
+                                <CheckBox Style="{StaticResource Switch}" HorizontalAlignment="Right" IsChecked="{Binding GameScriptsEnabled}"
+                                          IsEnabled="{Binding OptionsFileFound}" />
+                            </Grid>
+                            <TextBlock Style="{StaticResource T.Muted}" TextWrapping="Wrap" Margin="0,12,0,0" Foreground="{StaticResource B.Warning}"
+                                       Text="Файла Options.ini пока нет — запустите игру один раз, и настройки станут доступны."
+                                       Visibility="{Binding OptionsFileFound, Converter={StaticResource InverseBoolToVisibility}}" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Кэш -->
+                    <Border Style="{StaticResource Card}" b:Anim.Appear="True">
+                        <StackPanel>
+                            <Grid>
+                                <StackPanel Margin="0,0,140,0">
+                                    <TextBlock Text="Кэш игры" Style="{StaticResource T.Strong}" FontSize="12" />
+                                    <TextBlock Text="Удаляет localthumbcache.package, не затрагивая сохранения." Style="{StaticResource T.Muted}"
+                                               TextWrapping="Wrap" Margin="0,3,0,0" />
+                                </StackPanel>
+                                <Button Style="{StaticResource Btn.Secondary}" ctl:Btn.Icon="{StaticResource Icon.BrushCleaning}" Content="Очистить кэш"
+                                        HorizontalAlignment="Right" Command="{Binding ClearCacheCommand}" />
+                            </Grid>
+                            <Border Height="1" Background="{StaticResource B.Hover}" Margin="0,12" />
+                            <Grid>
+                                <TextBlock Text="Очищать кэш после установки" Style="{StaticResource T.Strong}" FontSize="12" VerticalAlignment="Center" />
+                                <CheckBox Style="{StaticResource Switch}" HorizontalAlignment="Right" IsChecked="{Binding AutoClearCache}" />
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- Правая колонка -->
+                <StackPanel Grid.Column="2">
+                    <Border Style="{StaticResource Card}" Margin="0,0,0,12" b:Anim.Appear="True">
+                        <StackPanel>
+                            <TextBlock Text="Удаление файлов" Style="{StaticResource T.Section}" />
+                            <StackPanel Orientation="Horizontal" Margin="0,12,0,10">
+                                <RadioButton Style="{StaticResource ChipRadio}" Content="В корзину" GroupName="DeleteMode"
+                                             IsChecked="{Binding DeleteToRecycleBin}" />
+                                <RadioButton Style="{StaticResource ChipRadio}" Content="Насовсем" GroupName="DeleteMode" Margin="4,0,0,0"
+                                             IsChecked="{Binding DeleteToRecycleBin, Converter={StaticResource InverseBool}}" />
+                            </StackPanel>
+                            <TextBlock Text="Рекомендуем корзину: удалённые моды можно восстановить." Style="{StaticResource T.Muted}" TextWrapping="Wrap" />
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource Card}" Margin="0,0,0,12" b:Anim.Appear="True">
+                        <Grid>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="Оформление" Style="{StaticResource T.Section}" />
+                                <TextBlock Text="Тёмное · графит" Style="{StaticResource T.Secondary}" Margin="0,4,0,0" />
+                            </StackPanel>
+                            <Border HorizontalAlignment="Right" Width="46" Height="30" CornerRadius="6" BorderThickness="1.5"
+                                    BorderBrush="{StaticResource B.Accent}" Background="{StaticResource B.Background}">
+                                <Grid Margin="5">
+                                    <Border Width="5" HorizontalAlignment="Left" Background="{StaticResource B.Control}" CornerRadius="1" />
+                                    <StackPanel Margin="9,1,0,0">
+                                        <Border Height="3" Background="{StaticResource B.TextSecondary}" CornerRadius="1" Width="22" HorizontalAlignment="Left" />
+                                        <Border Height="6" Background="{StaticResource B.Accent}" CornerRadius="1" Width="16" HorizontalAlignment="Left" Margin="0,4,0,0" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </Grid>
+                    </Border>
+
+                    <Border Style="{StaticResource Card}" b:Anim.Appear="True">
+                        <StackPanel>
+                            <TextBlock Text="О программе" Style="{StaticResource T.Section}" />
+                            <Grid Margin="0,12,0,6">
+                                <TextBlock Text="Sims Mod Manager" Style="{StaticResource T.Strong}" FontSize="12" VerticalAlignment="Center" />
+                                <Border Style="{StaticResource Tag}" HorizontalAlignment="Right">
+                                    <TextBlock Style="{StaticResource TagText}" Text="{Binding VersionText}" />
+                                </Border>
+                            </Grid>
+                            <TextBlock Style="{StaticResource T.Secondary}" TextWrapping="Wrap" LineHeight="17"
+                                       Text="Ваши моды остаются на компьютере. Открытый исходный код, без аккаунта и облака." />
+                            <StackPanel Orientation="Horizontal" Margin="0,12,0,10">
+                                <Button Style="{StaticResource Btn.Secondary}" ctl:Btn.Icon="{StaticResource Icon.ExternalLink}" Content="GitHub"
+                                        Command="{Binding OpenGitHubCommand}" />
+                                <Button Style="{StaticResource Btn.Secondary}" Content="Проверить обновления" Margin="8,0,0,0"
+                                        Command="{Binding CheckUpdatesCommand}" IsEnabled="{Binding IsCheckingUpdates, Converter={StaticResource InverseBool}}" />
+                            </StackPanel>
+                            <TextBlock Text="{Binding UpdateStatus}" Style="{StaticResource T.Muted}" TextWrapping="Wrap"
+                                       Visibility="{Binding UpdateStatus, Converter={StaticResource NullToVisibility}}" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Grid>
+        </Grid>
+    </ScrollViewer>
+</UserControl>

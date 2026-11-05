@@ -1,0 +1,353 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:ctl="clr-namespace:SimsModManager.App.Controls"
+                    xmlns:vm="clr-namespace:SimsModManager.App.ViewModels"
+                    xmlns:b="clr-namespace:SimsModManager.App.Behaviors">
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="Converters.xaml" />
+        <ResourceDictionary Source="Theme.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+
+    <!-- ═══════════ Превью мода (картинка или значок) ═══════════ -->
+    <DataTemplate x:Key="ModPreview" DataType="{x:Type vm:ModItemViewModel}">
+        <Grid>
+            <Border x:Name="Placeholder" CornerRadius="4" BorderThickness="1" BorderBrush="{StaticResource B.Border}" Background="{StaticResource B.Surface}">
+                <ctl:IconView x:Name="PlaceholderIcon" Data="{StaticResource Icon.Image}" Foreground="{StaticResource B.TextMuted}"
+                              Width="14" Height="14" />
+            </Border>
+            <Border x:Name="Pic" CornerRadius="4" Background="{StaticResource B.Control}" Visibility="Collapsed" ClipToBounds="True">
+                <Image Source="{Binding Thumbnail}" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality" />
+            </Border>
+        </Grid>
+        <DataTemplate.Triggers>
+            <DataTrigger Binding="{Binding IsScriptOnly}" Value="True">
+                <Setter TargetName="PlaceholderIcon" Property="Data" Value="{StaticResource Icon.FileCode}" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding HasThumbnail}" Value="True">
+                <Setter TargetName="Pic" Property="Visibility" Value="Visible" />
+                <Setter TargetName="Placeholder" Property="Visibility" Value="Collapsed" />
+                <DataTrigger.EnterActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetName="Pic" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.25" />
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.EnterActions>
+            </DataTrigger>
+        </DataTemplate.Triggers>
+    </DataTemplate>
+
+    <!-- ═══════════ Метки типа ═══════════ -->
+    <DataTemplate x:Key="ModTags" DataType="{x:Type vm:ModItemViewModel}">
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+            <Border Background="Transparent" Padding="2" Margin="0,0,6,0" ToolTip="{Binding ProblemsText}" ToolTipService.InitialShowDelay="200"
+                    Visibility="{Binding HasProblems, Converter={StaticResource BoolToVisibility}}">
+                <ctl:IconView Data="{StaticResource Icon.TriangleAlert}" Foreground="{StaticResource B.Warning}" Width="14" Height="14" />
+            </Border>
+            <Border Style="{StaticResource Tag}" Visibility="{Binding ShowCategory, Converter={StaticResource BoolToVisibility}}">
+                <TextBlock Style="{StaticResource TagText}" Text="{Binding CategoryLabel}" />
+            </Border>
+            <Border Style="{StaticResource Tag}" Background="{StaticResource B.AccentSubtle}" Margin="4,0,0,0"
+                    Visibility="{Binding ShowScriptBadge, Converter={StaticResource BoolToVisibility}}">
+                <TextBlock Style="{StaticResource TagText}" Text="Скрипт" Foreground="{StaticResource B.Accent}" />
+            </Border>
+            <Border Style="{StaticResource Tag}" Margin="4,0,0,0"
+                    Visibility="{Binding IsEnabled, Converter={StaticResource InverseBoolToVisibility}}">
+                <TextBlock Style="{StaticResource TagText}" Text="Выключен" Foreground="{StaticResource B.TextMuted}" />
+            </Border>
+        </StackPanel>
+    </DataTemplate>
+
+    <!-- ═══════════ Строка мода (вид «список», высота 48) ═══════════ -->
+    <DataTemplate x:Key="ModRow" DataType="{x:Type vm:ModItemViewModel}">
+        <Grid b:Anim.Offset="0" b:Anim.Appear="{Binding IsNew}" Background="Transparent">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Галочка выбора — выезжает, когда выбрано больше одного мода -->
+            <Border x:Name="SelectHolder" Width="0" ClipToBounds="True" VerticalAlignment="Center">
+                <CheckBox Style="{StaticResource SelectBox}" HorizontalAlignment="Left"
+                          IsChecked="{Binding IsSelected}" />
+            </Border>
+
+            <ContentPresenter Grid.Column="1" Content="{Binding}" ContentTemplate="{StaticResource ModPreview}"
+                              Width="36" Height="36" Margin="0,0,12,0" />
+
+            <StackPanel x:Name="Texts" Grid.Column="2" VerticalAlignment="Center">
+                <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="SemiBold" Foreground="{StaticResource B.Text}"
+                           TextTrimming="CharacterEllipsis" ToolTip="{Binding Name}" />
+                <TextBlock Text="{Binding DetailsText}" FontSize="10" Foreground="{StaticResource B.TextMuted}" Margin="0,2,0,0"
+                           TextTrimming="CharacterEllipsis" />
+            </StackPanel>
+
+            <ContentPresenter x:Name="Tags" Grid.Column="3" Content="{Binding}" ContentTemplate="{StaticResource ModTags}" Margin="12,0,16,0" />
+
+            <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center">
+                <Button Style="{StaticResource Btn.Icon}" ctl:Btn.Icon="{StaticResource Icon.FolderOpen}" ToolTip="Показать в проводнике"
+                        Command="{Binding DataContext.OpenModLocationCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                        CommandParameter="{Binding}" />
+                <Button Style="{StaticResource Btn.Icon}" ctl:Btn.Icon="{StaticResource Icon.Trash2}" ToolTip="Удалить в корзину" Margin="8,0,8,0"
+                        Command="{Binding DataContext.DeleteModCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                        CommandParameter="{Binding}" />
+                <CheckBox Style="{StaticResource Switch}" IsChecked="{Binding IsEnabled}" ToolTip="Включить / выключить мод" />
+            </StackPanel>
+        </Grid>
+        <DataTemplate.Triggers>
+            <DataTrigger Binding="{Binding IsEnabled}" Value="False">
+                <Setter TargetName="Texts" Property="Opacity" Value="0.55" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding DataContext.IsMultiSelect, RelativeSource={RelativeSource AncestorType=ListBox}}" Value="True">
+                <DataTrigger.EnterActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetName="SelectHolder" Storyboard.TargetProperty="Width" To="28" Duration="0:0:0.2">
+                                <DoubleAnimation.EasingFunction><CubicEase EasingMode="EaseOut" /></DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.EnterActions>
+                <DataTrigger.ExitActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetName="SelectHolder" Storyboard.TargetProperty="Width" To="0" Duration="0:0:0.18">
+                                <DoubleAnimation.EasingFunction><CubicEase EasingMode="EaseOut" /></DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.ExitActions>
+            </DataTrigger>
+        </DataTemplate.Triggers>
+    </DataTemplate>
+
+    <!-- ═══════════ Плитка мода (вид «плитки») ═══════════ -->
+    <DataTemplate x:Key="ModTile" DataType="{x:Type vm:ModItemViewModel}">
+        <Grid b:Anim.Appear="{Binding IsNew}" Width="176">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="132" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <ContentPresenter Content="{Binding}" ContentTemplate="{StaticResource ModPreview}" />
+            <CheckBox Style="{StaticResource SelectBox}" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="8"
+                      IsChecked="{Binding IsSelected}"
+                      Visibility="{Binding DataContext.IsMultiSelect, RelativeSource={RelativeSource AncestorType=ListBox}, Converter={StaticResource BoolToVisibility}}" />
+            <TextBlock x:Name="Title" Grid.Row="1" Text="{Binding Name}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource B.Text}"
+                       TextTrimming="CharacterEllipsis" Margin="0,10,0,6" ToolTip="{Binding Name}" />
+            <Grid Grid.Row="2">
+                <ContentPresenter Content="{Binding}" ContentTemplate="{StaticResource ModTags}" HorizontalAlignment="Left" />
+                <CheckBox Style="{StaticResource Switch}" IsChecked="{Binding IsEnabled}" HorizontalAlignment="Right" />
+            </Grid>
+        </Grid>
+        <DataTemplate.Triggers>
+            <DataTrigger Binding="{Binding IsEnabled}" Value="False">
+                <Setter TargetName="Title" Property="Opacity" Value="0.55" />
+            </DataTrigger>
+        </DataTemplate.Triggers>
+    </DataTemplate>
+
+    <!-- ═══════════ Контейнеры: подсветка при наведении и выборе, анимация удаления ═══════════ -->
+    <Style x:Key="ModRowContainer" TargetType="ListBoxItem">
+        <Setter Property="Height" Value="48" />
+        <Setter Property="Padding" Value="12,0" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ListBoxItem">
+                    <Grid>
+                        <Border Background="{StaticResource B.Surface}" BorderBrush="{StaticResource B.Hover}" BorderThickness="0,0,0,1" />
+                        <Border x:Name="HoverBg" Background="{StaticResource B.Control}" Opacity="0" Margin="0,0,0,1" />
+                        <Border x:Name="SelBg" Background="{StaticResource B.AccentSubtle}" BorderBrush="{StaticResource B.Accent}"
+                                BorderThickness="1" CornerRadius="2" Opacity="0" />
+                        <ContentPresenter Margin="{TemplateBinding Padding}" VerticalAlignment="Center" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="HoverBg" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.12" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="HoverBg" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.25" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}" Value="True" />
+                                <Condition Binding="{Binding DataContext.IsMultiSelect, RelativeSource={RelativeSource AncestorType=ListBox}}" Value="True" />
+                            </MultiDataTrigger.Conditions>
+                            <MultiDataTrigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="SelBg" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.15" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </MultiDataTrigger.EnterActions>
+                            <MultiDataTrigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="SelBg" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.15" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </MultiDataTrigger.ExitActions>
+                        </MultiDataTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding IsRemoving}" Value="True">
+                <DataTrigger.EnterActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.15" />
+                            <DoubleAnimation Storyboard.TargetProperty="Height" To="0" Duration="0:0:0.22">
+                                <DoubleAnimation.EasingFunction><CubicEase EasingMode="EaseIn" /></DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.EnterActions>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="ModTileContainer" TargetType="ListBoxItem">
+        <Setter Property="Margin" Value="0,0,12,12" />
+        <Setter Property="Padding" Value="10" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=TwoWay}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ListBoxItem">
+                    <Grid>
+                        <Border Background="{StaticResource B.Surface}" BorderBrush="{StaticResource B.Border}" BorderThickness="1" CornerRadius="8" />
+                        <Border x:Name="HoverBg" Background="{StaticResource B.Control}" BorderBrush="#555555" BorderThickness="1" CornerRadius="8" Opacity="0" />
+                        <Border x:Name="SelBg" Background="{StaticResource B.AccentSubtle}" BorderBrush="{StaticResource B.Accent}" BorderThickness="1"
+                                CornerRadius="8" Opacity="0" />
+                        <ContentPresenter Margin="{TemplateBinding Padding}" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="HoverBg" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.12" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="HoverBg" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.25" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}" Value="True" />
+                                <Condition Binding="{Binding DataContext.IsMultiSelect, RelativeSource={RelativeSource AncestorType=ListBox}}" Value="True" />
+                            </MultiDataTrigger.Conditions>
+                            <Setter TargetName="SelBg" Property="Opacity" Value="1" />
+                        </MultiDataTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding IsRemoving}" Value="True">
+                <DataTrigger.EnterActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.2" />
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.EnterActions>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- Строка-заглушка, пока читаем папку Mods (мягко «дышит») -->
+    <Style x:Key="SkeletonBar" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource B.Control}" />
+        <Setter Property="CornerRadius" Value="4" />
+        <Style.Triggers>
+            <EventTrigger RoutedEvent="Loaded">
+                <BeginStoryboard>
+                    <Storyboard RepeatBehavior="Forever" AutoReverse="True">
+                        <DoubleAnimation Storyboard.TargetProperty="Opacity" From="1" To="0.45" Duration="0:0:0.8" />
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- ═══════════ Итог установки ═══════════ -->
+    <DataTemplate x:Key="InstallResultItem" DataType="{x:Type vm:InstallResultViewModel}">
+        <Border x:Name="Card" Style="{StaticResource Card}" Padding="16,12" Margin="0,0,0,8" b:Anim.Appear="True">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <ctl:IconView x:Name="Icon" Data="{Binding Icon}" Foreground="{StaticResource B.Accent}" VerticalAlignment="Top" Margin="0,2,20,0" />
+                <StackPanel Grid.Column="1">
+                    <TextBlock Text="{Binding Title}" Style="{StaticResource T.Strong}" TextTrimming="CharacterEllipsis" />
+                    <TextBlock x:Name="Msg" Text="{Binding Message}" FontSize="11" Foreground="{StaticResource B.Accent}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                </StackPanel>
+            </Grid>
+        </Border>
+        <DataTemplate.Triggers>
+            <DataTrigger Binding="{Binding Status}" Value="Skipped">
+                <Setter TargetName="Icon" Property="Foreground" Value="{StaticResource B.TextSecondary}" />
+                <Setter TargetName="Msg" Property="Foreground" Value="{StaticResource B.TextSecondary}" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Status}" Value="Failed">
+                <Setter TargetName="Icon" Property="Foreground" Value="{StaticResource B.Error}" />
+                <Setter TargetName="Msg" Property="Foreground" Value="{StaticResource B.Error}" />
+                <Setter TargetName="Card" Property="BorderBrush" Value="{StaticResource B.ErrorBorder}" />
+                <Setter TargetName="Card" Property="Background" Value="#2A2223" />
+            </DataTrigger>
+        </DataTemplate.Triggers>
+    </DataTemplate>
+
+    <!-- ═══════════ Уведомление ═══════════ -->
+    <DataTemplate x:Key="ToastItem" DataType="{x:Type vm:ToastViewModel}">
+        <Border Style="{StaticResource Card}" Background="{StaticResource B.Control}" Padding="14,0,6,0" Height="40" Margin="0,8,0,0"
+                b:Anim.Show="{Binding IsVisible}" b:Anim.Appear="True" MinWidth="320" HorizontalAlignment="Center">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="24" ShadowDepth="4" Opacity="0.4" Color="Black" />
+            </Border.Effect>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <ctl:IconView Data="{Binding Icon}" Foreground="{StaticResource B.Accent}" Margin="0,0,10,0" />
+                <TextBlock Grid.Column="1" Text="{Binding Message}" FontSize="12" Foreground="{StaticResource B.Text}" VerticalAlignment="Center"
+                           TextTrimming="CharacterEllipsis" MaxWidth="460" />
+                <Button Grid.Column="2" Style="{StaticResource Btn.Link}" Content="Отменить" Command="{Binding UndoCommand}" Margin="16,0,0,0"
+                        Visibility="{Binding CanUndo, Converter={StaticResource BoolToVisibility}}" />
+                <Button Grid.Column="3" Style="{StaticResource Btn.IconGhost}" ctl:Btn.Icon="{StaticResource Icon.X}" Command="{Binding CloseCommand}"
+                        Margin="4,0,0,0" Width="24" Height="24" />
+            </Grid>
+        </Border>
+    </DataTemplate>
+
+</ResourceDictionary>

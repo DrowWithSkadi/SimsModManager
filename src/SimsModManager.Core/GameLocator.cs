@@ -61,6 +61,44 @@ public static class GameLocator
         return markerCount * 10 + (nameMatches ? 5 : 0);
     }
 
+    public sealed record Candidate(string Label, string Path, bool Exists, bool LooksValid);
+
+    /// <summary>
+    /// Места, где обычно лежит папка игры, — для экрана «папка не найдена».
+    /// Показываем только реально существующие «Документы».
+    /// </summary>
+    public static IReadOnlyList<Candidate> GetCandidates()
+    {
+        var result = new List<Candidate>();
+        foreach (var docs in GetDocumentRoots().Where(Directory.Exists).Distinct(StringComparer.OrdinalIgnoreCase))
+        {
+            var label = docs.Contains("OneDrive", StringComparison.OrdinalIgnoreCase)
+                ? "Документы OneDrive"
+                : "Документы на этом компьютере";
+            var ea = System.IO.Path.Combine(docs, "Electronic Arts");
+            var found = false;
+            if (Directory.Exists(ea))
+            {
+                foreach (var dir in SafeDirs(ea))
+                {
+                    found = true;
+                    result.Add(new Candidate(label, System.IO.Path.GetFullPath(dir), true, Score(dir) > 1));
+                }
+            }
+            if (!found)
+                result.Add(new Candidate(label, System.IO.Path.Combine(ea, "The Sims 4"), false, false));
+        }
+        return result
+            .GroupBy(c => c.Path, StringComparer.OrdinalIgnoreCase).Select(g => g.First())
+            .ToList();
+    }
+
+    private static string[] SafeDirs(string dir)
+    {
+        try { return Directory.GetDirectories(dir); }
+        catch (Exception) { return []; }
+    }
+
     /// <summary>Все места, где может оказаться папка «Документы».</summary>
     private static IEnumerable<string> GetDocumentRoots()
     {

@@ -4,6 +4,9 @@ namespace SimsModManager.Core;
 
 public enum InstallStatus { Installed, Updated, Failed, Skipped }
 
+/// <summary>Ход установки: какой по счёту файл обрабатывается.</summary>
+public readonly record struct InstallProgress(int Index, int Total, string CurrentName);
+
 public sealed record InstallResult(
     string Source,
     string? ModName,
@@ -27,14 +30,16 @@ public sealed class ModInstaller(SimsPaths paths, IArchiveExtractor extractor)
     /// <summary>Файлы настроек, которые некоторые скриптовые моды кладут рядом со скриптом.</summary>
     private static readonly string[] CompanionExtensions = [".cfg", ".ini", ".json"];
 
-    public IReadOnlyList<InstallResult> Install(IEnumerable<string> sources, IProgress<string>? progress = null)
+    public IReadOnlyList<InstallResult> Install(IEnumerable<string> sources, IProgress<InstallProgress>? progress = null)
     {
+        var list = sources.ToList();
         var results = new List<InstallResult>();
-        foreach (var source in sources)
+        for (var i = 0; i < list.Count; i++)
         {
-            progress?.Report(Path.GetFileName(source));
-            results.Add(InstallOne(source));
+            progress?.Report(new InstallProgress(i, list.Count, Path.GetFileName(list[i])));
+            results.Add(InstallOne(list[i]));
         }
+        progress?.Report(new InstallProgress(list.Count, list.Count, ""));
         return results;
     }
 

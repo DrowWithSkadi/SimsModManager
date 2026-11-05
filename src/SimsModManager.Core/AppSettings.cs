@@ -6,6 +6,11 @@ namespace SimsModManager.Core;
 public sealed class AppSettings
 {
     public string? SimsFolder { get; set; }
+    public bool AutoClearCache { get; set; } = true;
+    public bool DeleteToRecycleBin { get; set; } = true;
+    public bool GridView { get; set; }
+    public string SortBy { get; set; } = "name";
+    public bool SortDescending { get; set; }
 
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
 

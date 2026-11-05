@@ -1,0 +1,325 @@
+<UserControl x:Class="SimsModManager.App.Views.LibraryPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ctl="clr-namespace:SimsModManager.App.Controls"
+             xmlns:b="clr-namespace:SimsModManager.App.Behaviors">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- ═══ Поиск и фильтры ═══ -->
+        <StackPanel Margin="24,8,24,8">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <ctl:SearchBox x:Name="Search" Placeholder="Найти мод по названию…"
+                               Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged, Delay=120}" />
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="12,0,0,0" VerticalAlignment="Center">
+                    <RadioButton Style="{StaticResource ChipRadio}" Content="Все" GroupName="State"
+                                 IsChecked="{Binding StateFilter, Converter={StaticResource Equals}, ConverterParameter=All}" />
+                    <RadioButton Style="{StaticResource ChipRadio}" Content="Включённые" GroupName="State" Margin="4,0,0,0"
+                                 IsChecked="{Binding StateFilter, Converter={StaticResource Equals}, ConverterParameter=Enabled}" />
+                    <RadioButton Style="{StaticResource ChipRadio}" Content="Выключенные" GroupName="State" Margin="4,0,0,0"
+                                 IsChecked="{Binding StateFilter, Converter={StaticResource Equals}, ConverterParameter=Disabled}" />
+                </StackPanel>
+            </Grid>
+
+            <Grid Margin="0,8,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <!-- Типы: чипами в широком окне, выпадающим списком в узком -->
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center"
+                            Visibility="{Binding IsCompact, Converter={StaticResource InverseBoolToVisibility}}">
+                    <RadioButton Style="{StaticResource ChipRadio}" Content="Все типы" GroupName="Type"
+                                 IsChecked="{Binding TypeFilter, Converter={StaticResource Equals}, ConverterParameter=All}" />
+                    <RadioButton Style="{StaticResource ChipRadio}" Content="Одежда" GroupName="Type" Margin="4,0,0,0"
+                                 IsChecked="{Binding TypeFilter, Converter={StaticResource Equals}, ConverterParameter=Clothing}" />
+                    <RadioButton Style="{StaticResource ChipRadio}" Content="Причёски" GroupName="Type" Margin="4,0,0,0"
+                                 IsChecked="{Binding TypeFilter, Converter={StaticResource Equals}, ConverterParameter=Hair}" />
+                    <RadioButton Style="{StaticResource ChipRadio}" Content="Макияж" GroupName="Type" Margin="4,0,0,0"
+                                 IsChecked="{Binding TypeFilter, Converter={StaticResource Equals}, ConverterParameter=Makeup}" />
+                    <RadioButton Style="{StaticResource ChipRadio}" Content="Объекты" GroupName="Type" Margin="4,0,0,0"
+                                 IsChecked="{Binding TypeFilter, Converter={StaticResource Equals}, ConverterParameter=Objects}" />
+                    <RadioButton Style="{StaticResource ChipRadio}" Content="Скрипты" GroupName="Type" Margin="4,0,0,0"
+                                 IsChecked="{Binding TypeFilter, Converter={StaticResource Equals}, ConverterParameter=Scripts}" />
+                    <RadioButton Style="{StaticResource ChipRadio}" Content="Другое" GroupName="Type" Margin="4,0,0,0"
+                                 IsChecked="{Binding TypeFilter, Converter={StaticResource Equals}, ConverterParameter=Other}" />
+                </StackPanel>
+
+                <Grid HorizontalAlignment="Left" Visibility="{Binding IsCompact, Converter={StaticResource BoolToVisibility}}">
+                    <Button x:Name="TypeButton" Style="{StaticResource Btn.Secondary}" ctl:Btn.Icon="{StaticResource Icon.ChevronDown}"
+                            Content="{Binding TypeFilterLabel}" Command="{Binding ToggleTypeMenuCommand}" />
+                    <Popup IsOpen="{Binding IsTypeMenuOpen}" StaysOpen="False" PlacementTarget="{Binding ElementName=TypeButton}"
+                           Placement="Bottom" VerticalOffset="4" AllowsTransparency="True" PopupAnimation="Fade">
+                        <Border Background="{StaticResource B.Surface}" BorderBrush="{StaticResource B.Border}" BorderThickness="1"
+                                CornerRadius="8" Padding="4" MinWidth="170">
+                            <StackPanel>
+                                <RadioButton Style="{StaticResource MenuOption}" Content="Все типы" GroupName="TypeMenu"
+                                             IsChecked="{Binding TypeFilter, Converter={StaticResource Equals}, ConverterParameter=All}" />
+                                <RadioButton Style="{StaticResource MenuOption}" Content="Одежда" GroupName="TypeMenu"
+                                             IsChecked="{Binding TypeFilter, Converter={StaticResource Equals}, ConverterParameter=Clothing}" />
+                                <RadioButton Style="{StaticResource MenuOption}" Content="Причёски" GroupName="TypeMenu"
+                                             IsChecked="{Binding TypeFilter, Converter={StaticResource Equals}, ConverterParameter=Hair}" />
+                                <RadioButton Style="{StaticResource MenuOption}" Content="Макияж" GroupName="TypeMenu"
+                                             IsChecked="{Binding TypeFilter, Converter={StaticResource Equals}, ConverterParameter=Makeup}" />
+                                <RadioButton Style="{StaticResource MenuOption}" Content="Объекты" GroupName="TypeMenu"
+                                             IsChecked="{Binding TypeFilter, Converter={StaticResource Equals}, ConverterParameter=Objects}" />
+                                <RadioButton Style="{StaticResource MenuOption}" Content="Скрипты" GroupName="TypeMenu"
+                                             IsChecked="{Binding TypeFilter, Converter={StaticResource Equals}, ConverterParameter=Scripts}" />
+                                <RadioButton Style="{StaticResource MenuOption}" Content="Другое" GroupName="TypeMenu"
+                                             IsChecked="{Binding TypeFilter, Converter={StaticResource Equals}, ConverterParameter=Other}" />
+                            </StackPanel>
+                        </Border>
+                    </Popup>
+                </Grid>
+
+                <!-- Сортировка, вид, обновление -->
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Grid>
+                        <Button x:Name="SortButton" Style="{StaticResource Btn.Secondary}" ctl:Btn.Icon="{StaticResource Icon.ChevronDown}"
+                                Content="{Binding SortLabel}" Command="{Binding ToggleSortMenuCommand}" />
+                        <Popup IsOpen="{Binding IsSortMenuOpen}" StaysOpen="False" PlacementTarget="{Binding ElementName=SortButton}"
+                               Placement="Bottom" VerticalOffset="4" AllowsTransparency="True" PopupAnimation="Fade">
+                            <Border Background="{StaticResource B.Surface}" BorderBrush="{StaticResource B.Border}" BorderThickness="1"
+                                    CornerRadius="8" Padding="4" MinWidth="190">
+                                <StackPanel>
+                                    <TextBlock Text="Сортировать" Style="{StaticResource T.Muted}" Margin="8,6,8,4" />
+                                    <RadioButton Style="{StaticResource MenuOption}" Content="По имени" GroupName="Sort"
+                                                 IsChecked="{Binding SortBy, Converter={StaticResource Equals}, ConverterParameter=name, Mode=OneWay}"
+                                                 Command="{Binding SetSortCommand}" CommandParameter="name" />
+                                    <RadioButton Style="{StaticResource MenuOption}" Content="По дате установки" GroupName="Sort"
+                                                 IsChecked="{Binding SortBy, Converter={StaticResource Equals}, ConverterParameter=date, Mode=OneWay}"
+                                                 Command="{Binding SetSortCommand}" CommandParameter="date" />
+                                    <RadioButton Style="{StaticResource MenuOption}" Content="По размеру" GroupName="Sort"
+                                                 IsChecked="{Binding SortBy, Converter={StaticResource Equals}, ConverterParameter=size, Mode=OneWay}"
+                                                 Command="{Binding SetSortCommand}" CommandParameter="size" />
+                                    <Border Height="1" Background="{StaticResource B.Hover}" Margin="4" />
+                                    <Button Style="{StaticResource Btn.Ghost}" HorizontalContentAlignment="Left" Height="30"
+                                            ctl:Btn.Icon="{StaticResource Icon.ArrowUp}" Content="Обратный порядок"
+                                            Command="{Binding ToggleSortDirectionCommand}" Foreground="{StaticResource B.Text}" FontWeight="Normal" />
+                                </StackPanel>
+                            </Border>
+                        </Popup>
+                    </Grid>
+                    <RadioButton Style="{StaticResource ViewToggle}" ctl:Btn.Icon="{StaticResource Icon.List}" GroupName="View" Margin="4,0,0,0"
+                                 ToolTip="Список" IsChecked="{Binding IsGridView, Converter={StaticResource InverseBool}}" />
+                    <RadioButton Style="{StaticResource ViewToggle}" ctl:Btn.Icon="{StaticResource Icon.LayoutGrid}" GroupName="View" Margin="4,0,0,0"
+                                 ToolTip="Плитки" IsChecked="{Binding IsGridView}" />
+                    <Button Style="{StaticResource Btn.Icon}" ctl:Btn.Icon="{StaticResource Icon.RefreshCw}" Margin="4,0,0,0"
+                            ToolTip="Обновить список" Command="{Binding RefreshCommand}" />
+                </StackPanel>
+            </Grid>
+        </StackPanel>
+
+        <!-- ═══ Зона установки ═══ -->
+        <Grid Grid.Row="1" Margin="24,0,24,8" Height="40">
+            <Rectangle RadiusX="6" RadiusY="6" Fill="{StaticResource B.Surface}" Stroke="{StaticResource B.Border}"
+                       StrokeThickness="1" StrokeDashArray="4 3" SnapsToDevicePixels="True" />
+            <Grid Margin="12,0,4,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <ctl:IconView Data="{StaticResource Icon.Upload}" Foreground="{StaticResource B.Accent}" />
+                <TextBlock Grid.Column="1" Text="Перетащите архивы сюда" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource B.Text}"
+                           VerticalAlignment="Center" Margin="12,0,0,0" />
+                <TextBlock Grid.Column="2" Text="ZIP / RAR / 7z / .package / .ts4script" FontSize="10" Foreground="{StaticResource B.TextMuted}"
+                           VerticalAlignment="Center" Margin="12,0,0,0" TextTrimming="CharacterEllipsis" />
+                <Button Grid.Column="3" Style="{StaticResource Btn.Secondary}" Content="Выбрать файлы" Command="{Binding BrowseFilesCommand}" />
+            </Grid>
+        </Grid>
+
+        <!-- ═══ Плашки-предупреждения ═══ -->
+        <StackPanel Grid.Row="2" Margin="24,0,24,0">
+            <Border b:Anim.Show="{Binding HasOptionsWarning}" Background="{StaticResource B.WarningSubtle}" BorderBrush="{StaticResource B.WarningBorder}"
+                    BorderThickness="1" CornerRadius="6" Padding="12,10" Margin="0,0,0,8">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <ctl:IconView Data="{StaticResource Icon.TriangleAlert}" Foreground="{StaticResource B.Warning}" Margin="0,0,12,0" />
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="{Binding OptionsWarning}" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource B.Text}" />
+                        <TextBlock Text="{Binding OptionsWarningDetail}" FontSize="11" Foreground="{StaticResource B.Warning}" Margin="0,2,0,0"
+                                   Visibility="{Binding HasOptionsWarningDetail, Converter={StaticResource BoolToVisibility}}" />
+                    </StackPanel>
+                    <Button Grid.Column="2" Style="{StaticResource Btn.Primary}" Content="Включить моды" Command="{Binding FixOptionsCommand}" />
+                </Grid>
+            </Border>
+
+            <Border b:Anim.Show="{Binding IsGameRunning}" Background="{StaticResource B.Surface}" BorderBrush="{StaticResource B.Border}"
+                    BorderThickness="1" CornerRadius="6" Padding="12,10" Margin="0,0,0,8">
+                <StackPanel Orientation="Horizontal">
+                    <ctl:IconView Data="{StaticResource Icon.Info}" Foreground="{StaticResource B.TextSecondary}" Margin="0,0,12,0" />
+                    <TextBlock Text="Игра запущена — изменения применятся после перезапуска" FontSize="12" Foreground="{StaticResource B.Text}"
+                               VerticalAlignment="Center" />
+                </StackPanel>
+            </Border>
+
+            <Border b:Anim.Show="{Binding HasDuplicates}" Background="{StaticResource B.WarningSubtle}" BorderBrush="{StaticResource B.WarningBorder}"
+                    BorderThickness="1" CornerRadius="6" Padding="12,6" Margin="0,0,0,8">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <ctl:IconView Data="{StaticResource Icon.TriangleAlert}" Foreground="{StaticResource B.Warning}" Margin="0,0,12,0" />
+                    <TextBlock Grid.Column="1" Text="{Binding DuplicateText}" FontSize="12" Foreground="{StaticResource B.Text}" VerticalAlignment="Center"
+                               TextTrimming="CharacterEllipsis" />
+                    <Button Grid.Column="2" Style="{StaticResource Btn.Secondary}" Content="Показать" Command="{Binding ShowDuplicatesCommand}" />
+                </Grid>
+            </Border>
+
+            <Border b:Anim.Show="{Binding DuplicatesOnly}" Background="{StaticResource B.Surface}" BorderBrush="{StaticResource B.Border}"
+                    BorderThickness="1" CornerRadius="6" Padding="12,6" Margin="0,0,0,8">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <ctl:IconView Data="{StaticResource Icon.Files}" Foreground="{StaticResource B.TextSecondary}" Margin="0,0,12,0" />
+                    <TextBlock Grid.Column="1" FontSize="12" Foreground="{StaticResource B.Text}" VerticalAlignment="Center" TextWrapping="Wrap"
+                               Text="Показаны моды с одинаковыми файлами. Наведите на ⚠, чтобы увидеть, с чем совпадает. Лишний мод можно выключить или удалить." />
+                    <Button Grid.Column="2" Style="{StaticResource Btn.Secondary}" Content="Показать все" Command="{Binding ResetFiltersCommand}" Margin="12,0,0,0" />
+                </Grid>
+            </Border>
+        </StackPanel>
+
+        <!-- ═══ Библиотека ═══ -->
+        <Grid Grid.Row="3" Margin="24,0,24,0" b:Anim.Show="{Binding IsLibraryPage}" b:Anim.Offset="6">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="24" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <TextBlock Text="МОЯ БИБЛИОТЕКА" Style="{StaticResource T.Caption}" VerticalAlignment="Center" />
+            <TextBlock Text="{Binding ListHeaderText}" FontSize="10" Foreground="{StaticResource B.TextMuted}" HorizontalAlignment="Right"
+                       VerticalAlignment="Center" />
+
+            <!-- Список -->
+            <Border Grid.Row="1" Background="{StaticResource B.Surface}" CornerRadius="6" ClipToBounds="True" Margin="0,0,0,12"
+                    b:Anim.Show="{Binding ShowList}" b:Anim.Offset="0">
+                <Grid>
+                    <ListBox x:Name="ModList" ItemsSource="{Binding ModsView}" ItemTemplate="{StaticResource ModRow}"
+                             ItemContainerStyle="{StaticResource ModRowContainer}" SelectionMode="Extended"
+                             Background="Transparent" BorderThickness="0" Padding="0"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                             VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling"
+                             VirtualizingPanel.ScrollUnit="Pixel" SelectionChanged="OnSelectionChanged"
+                             Visibility="{Binding IsGridView, Converter={StaticResource InverseBoolToVisibility}}" />
+
+                    <ListBox x:Name="ModGrid" ItemsSource="{Binding ModsView}" ItemTemplate="{StaticResource ModTile}"
+                             ItemContainerStyle="{StaticResource ModTileContainer}" SelectionMode="Extended"
+                             Background="{StaticResource B.Background}" BorderThickness="0" Padding="0,4,0,0"
+                             ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="OnSelectionChanged"
+                             Visibility="{Binding IsGridView, Converter={StaticResource BoolToVisibility}}">
+                        <ListBox.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel />
+                            </ItemsPanelTemplate>
+                        </ListBox.ItemsPanel>
+                    </ListBox>
+                </Grid>
+            </Border>
+
+            <!-- Заглушка при загрузке -->
+            <Border Grid.Row="1" Background="{StaticResource B.Surface}" CornerRadius="6" ClipToBounds="True" Margin="0,0,0,12"
+                    b:Anim.Show="{Binding IsLoading}" b:Anim.Offset="0">
+                <ItemsControl>
+                    <ItemsControl.ItemsSource>
+                        <x:Array Type="{x:Type x:Double}">
+                            <x:Double>260</x:Double><x:Double>200</x:Double><x:Double>240</x:Double><x:Double>180</x:Double>
+                            <x:Double>260</x:Double><x:Double>220</x:Double><x:Double>200</x:Double><x:Double>250</x:Double>
+                            <x:Double>190</x:Double><x:Double>230</x:Double>
+                        </x:Array>
+                    </ItemsControl.ItemsSource>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Height="48" BorderBrush="{StaticResource B.Hover}" BorderThickness="0,0,0,1" Padding="12,0">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border Style="{StaticResource SkeletonBar}" Width="36" Height="36" />
+                                    <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
+                                        <Border Style="{StaticResource SkeletonBar}" Height="10" Width="{Binding}" HorizontalAlignment="Left" />
+                                        <Border Style="{StaticResource SkeletonBar}" Height="8" Width="150" HorizontalAlignment="Left" Margin="0,6,0,0" />
+                                    </StackPanel>
+                                    <Border Grid.Column="2" Style="{StaticResource SkeletonBar}" Width="36" Height="20" CornerRadius="10" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Border>
+
+            <!-- Модов ещё нет -->
+            <StackPanel Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="460"
+                        b:Anim.Show="{Binding HasNoMods}">
+                <Border Width="48" Height="48" CornerRadius="8" Background="{StaticResource B.Control}" BorderBrush="{StaticResource B.Border}"
+                        BorderThickness="1" HorizontalAlignment="Center">
+                    <ctl:IconView Data="{StaticResource Icon.FolderPlus}" Foreground="{StaticResource B.Accent}" />
+                </Border>
+                <TextBlock Text="Перетащите архивы с модами в это окно" Style="{StaticResource T.Section}" FontSize="20" TextAlignment="Center"
+                           TextWrapping="Wrap" Margin="0,20,0,10" />
+                <TextBlock Style="{StaticResource T.Secondary}" TextAlignment="Center" TextWrapping="Wrap" LineHeight="18"
+                           Text="Установим файлы в нужную папку и аккуратно соберём вашу библиотеку. Поддерживаются ZIP, RAR, 7z, .package и .ts4script." />
+                <Button Style="{StaticResource Btn.Primary}" ctl:Btn.Icon="{StaticResource Icon.Plus}" Content="Выбрать файлы" Margin="0,18,0,0"
+                        HorizontalAlignment="Center" Command="{Binding BrowseFilesCommand}" />
+            </StackPanel>
+
+            <!-- Ничего не найдено -->
+            <StackPanel Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="520"
+                        b:Anim.Show="{Binding HasNoResults}">
+                <Border Width="48" Height="48" CornerRadius="8" Background="{StaticResource B.Control}" BorderBrush="{StaticResource B.Border}"
+                        BorderThickness="1" HorizontalAlignment="Center">
+                    <ctl:IconView Data="{StaticResource Icon.Search}" Foreground="{StaticResource B.Accent}" />
+                </Border>
+                <TextBlock Text="{Binding NoResultsTitle}" Style="{StaticResource T.Section}" FontSize="20" TextAlignment="Center"
+                           TextWrapping="Wrap" Margin="0,20,0,10" />
+                <TextBlock Style="{StaticResource T.Secondary}" TextAlignment="Center" TextWrapping="Wrap"
+                           Text="Попробуйте другое название или уберите ограничения по типу и состоянию." />
+                <Button Style="{StaticResource Btn.Primary}" ctl:Btn.Icon="{StaticResource Icon.RotateCcw}" Content="Сбросить фильтры" Margin="0,18,0,0"
+                        HorizontalAlignment="Center" Command="{Binding ResetFiltersCommand}" />
+            </StackPanel>
+        </Grid>
+
+        <!-- ═══ Итог установки ═══ -->
+        <Grid Grid.Row="3" Margin="24,4,24,0" b:Anim.Show="{Binding IsInstallResultPage}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Grid Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="Последняя установка" Style="{StaticResource T.Section}" FontSize="20" />
+                    <TextBlock Text="{Binding ResultSummary}" Style="{StaticResource T.Muted}" Margin="0,4,0,0" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <Button Style="{StaticResource Btn.Secondary}" Content="К библиотеке" Command="{Binding CloseResultsCommand}" />
+                    <Button Style="{StaticResource Btn.Primary}" ctl:Btn.Icon="{StaticResource Icon.Plus}" Content="Установить ещё" Margin="8,0,0,0"
+                            Command="{Binding BrowseFilesCommand}" />
+                </StackPanel>
+            </Grid>
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Margin="0,0,0,12">
+                <ItemsControl ItemsSource="{Binding LastResults}" ItemTemplate="{StaticResource InstallResultItem}" />
+            </ScrollViewer>
+        </Grid>
+    </Grid>
+</UserControl>

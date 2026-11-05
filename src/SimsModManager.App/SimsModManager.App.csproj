@@ -24,6 +24,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Шрифт Inter встроен в программу (лицензия OFL — Fonts/OFL-Inter.txt) -->
+    <Resource Include="Fonts\*.ttf" />
+    <None Include="Fonts\OFL-Inter.txt" CopyToOutputDirectory="Never" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\SimsModManager.Core\SimsModManager.Core.csproj" />
   </ItemGroup>
 

@@ -42,9 +42,18 @@ public static partial class GameOptions
     }
 
     /// <summary>Включает моды и скрипты в Options.ini. Игра в этот момент должна быть закрыта.</summary>
-    public static void EnableMods(SimsPaths paths)
+    public static void EnableMods(SimsPaths paths) => SetModSettings(paths, mods: true, scripts: true);
+
+    /// <summary>
+    /// Меняет настройки модов в Options.ini. null — оставить как есть.
+    /// Игра в этот момент должна быть закрыта, иначе перезапишет файл при выходе.
+    /// </summary>
+    public static void SetModSettings(SimsPaths paths, bool? mods, bool? scripts)
     {
         if (!File.Exists(paths.OptionsIni)) return;
+        var current = ReadModSettings(paths);
+        var wantMods = mods ?? current.ModsEnabled;
+        var wantScripts = scripts ?? current.ScriptModsEnabled;
 
         var text = File.ReadAllText(paths.OptionsIni);
         var newline = text.Contains("\r\n") ? "\r\n" : "\n";
@@ -55,14 +64,15 @@ public static partial class GameOptions
             if (m.Groups[1].Value.Equals("modsdisabled", StringComparison.OrdinalIgnoreCase))
             {
                 sawMods = true;
-                return "modsdisabled = 0";
+                return "modsdisabled = " + (wantMods ? "0" : "1");
             }
             sawScripts = true;
-            return "scriptmodsenabled = 1";
+            return "scriptmodsenabled = " + (wantScripts ? "1" : "0");
         });
 
         // Если строк не было — добавляем их в секцию [options]
-        var additions = (sawMods ? "" : "modsdisabled = 0" + newline) + (sawScripts ? "" : "scriptmodsenabled = 1" + newline);
+        var additions = (sawMods ? "" : "modsdisabled = " + (wantMods ? "0" : "1") + newline)
+                        + (sawScripts ? "" : "scriptmodsenabled = " + (wantScripts ? "1" : "0") + newline);
         if (additions.Length > 0)
         {
             var idx = text.IndexOf("[options]", StringComparison.OrdinalIgnoreCase);

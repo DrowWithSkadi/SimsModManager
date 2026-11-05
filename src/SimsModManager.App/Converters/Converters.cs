@@ -34,3 +34,20 @@ public sealed class EqualsConverter : IValueConverter
             ? result!
             : Binding.DoNothing;
 }
+
+public sealed class InverseBoolConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture) => value is not true;
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) => value is not true;
+}
+
+/// <summary>Видимо, если значение совпадает с параметром (для enum).</summary>
+public sealed class EqualsToVisibilityConverter : IValueConverter
+{
+    public object Convert(object? value, Type targetType, object parameter, CultureInfo culture) =>
+        string.Equals(value?.ToString(), parameter?.ToString(), StringComparison.OrdinalIgnoreCase)
+            ? Visibility.Visible : Visibility.Collapsed;
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) =>
+        throw new NotSupportedException();
+}
