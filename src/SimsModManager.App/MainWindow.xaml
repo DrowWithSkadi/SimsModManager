@@ -100,9 +100,10 @@
 
                 <!-- Уведомления -->
                 <ItemsControl ItemsSource="{Binding Toasts}" ItemTemplate="{StaticResource ToastItem}" VerticalAlignment="Bottom"
-                              HorizontalAlignment="Center" Margin="0,0,0,16" Focusable="False">
+                              HorizontalAlignment="Center" Focusable="False">
                     <ItemsControl.Style>
                         <Style TargetType="ItemsControl">
+                            <Setter Property="Margin" Value="0,0,0,16" />
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding IsMultiSelect}" Value="True">
                                     <Setter Property="Margin" Value="0,0,0,72" />

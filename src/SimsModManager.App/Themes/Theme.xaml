@@ -382,7 +382,8 @@
         </Setter>
     </Style>
 
-    <!-- ═══════════ Переключатель вкл/выкл ═══════════ -->
+    <!-- ═══════════ Переключатель вкл/выкл ═══════════
+         Анимации идут через путь свойства: так WPF сам создаёт изменяемые копии кистей. -->
     <Style x:Key="Switch" TargetType="CheckBox">
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="FocusVisualStyle" Value="{x:Null}" />
@@ -394,18 +395,18 @@
                     <Grid x:Name="Root" Background="Transparent">
                         <Border x:Name="Track" CornerRadius="10" BorderThickness="1">
                             <Border.Background>
-                                <SolidColorBrush x:Name="TrackBrush" Color="{StaticResource C.Hover}" />
+                                <SolidColorBrush Color="{StaticResource C.Hover}" />
                             </Border.Background>
                             <Border.BorderBrush>
-                                <SolidColorBrush x:Name="TrackBorder" Color="{StaticResource C.Border}" />
+                                <SolidColorBrush Color="{StaticResource C.Border}" />
                             </Border.BorderBrush>
                         </Border>
                         <Ellipse x:Name="Knob" Width="14" Height="14" HorizontalAlignment="Left" Margin="3,0,0,0">
                             <Ellipse.Fill>
-                                <SolidColorBrush x:Name="KnobBrush" Color="{StaticResource C.Text}" />
+                                <SolidColorBrush Color="{StaticResource C.Text}" />
                             </Ellipse.Fill>
                             <Ellipse.RenderTransform>
-                                <TranslateTransform x:Name="KnobMove" X="0" />
+                                <TranslateTransform X="0" />
                             </Ellipse.RenderTransform>
                         </Ellipse>
                     </Grid>
@@ -414,24 +415,32 @@
                             <Trigger.EnterActions>
                                 <BeginStoryboard>
                                     <Storyboard>
-                                        <DoubleAnimation Storyboard.TargetName="KnobMove" Storyboard.TargetProperty="X" To="16" Duration="0:0:0.2">
+                                        <DoubleAnimation Storyboard.TargetName="Knob" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
+                                                         To="16" Duration="0:0:0.2">
                                             <DoubleAnimation.EasingFunction><CubicEase EasingMode="EaseOut" /></DoubleAnimation.EasingFunction>
                                         </DoubleAnimation>
-                                        <ColorAnimation Storyboard.TargetName="TrackBrush" Storyboard.TargetProperty="Color" To="{StaticResource C.Accent}" Duration="0:0:0.2" />
-                                        <ColorAnimation Storyboard.TargetName="TrackBorder" Storyboard.TargetProperty="Color" To="{StaticResource C.Accent}" Duration="0:0:0.2" />
-                                        <ColorAnimation Storyboard.TargetName="KnobBrush" Storyboard.TargetProperty="Color" To="{StaticResource C.Background}" Duration="0:0:0.2" />
+                                        <ColorAnimation Storyboard.TargetName="Track" Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                        To="{StaticResource C.Accent}" Duration="0:0:0.2" />
+                                        <ColorAnimation Storyboard.TargetName="Track" Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"
+                                                        To="{StaticResource C.Accent}" Duration="0:0:0.2" />
+                                        <ColorAnimation Storyboard.TargetName="Knob" Storyboard.TargetProperty="(Shape.Fill).(SolidColorBrush.Color)"
+                                                        To="{StaticResource C.Background}" Duration="0:0:0.2" />
                                     </Storyboard>
                                 </BeginStoryboard>
                             </Trigger.EnterActions>
                             <Trigger.ExitActions>
                                 <BeginStoryboard>
                                     <Storyboard>
-                                        <DoubleAnimation Storyboard.TargetName="KnobMove" Storyboard.TargetProperty="X" To="0" Duration="0:0:0.2">
+                                        <DoubleAnimation Storyboard.TargetName="Knob" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
+                                                         To="0" Duration="0:0:0.2">
                                             <DoubleAnimation.EasingFunction><CubicEase EasingMode="EaseOut" /></DoubleAnimation.EasingFunction>
                                         </DoubleAnimation>
-                                        <ColorAnimation Storyboard.TargetName="TrackBrush" Storyboard.TargetProperty="Color" To="{StaticResource C.Hover}" Duration="0:0:0.2" />
-                                        <ColorAnimation Storyboard.TargetName="TrackBorder" Storyboard.TargetProperty="Color" To="{StaticResource C.Border}" Duration="0:0:0.2" />
-                                        <ColorAnimation Storyboard.TargetName="KnobBrush" Storyboard.TargetProperty="Color" To="{StaticResource C.Text}" Duration="0:0:0.2" />
+                                        <ColorAnimation Storyboard.TargetName="Track" Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"
+                                                        To="{StaticResource C.Hover}" Duration="0:0:0.2" />
+                                        <ColorAnimation Storyboard.TargetName="Track" Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"
+                                                        To="{StaticResource C.Border}" Duration="0:0:0.2" />
+                                        <ColorAnimation Storyboard.TargetName="Knob" Storyboard.TargetProperty="(Shape.Fill).(SolidColorBrush.Color)"
+                                                        To="{StaticResource C.Text}" Duration="0:0:0.2" />
                                     </Storyboard>
                                 </BeginStoryboard>
                             </Trigger.ExitActions>
