@@ -16,6 +16,9 @@ jobs:
     defaults:
       run:
         shell: bash
+    env:
+      # Номер версии растёт с каждой сборкой — по нему установленная программа понимает, что есть обновление
+      APP_VERSION: 0.3.${{ github.run_number }}
     steps:
       - uses: actions/checkout@v5
 
@@ -26,13 +29,32 @@ jobs:
       - name: Тесты
         run: dotnet test tests/SimsModManager.Tests/SimsModManager.Tests.csproj -c Release --logger "console;verbosity=normal"
 
-      - name: Сборка exe
-        run: dotnet publish src/SimsModManager.App/SimsModManager.App.csproj -c Release -o publish
+      - name: Сборка программы
+        run: >
+          dotnet publish src/SimsModManager.App/SimsModManager.App.csproj -c Release -o publish
+          -p:PublishSingleFile=false -p:Version=$APP_VERSION
+
+      - name: Установщик (Velopack)
+        run: |
+          # Версия инструмента — та же, что у библиотеки Velopack в программе
+          VPK=$(grep -o '"Velopack/[0-9.]*"' src/SimsModManager.App/obj/project.assets.json | head -1 | cut -d/ -f2 | tr -d '"')
+          echo "Velopack $VPK"
+          dotnet tool install -g vpk --version "$VPK"
+          vpk pack \
+            --packId SimsModManager \
+            --packVersion "$APP_VERSION" \
+            --packDir publish \
+            --mainExe SimsModManager.exe \
+            --packTitle "Sims Mod Manager" \
+            --packAuthors "DrowWithSkadi" \
+            --icon src/SimsModManager.App/Assets/app.ico \
+            --outputDir releases
+          ls -la releases
 
       - uses: actions/upload-artifact@v5
         with:
           name: SimsModManager
-          path: publish/SimsModManager.exe
+          path: releases/*
 
       # Каждый коммит в main обновляет «тестовую сборку» на странице Releases
       - name: Тестовая сборка в Releases
@@ -41,15 +63,17 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release delete dev --cleanup-tag --yes || true
-          gh release create dev publish/SimsModManager.exe \
+          gh release create dev releases/* \
             --prerelease \
             --target "$GITHUB_SHA" \
-            --title "Тестовая сборка" \
-            --notes "Автоматическая сборка последнего коммита ($(git log -1 --format=%h): $(git log -1 --format=%s))."
+            --title "Тестовая сборка $APP_VERSION" \
+            --notes "Скачайте **SimsModManager-win-Setup.exe** и запустите — программа установится, появится в «Пуске» и на рабочем столе и сама будет предлагать обновления (Настройки → Проверить обновления). Без установки: **SimsModManager-win-Portable.zip**.
+
+          Сборка коммита $(git log -1 --format=%h): $(git log -1 --format=%s)"
 
       # Тег вида v1.0.0 — настоящий релиз
       - name: Релиз
         if: startsWith(github.ref, 'refs/tags/v')
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh release create "$GITHUB_REF_NAME" publish/SimsModManager.exe --title "$GITHUB_REF_NAME" --generate-notes
+        run: gh release create "$GITHUB_REF_NAME" releases/* --title "$GITHUB_REF_NAME" --generate-notes

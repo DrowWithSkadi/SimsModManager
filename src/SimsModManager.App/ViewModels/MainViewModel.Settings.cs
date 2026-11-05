@@ -109,9 +109,60 @@ public sealed partial class MainViewModel
         catch (Exception) { /* нет браузера — не страшно */ }
     }
 
+    /// <summary>
+    /// Установленная версия обновляется сама через Velopack (скачивает новую сборку с GitHub
+    /// и перезапускается). Если программа запущена без установки — просто сообщаем о новой версии.
+    /// </summary>
     [RelayCommand]
     private async Task CheckUpdates()
     {
+        try
+        {
+            var mgr = new Velopack.UpdateManager(new Velopack.Sources.GithubSource(RepoUrl, null, true));
+            if (mgr.IsInstalled)
+            {
+                IsCheckingUpdates = true;
+                UpdateStatus = "Проверяем…";
+                var info = await mgr.CheckForUpdatesAsync();
+                if (info is null)
+                {
+                    UpdateStatus = $"У вас последняя версия. Последняя проверка: сегодня, {DateTime.Now:HH:mm}";
+                    return;
+                }
+
+                var version = info.TargetFullRelease.Version.ToString();
+                var answer = await ShowDialogAsync(new DialogViewModel
+                {
+                    Title = "Доступно обновление",
+                    Icon = (System.Windows.Media.Geometry)System.Windows.Application.Current.FindResource("Icon.Download"),
+                    Message = $"Новая версия {version}. Программа скачает её и перезапустится — моды и настройки не затрагиваются.",
+                    PrimaryText = "Обновить",
+                    SecondaryText = "Позже",
+                });
+                if (answer != DialogResult.Primary)
+                {
+                    UpdateStatus = $"Доступна версия {version}";
+                    return;
+                }
+
+                UpdateStatus = "Скачиваем обновление…";
+                await mgr.DownloadUpdatesAsync(info, p => UpdateStatus = $"Скачиваем обновление… {p}%");
+                Shutdown();
+                mgr.ApplyUpdatesAndRestart(info);
+                return;
+            }
+        }
+        catch (Exception ex)
+        {
+            UpdateStatus = "Не удалось обновиться: " + ex.Message;
+            IsCheckingUpdates = false;
+            return;
+        }
+        finally
+        {
+            IsCheckingUpdates = false;
+        }
+
         IsCheckingUpdates = true;
         UpdateStatus = "Проверяем…";
         try

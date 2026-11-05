@@ -7,9 +7,13 @@
     <RootNamespace>SimsModManager.App</RootNamespace>
     <AssemblyName>SimsModManager</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- Значок программы: exe, панель задач, ярлыки -->
+    <ApplicationIcon>Assets\app.ico</ApplicationIcon>
+    <!-- Main пишем сами (нужно для установщика Velopack), поэтому App.xaml — обычная страница -->
+    <StartupObject>SimsModManager.App.App</StartupObject>
   </PropertyGroup>
 
-  <!-- Сборка в один exe, который запускается без установки .NET -->
+  <!-- Сборка без установки .NET. Для установщика CI публикует обычной папкой (PublishSingleFile=false) -->
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <SelfContained>true</SelfContained>
@@ -21,12 +25,21 @@
 
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
+    <!-- Установщик и автообновление через GitHub Releases -->
+    <PackageReference Include="Velopack" Version="0.0.*" />
   </ItemGroup>
 
   <ItemGroup>
     <!-- Шрифт Inter встроен в программу (лицензия OFL — Fonts/OFL-Inter.txt) -->
     <Resource Include="Fonts\*.ttf" />
     <None Include="Fonts\OFL-Inter.txt" CopyToOutputDirectory="Never" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ApplicationDefinition Remove="App.xaml" />
+    <Page Include="App.xaml" />
+    <Resource Include="Assets\logo-mark.png" />
+    <Resource Include="Assets\app.ico" />
   </ItemGroup>
 
   <ItemGroup>
