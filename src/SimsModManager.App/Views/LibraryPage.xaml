@@ -207,7 +207,7 @@
                     </Grid.ColumnDefinitions>
                     <ctl:IconView Data="{StaticResource Icon.ScanSearch}" Foreground="{DynamicResource B.Accent}" Margin="0,0,12,0" />
                     <TextBlock Grid.Column="1" FontSize="12" Foreground="{DynamicResource B.Text}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
-                               Text="{Binding BisectStepText, StringFormat=Идёт поиск мода, который мешает игре · {0}}" />
+                               Text="{Binding BisectStepText, StringFormat='Идёт поиск мода, который мешает игре · {0}'}" />
                     <Button Grid.Column="2" Style="{StaticResource Btn.Primary}" Content="Продолжить" Command="{Binding OpenHealthCommand}" />
                 </Grid>
             </Border>
