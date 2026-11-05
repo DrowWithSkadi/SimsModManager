@@ -54,6 +54,9 @@
                                  IsChecked="{Binding TypeFilter, Converter={StaticResource Equals}, ConverterParameter=Scripts}" />
                     <RadioButton Style="{StaticResource ChipRadio}" Content="Другое" GroupName="Type" Margin="4,0,0,0"
                                  IsChecked="{Binding TypeFilter, Converter={StaticResource Equals}, ConverterParameter=Other}" />
+                    <RadioButton Style="{StaticResource ChipRadio}" Content="Дома и семьи" GroupName="Type" Margin="4,0,0,0"
+                                 ToolTip="Участки, комнаты и персонажи — они лежат в папке Tray"
+                                 IsChecked="{Binding TypeFilter, Converter={StaticResource Equals}, ConverterParameter=Tray}" />
                 </StackPanel>
 
                 <Grid HorizontalAlignment="Left" Visibility="{Binding IsCompact, Converter={StaticResource BoolToVisibility}}">
@@ -78,6 +81,8 @@
                                              IsChecked="{Binding TypeFilter, Converter={StaticResource Equals}, ConverterParameter=Scripts}" />
                                 <RadioButton Style="{StaticResource MenuOption}" Content="Другое" GroupName="TypeMenu"
                                              IsChecked="{Binding TypeFilter, Converter={StaticResource Equals}, ConverterParameter=Other}" />
+                                <RadioButton Style="{StaticResource MenuOption}" Content="Дома и семьи" GroupName="TypeMenu"
+                                             IsChecked="{Binding TypeFilter, Converter={StaticResource Equals}, ConverterParameter=Tray}" />
                             </StackPanel>
                         </Border>
                     </Popup>
@@ -135,7 +140,7 @@
                 <ctl:IconView Data="{StaticResource Icon.Upload}" Foreground="{StaticResource B.Accent}" />
                 <TextBlock Grid.Column="1" Text="Перетащите архивы сюда" FontSize="12" FontWeight="SemiBold" Foreground="{StaticResource B.Text}"
                            VerticalAlignment="Center" Margin="12,0,0,0" />
-                <TextBlock Grid.Column="2" Text="ZIP / RAR / 7z / .package / .ts4script" FontSize="10" Foreground="{StaticResource B.TextMuted}"
+                <TextBlock Grid.Column="2" Text="ZIP / RAR / 7z / .package / .ts4script / дома и семьи" FontSize="10" Foreground="{StaticResource B.TextMuted}"
                            VerticalAlignment="Center" Margin="12,0,0,0" TextTrimming="CharacterEllipsis" />
                 <Button Grid.Column="3" Style="{StaticResource Btn.Secondary}" Content="Выбрать файлы" Command="{Binding BrowseFilesCommand}" />
             </Grid>
@@ -280,7 +285,7 @@
                 <TextBlock Text="Перетащите архивы с модами в это окно" Style="{StaticResource T.Section}" FontSize="20" TextAlignment="Center"
                            TextWrapping="Wrap" Margin="0,20,0,10" />
                 <TextBlock Style="{StaticResource T.Secondary}" TextAlignment="Center" TextWrapping="Wrap" LineHeight="18"
-                           Text="Установим файлы в нужную папку и аккуратно соберём вашу библиотеку. Поддерживаются ZIP, RAR, 7z, .package и .ts4script." />
+                           Text="Моды попадут в Mods, а дома, комнаты и персонажи — в Tray. Поддерживаются ZIP, RAR, 7z, .package, .ts4script и файлы из галереи." />
                 <Button Style="{StaticResource Btn.Primary}" ctl:Btn.Icon="{StaticResource Icon.Plus}" Content="Выбрать файлы" Margin="0,18,0,0"
                         HorizontalAlignment="Center" Command="{Binding BrowseFilesCommand}" />
             </StackPanel>

@@ -3,7 +3,8 @@ using SimsModManager.Core.Dbpf;
 
 namespace SimsModManager.Core.Content;
 
-public enum ModCategory { Unknown, Clothing, Hair, Makeup, Objects, Scripts, Other }
+/// <summary>Тип мода. Новые значения добавляются только в конец — номера хранятся в кеше.</summary>
+public enum ModCategory { Unknown, Clothing, Hair, Makeup, Objects, Scripts, Other, Tray }
 
 /// <summary>Что лежит внутри мода. Считается один раз и кешируется.</summary>
 public sealed record ModContent
@@ -32,6 +33,13 @@ public static class ModAnalyzer
 
     public static (ModContent Content, ModThumbnail? Thumbnail) Analyze(IReadOnlyList<string> files)
     {
+        // Участок, комната или семья для папки Tray
+        if (files.Count > 0 && files.All(ModFiles.IsTrayFile))
+        {
+            var trayThumb = FindTrayThumbnail(files);
+            return (new ModContent { Category = ModCategory.Tray, HasThumbnail = trayThumb is not null }, trayThumb);
+        }
+
         var packages = files.Where(ModFiles.IsPackage).ToList();
         var hasScripts = files.Any(ModFiles.IsScript);
 
@@ -107,6 +115,42 @@ public static class ModAnalyzer
             }
         }
         return null;
+    }
+
+    /// <summary>
+    /// Превью участка, комнаты или персонажа: внутри .bpi/.rmi/.hhi/.sgi после небольшого
+    /// служебного заголовка лежит обычная картинка JPEG или PNG — ищем её начало.
+    /// </summary>
+    private static ModThumbnail? FindTrayThumbnail(IReadOnlyList<string> files)
+    {
+        string[] imageExts = [".bpi", ".rmi", ".hhi", ".sgi"];
+        var candidates = files
+            .Where(f => imageExts.Contains(Path.GetExtension(f).ToLowerInvariant()))
+            .OrderBy(f => Array.IndexOf(imageExts, Path.GetExtension(f).ToLowerInvariant()));
+
+        foreach (var file in candidates)
+        {
+            try
+            {
+                var info = new FileInfo(file);
+                if (info.Length > 16 * 1024 * 1024) continue;
+                var data = File.ReadAllBytes(file);
+                var start = FindImageStart(data);
+                if (start >= 0) return new ModThumbnail(data[start..], null);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
+        }
+        return null;
+    }
+
+    internal static int FindImageStart(byte[] data)
+    {
+        for (var i = 0; i + 8 < data.Length && i < 4096; i++)
+        {
+            if (data[i] == 0xFF && data[i + 1] == 0xD8 && data[i + 2] == 0xFF) return i;
+            if (data[i] == 0x89 && data[i + 1] == 'P' && data[i + 2] == 'N' && data[i + 3] == 'G') return i;
+        }
+        return -1;
     }
 
     /// <summary>

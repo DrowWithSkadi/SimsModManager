@@ -14,6 +14,10 @@ public sealed record InstallResult(
     int FileCount,
     string? Message = null)
 {
+    /// <summary>Сколько файлов участка/комнаты/семьи ушло в папку Tray.</summary>
+    public int TrayFileCount { get; init; }
+    public TrayKind? TrayKind { get; init; }
+
     public bool Succeeded => Status is InstallStatus.Installed or InstallStatus.Updated;
 }
 
@@ -49,9 +53,9 @@ public sealed class ModInstaller(SimsPaths paths, IArchiveExtractor extractor)
         if (!isDir && !File.Exists(source))
             return new(source, null, InstallStatus.Failed, 0, "Файл не найден.");
 
-        if (!isDir && !ModFiles.IsArchive(source) && !ModFiles.IsModFile(source))
+        if (!isDir && !ModFiles.IsArchive(source) && !ModFiles.IsModFile(source) && !ModFiles.IsTrayFile(source))
             return new(source, null, InstallStatus.Skipped, 0,
-                "Это не мод и не архив (поддерживаются .zip, .rar, .7z, .package, .ts4script).");
+                "Это не мод и не архив (поддерживаются .zip, .rar, .7z, .package, .ts4script и файлы участков/семей).");
 
         var modName = ModFiles.SanitizeName(isDir
             ? new DirectoryInfo(source).Name
@@ -61,22 +65,39 @@ public sealed class ModInstaller(SimsPaths paths, IArchiveExtractor extractor)
         try
         {
             var files = new List<string>();
+            var trayFiles = new List<string>();
             if (isDir)
-                Collect(source, files, workDir, 0);
+                Collect(source, files, trayFiles, workDir, 0);
             else if (ModFiles.IsModFile(source))
                 files.Add(source);
+            else if (ModFiles.IsTrayFile(source))
+                trayFiles.Add(source);
             else
             {
                 var extracted = Path.Combine(workDir, "a");
                 extractor.ExtractAll(source, extracted);
-                Collect(extracted, files, workDir, 1);
+                Collect(extracted, files, trayFiles, workDir, 1);
             }
 
-            if (files.Count == 0)
-                return new(source, modName, InstallStatus.Failed, 0, "Внутри нет файлов модов (.package или .ts4script).");
+            if (files.Count == 0 && trayFiles.Count == 0)
+                return new(source, modName, InstallStatus.Failed, 0,
+                    "Внутри нет ни модов (.package, .ts4script), ни участков или персонажей для «Библиотеки».");
 
-            var updated = Place(modName, files);
-            return new(source, modName, updated ? InstallStatus.Updated : InstallStatus.Installed, files.Count);
+            // Моды — в Mods\Название\, участки/комнаты/семьи — прямо в Tray.
+            var updated = false;
+            if (files.Count > 0) updated |= Place(modName, files);
+            TrayKind? trayKind = null;
+            if (trayFiles.Count > 0)
+            {
+                updated |= PlaceTray(modName, trayFiles);
+                trayKind = ModFiles.DetectTrayKind(trayFiles);
+            }
+
+            return new(source, modName, updated ? InstallStatus.Updated : InstallStatus.Installed, files.Count)
+            {
+                TrayFileCount = trayFiles.Count,
+                TrayKind = trayKind,
+            };
         }
         catch (ArchiveExtractionException ex)
         {
@@ -94,7 +115,7 @@ public sealed class ModInstaller(SimsPaths paths, IArchiveExtractor extractor)
     }
 
     /// <summary>Находит файлы мода в папке, заодно распаковывая вложенные архивы.</summary>
-    private void Collect(string dir, List<string> files, string workDir, int depth)
+    private void Collect(string dir, List<string> files, List<string> trayFiles, string workDir, int depth)
     {
         foreach (var file in Directory.EnumerateFiles(dir, "*", SearchOption.AllDirectories).OrderBy(f => f, StringComparer.OrdinalIgnoreCase))
         {
@@ -104,13 +125,17 @@ public sealed class ModInstaller(SimsPaths paths, IArchiveExtractor extractor)
             {
                 files.Add(file);
             }
+            else if (ModFiles.IsTrayFile(file))
+            {
+                trayFiles.Add(file);
+            }
             else if (ModFiles.IsArchive(file) && depth < MaxNestedArchiveDepth)
             {
                 var nested = Path.Combine(workDir, "n" + Guid.NewGuid().ToString("N")[..8]);
                 try
                 {
                     extractor.ExtractAll(file, nested);
-                    Collect(nested, files, workDir, depth + 1);
+                    Collect(nested, files, trayFiles, workDir, depth + 1);
                 }
                 catch (ArchiveExtractionException)
                 {
@@ -181,6 +206,59 @@ public sealed class ModInstaller(SimsPaths paths, IArchiveExtractor extractor)
             TryDeleteDirectory(staging);
             TryDeleteDirectory(Path.Combine(paths.Root, ".modmanager-staging"), onlyIfEmpty: true);
         }
+    }
+
+    /// <summary>
+    /// Кладёт файлы участка/комнаты/семьи прямо в Tray (игра не смотрит в подпапки Tray)
+    /// и запоминает их в списке, чтобы потом можно было выключить или удалить всё вместе.
+    /// </summary>
+    /// <returns>true, если такая загрузка уже была и мы её обновили.</returns>
+    private bool PlaceTray(string name, List<string> trayFiles)
+    {
+        paths.EnsureTrayCreated();
+        var manifest = TrayManifest.Load(paths);
+        var existing = manifest.Entries.FirstOrDefault(e => e.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+
+        // Старые файлы прошлой версии убираем (и из Tray, и из выключенных).
+        if (existing is not null)
+        {
+            foreach (var old in existing.Files)
+            {
+                TryDeleteFile(Path.Combine(paths.Tray, old));
+                TryDeleteFile(Path.Combine(paths.DisabledTray, old));
+            }
+            manifest.Entries.Remove(existing);
+        }
+
+        var names = new List<string>();
+        foreach (var file in trayFiles)
+        {
+            var fileName = Path.GetFileName(file);
+            if (names.Contains(fileName, StringComparer.OrdinalIgnoreCase)) continue;
+            File.Copy(file, Path.Combine(paths.Tray, fileName), overwrite: true);
+            names.Add(fileName);
+
+            // Если этот файл раньше числился за другой загрузкой — теперь он наш.
+            foreach (var other in manifest.Entries)
+                other.Files.RemoveAll(f => f.Equals(fileName, StringComparison.OrdinalIgnoreCase));
+        }
+        manifest.Entries.RemoveAll(e => e.Files.Count == 0);
+
+        manifest.Entries.Add(new TrayEntry
+        {
+            Name = name,
+            Kind = ModFiles.DetectTrayKind(names),
+            Files = names,
+            InstalledAt = DateTime.Now,
+        });
+        manifest.Save(paths);
+        return existing is not null;
+    }
+
+    private static void TryDeleteFile(string path)
+    {
+        try { if (File.Exists(path)) File.Delete(path); }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
     }
 
     private static void DeleteEntry(string path)

@@ -16,6 +16,7 @@ public sealed partial class ModItemViewModel : ObservableObject
         Model = model;
         _isEnabled = model.IsEnabled;
         _problems = model.Problems;
+        if (model.IsTray) _category = ModCategory.Tray;
     }
 
     public ModItem Model { get; private set; }
@@ -25,11 +26,20 @@ public sealed partial class ModItemViewModel : ObservableObject
     public long SizeBytes => Model.SizeBytes;
     public DateTime InstalledAt => Model.InstalledAt;
 
+    public bool IsTray => Model.IsTray;
+
     public string DetailsText
     {
         get
         {
             var parts = new List<string>();
+            if (Model.IsTray)
+            {
+                parts.Add(Text.Plural(Model.Files.Count, "файл", "файла", "файлов") + " в Tray");
+                parts.Add(Text.Size(Model.SizeBytes));
+                parts.Add(Model.InstalledAt.ToString("dd.MM.yyyy"));
+                return string.Join(" · ", parts);
+            }
             if (Model.PackageCount > 0) parts.Add(Text.Plural(Model.PackageCount, "файл", "файла", "файлов") + " .package");
             if (Model.ScriptCount > 0) parts.Add(Text.Plural(Model.ScriptCount, "скрипт", "скрипта", "скриптов"));
             parts.Add(Text.Size(Model.SizeBytes));
@@ -52,6 +62,7 @@ public sealed partial class ModItemViewModel : ObservableObject
         ModCategory.Objects => "Объекты",
         ModCategory.Scripts => "Скрипты",
         ModCategory.Other => "Другое",
+        ModCategory.Tray => ModFiles.TrayKindName(Model.TrayKind),
         _ => "",
     };
 
@@ -67,7 +78,7 @@ public sealed partial class ModItemViewModel : ObservableObject
     public bool HasThumbnail => Thumbnail is not null;
 
     /// <summary>Для модов без картинки: скрипт показываем значком кода, остальное — значком картинки.</summary>
-    public bool IsScriptOnly => Model.HasScripts && Model.PackageCount == 0 || Category == ModCategory.Scripts;
+    public bool IsScriptOnly => !Model.IsTray && (Model.HasScripts && Model.PackageCount == 0 || Category == ModCategory.Scripts);
 
     // ---------- Проблемы ----------
 

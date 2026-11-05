@@ -41,7 +41,7 @@ public sealed partial class MainViewModel
         {
             Title = "Выберите архивы или файлы модов",
             Multiselect = true,
-            Filter = "Моды и архивы|*.zip;*.rar;*.7z;*.package;*.ts4script|Все файлы|*.*",
+            Filter = "Моды, дома и архивы|*.zip;*.rar;*.7z;*.package;*.ts4script;*.trayitem;*.blueprint;*.bpi;*.room;*.rmi;*.householdbinary;*.hhi;*.sgi|Все файлы|*.*",
             InitialDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads"),
         };
         if (dialog.ShowDialog() == true)
@@ -135,11 +135,21 @@ public sealed class InstallResultViewModel(InstallResult result)
 
     public string Message => result.Status switch
     {
-        InstallStatus.Installed => "Установлен · " + Text.Plural(result.FileCount, "файл", "файла", "файлов"),
-        InstallStatus.Updated => "Обновлён · " + Text.Plural(result.FileCount, "файл", "файла", "файлов"),
+        InstallStatus.Installed => "Установлен · " + Where(),
+        InstallStatus.Updated => "Обновлён · " + Where(),
         InstallStatus.Skipped => result.Message ?? "Пропущен",
         _ => result.Message ?? "Ошибка",
     };
+
+    /// <summary>«3 файла в Mods · участок в Tray».</summary>
+    private string Where()
+    {
+        var parts = new List<string>();
+        if (result.FileCount > 0) parts.Add(Text.Plural(result.FileCount, "файл", "файла", "файлов") + " в Mods");
+        if (result.TrayFileCount > 0 && result.TrayKind is { } kind)
+            parts.Add(ModFiles.TrayKindName(kind).ToLowerInvariant() + " в Tray");
+        return string.Join(" · ", parts);
+    }
 
     public Geometry Icon => result.Status switch
     {

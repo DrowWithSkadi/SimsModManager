@@ -1,6 +1,10 @@
 namespace SimsModManager.Core;
 
-/// <summary>Один мод: папка внутри Mods или отдельный файл, лежащий прямо в Mods.</summary>
+public enum ModKind { Mod, Tray }
+
+/// <summary>
+/// Один элемент списка: мод (папка или файл в Mods) либо участок/комната/семья в Tray.
+/// </summary>
 public sealed record ModItem(
     string Name,
     string Path,
@@ -13,6 +17,12 @@ public sealed record ModItem(
 {
     /// <summary>Когда мод появился в папке (для сортировки «по дате установки»).</summary>
     public DateTime InstalledAt { get; init; } = ModifiedAt;
+
+    public ModKind Kind { get; init; } = ModKind.Mod;
+    public TrayKind TrayKind { get; init; }
+    /// <summary>Номер записи в списке Tray (для участков и семей).</summary>
+    public string? TrayId { get; init; }
+    public bool IsTray => Kind == ModKind.Tray;
 
     public int PackageCount => Files.Count(ModFiles.IsPackage);
     public int ScriptCount => Files.Count(ModFiles.IsScript);
@@ -44,6 +54,7 @@ public sealed class ModLibrary(SimsPaths paths, IFileDeleter? deleter = null)
         var items = new List<ModItem>();
         items.AddRange(ScanFolder(paths.Mods, enabled: true));
         items.AddRange(ScanFolder(paths.DisabledMods, enabled: false));
+        items.AddRange(ScanTray());
         return items.OrderBy(i => i.Name, StringComparer.CurrentCultureIgnoreCase).ToList();
     }
 
@@ -92,6 +103,47 @@ public sealed class ModLibrary(SimsPaths paths, IFileDeleter? deleter = null)
         }
     }
 
+    /// <summary>Участки, комнаты и семьи, установленные через менеджер.</summary>
+    private IEnumerable<ModItem> ScanTray()
+    {
+        if (!File.Exists(paths.TrayManifest)) return [];
+        var manifest = TrayManifest.Load(paths);
+        var result = new List<ModItem>();
+        var changed = false;
+
+        foreach (var entry in manifest.Entries.ToList())
+        {
+            var folder = entry.Enabled ? paths.Tray : paths.DisabledTray;
+            var files = entry.Files.Select(f => System.IO.Path.Combine(folder, f)).Where(File.Exists).ToList();
+            if (files.Count == 0)
+            {
+                // Файлы удалили вручную — забываем запись.
+                manifest.Entries.Remove(entry);
+                changed = true;
+                continue;
+            }
+            var infos = files.Select(f => new FileInfo(f)).ToList();
+            result.Add(new ModItem(entry.Name, TrayPath(entry.Id), entry.Enabled, IsFolder: false, files,
+                infos.Sum(i => i.Length), infos.Max(i => i.LastWriteTime), [])
+            {
+                InstalledAt = entry.InstalledAt,
+                Kind = ModKind.Tray,
+                TrayKind = entry.Kind,
+                TrayId = entry.Id,
+            });
+        }
+
+        if (changed)
+        {
+            try { manifest.Save(paths); }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
+        }
+        return result;
+    }
+
+    /// <summary>Условный «путь» элемента Tray — по нему элементы различаются в списке.</summary>
+    private string TrayPath(string id) => System.IO.Path.Combine(paths.Tray, "#" + id);
+
     /// <summary>Частые ошибки ручной установки, из-за которых мод не работает.</summary>
     private static IReadOnlyList<string> FindProblems(string modDir, List<string> files)
     {
@@ -107,6 +159,7 @@ public sealed class ModLibrary(SimsPaths paths, IFileDeleter? deleter = null)
     public ModItem SetEnabled(ModItem mod, bool enabled)
     {
         if (mod.IsEnabled == enabled) return mod;
+        if (mod.IsTray) return SetTrayEnabled(mod, enabled);
 
         var targetRoot = enabled ? paths.Mods : paths.DisabledMods;
         Directory.CreateDirectory(targetRoot);
@@ -126,10 +179,53 @@ public sealed class ModLibrary(SimsPaths paths, IFileDeleter? deleter = null)
         return mod with { Path = target, IsEnabled = enabled, Files = newFiles };
     }
 
+    /// <summary>Выключенный участок/семья переезжает в «Tray (выключенные)» — игра его не видит.</summary>
+    private ModItem SetTrayEnabled(ModItem mod, bool enabled)
+    {
+        paths.EnsureTrayCreated();
+        var targetRoot = enabled ? paths.Tray : paths.DisabledTray;
+        var conflict = mod.Files.FirstOrDefault(f => File.Exists(System.IO.Path.Combine(targetRoot, System.IO.Path.GetFileName(f))));
+        if (conflict is not null)
+            throw new InvalidOperationException($"В папке {(enabled ? "Tray" : "выключенных")} уже есть файл {System.IO.Path.GetFileName(conflict)}.");
+
+        var moved = new List<string>();
+        foreach (var file in mod.Files)
+        {
+            var target = System.IO.Path.Combine(targetRoot, System.IO.Path.GetFileName(file));
+            File.Move(file, target);
+            moved.Add(target);
+        }
+
+        var manifest = TrayManifest.Load(paths);
+        var entry = manifest.Entries.FirstOrDefault(e => e.Id == mod.TrayId);
+        if (entry is not null)
+        {
+            entry.Enabled = enabled;
+            manifest.Save(paths);
+        }
+        return mod with { IsEnabled = enabled, Files = moved };
+    }
+
     public void Delete(ModItem mod)
     {
+        if (mod.IsTray)
+        {
+            foreach (var f in mod.Files) _deleter.DeleteFile(f);
+            RemoveTrayEntry(mod.TrayId);
+            return;
+        }
         if (mod.IsFolder) _deleter.DeleteDirectory(mod.Path);
         else _deleter.DeleteFile(mod.Path);
+    }
+
+    private TrayEntry? RemoveTrayEntry(string? id)
+    {
+        var manifest = TrayManifest.Load(paths);
+        var entry = manifest.Entries.FirstOrDefault(e => e.Id == id);
+        if (entry is null) return null;
+        manifest.Entries.Remove(entry);
+        manifest.Save(paths);
+        return entry;
     }
 
     // ---------- Удаление с возможностью отмены ----------
@@ -144,6 +240,17 @@ public sealed class ModLibrary(SimsPaths paths, IFileDeleter? deleter = null)
     {
         var holder = System.IO.Path.Combine(TrashRoot, Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(holder);
+
+        if (mod.IsTray)
+        {
+            // Папка с понятным именем — так элемент и окажется в корзине Windows.
+            var box = System.IO.Path.Combine(holder, ModFiles.SanitizeName(mod.Name));
+            Directory.CreateDirectory(box);
+            foreach (var file in mod.Files)
+                File.Move(file, System.IO.Path.Combine(box, System.IO.Path.GetFileName(file)));
+            return new TrashedMod(mod, box) { TrayEntry = RemoveTrayEntry(mod.TrayId) };
+        }
+
         var target = System.IO.Path.Combine(holder, System.IO.Path.GetFileName(mod.Path));
         if (mod.IsFolder) Directory.Move(mod.Path, target);
         else File.Move(mod.Path, target);
@@ -152,6 +259,11 @@ public sealed class ModLibrary(SimsPaths paths, IFileDeleter? deleter = null)
 
     public void UndoDelete(TrashedMod trashed)
     {
+        if (trashed.Mod.IsTray)
+        {
+            UndoTrayDelete(trashed);
+            return;
+        }
         var original = trashed.Mod.Path;
         if (Directory.Exists(original) || File.Exists(original))
             throw new InvalidOperationException($"Не получилось вернуть: «{trashed.Mod.Name}» уже снова есть в папке.");
@@ -161,9 +273,37 @@ public sealed class ModLibrary(SimsPaths paths, IFileDeleter? deleter = null)
         CleanupHolder(trashed);
     }
 
+    private void UndoTrayDelete(TrashedMod trashed)
+    {
+        paths.EnsureTrayCreated();
+        foreach (var file in trashed.Mod.Files)
+        {
+            var name = System.IO.Path.GetFileName(file);
+            var from = System.IO.Path.Combine(trashed.TrashPath, name);
+            if (!File.Exists(from)) continue;
+            if (File.Exists(file))
+                throw new InvalidOperationException($"Не получилось вернуть: файл {name} уже снова есть в папке.");
+            File.Move(from, file);
+        }
+        if (trashed.TrayEntry is not null)
+        {
+            var manifest = TrayManifest.Load(paths);
+            manifest.Entries.Add(trashed.TrayEntry);
+            manifest.Save(paths);
+        }
+        TryDeleteEmpty(trashed.TrashPath);
+        CleanupHolder(trashed);
+    }
+
     /// <summary>Окончательно удаляет мод (в корзину Windows или насовсем — зависит от IFileDeleter).</summary>
     public void FinishDelete(TrashedMod trashed)
     {
+        if (trashed.Mod.IsTray)
+        {
+            if (Directory.Exists(trashed.TrashPath)) _deleter.DeleteDirectory(trashed.TrashPath);
+            CleanupHolder(trashed);
+            return;
+        }
         if (trashed.Mod.IsFolder) _deleter.DeleteDirectory(trashed.TrashPath);
         else _deleter.DeleteFile(trashed.TrashPath);
         CleanupHolder(trashed);
@@ -213,7 +353,7 @@ public sealed class ModLibrary(SimsPaths paths, IFileDeleter? deleter = null)
     public static IReadOnlyDictionary<string, IReadOnlyList<string>> FindDuplicates(IEnumerable<ModItem> mods)
     {
         var byFile = new Dictionary<(string Name, long Size), List<ModItem>>();
-        foreach (var mod in mods.Where(m => m.IsEnabled))
+        foreach (var mod in mods.Where(m => m.IsEnabled && !m.IsTray))
         {
             foreach (var file in mod.Files)
             {
@@ -241,4 +381,8 @@ public sealed class ModLibrary(SimsPaths paths, IFileDeleter? deleter = null)
     }
 }
 
-public sealed record TrashedMod(ModItem Mod, string TrashPath);
+public sealed record TrashedMod(ModItem Mod, string TrashPath)
+{
+    /// <summary>Для участков и семей — запись из списка Tray, чтобы вернуть её при отмене.</summary>
+    public TrayEntry? TrayEntry { get; init; }
+}

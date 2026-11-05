@@ -24,6 +24,9 @@
             <DataTrigger Binding="{Binding IsScriptOnly}" Value="True">
                 <Setter TargetName="PlaceholderIcon" Property="Data" Value="{StaticResource Icon.FileCode}" />
             </DataTrigger>
+            <DataTrigger Binding="{Binding IsTray}" Value="True">
+                <Setter TargetName="PlaceholderIcon" Property="Data" Value="{StaticResource Icon.House}" />
+            </DataTrigger>
             <DataTrigger Binding="{Binding HasThumbnail}" Value="True">
                 <Setter TargetName="Pic" Property="Visibility" Value="Visible" />
                 <Setter TargetName="Placeholder" Property="Visibility" Value="Collapsed" />

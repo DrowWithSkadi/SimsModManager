@@ -16,7 +16,7 @@ using SimsModManager.Core.Content;
 namespace SimsModManager.App.ViewModels;
 
 public enum StateFilter { All, Enabled, Disabled }
-public enum TypeFilter { All, Clothing, Hair, Makeup, Objects, Scripts, Other }
+public enum TypeFilter { All, Clothing, Hair, Makeup, Objects, Scripts, Other, Tray }
 public enum AppPage { Library, InstallResult, Settings, NotFound }
 
 /// <summary>
@@ -224,7 +224,9 @@ public sealed partial class MainViewModel : ObservableObject
         if (mod is null) return;
         try
         {
-            if (mod.Model.IsFolder) OpenInExplorer(mod.Model.Path);
+            if (mod.Model.IsTray && mod.Model.Files.Count > 0)
+                Process.Start(new ProcessStartInfo("explorer.exe", $"/select,\"{mod.Model.Files[0]}\"") { UseShellExecute = true });
+            else if (mod.Model.IsFolder) OpenInExplorer(mod.Model.Path);
             else Process.Start(new ProcessStartInfo("explorer.exe", $"/select,\"{mod.Model.Path}\"") { UseShellExecute = true });
         }
         catch (Exception ex) when (ex is Win32Exception or InvalidOperationException) { }
@@ -393,6 +395,7 @@ public sealed partial class MainViewModel : ObservableObject
         TypeFilter.Objects => "Тип: объекты",
         TypeFilter.Scripts => "Тип: скрипты",
         TypeFilter.Other => "Тип: другое",
+        TypeFilter.Tray => "Тип: дома и семьи",
         _ => "Тип: все",
     };
 
@@ -416,6 +419,7 @@ public sealed partial class MainViewModel : ObservableObject
             TypeFilter.Objects => mod.Category == ModCategory.Objects,
             TypeFilter.Scripts => mod.Category == ModCategory.Scripts || mod.HasScripts,
             TypeFilter.Other => mod.Category is ModCategory.Other or ModCategory.Unknown,
+            TypeFilter.Tray => mod.IsTray,
             _ => true,
         };
         if (!typeOk) return false;

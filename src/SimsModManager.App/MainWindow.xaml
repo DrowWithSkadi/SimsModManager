@@ -138,7 +138,7 @@
                     <Border Style="{StaticResource Tag}" Background="{StaticResource B.AccentSubtle}" HorizontalAlignment="Center" Height="22" Padding="10,0">
                         <TextBlock Style="{StaticResource TagText}" Text="{Binding DragCountText}" Foreground="{StaticResource B.Accent}" FontSize="11" />
                     </Border>
-                    <TextBlock Text="ZIP / RAR / 7z / .package / .ts4script" Style="{StaticResource T.Secondary}" HorizontalAlignment="Center" Margin="0,12,0,0" />
+                    <TextBlock Text="Моды — в Mods, дома и персонажи — в Tray" Style="{StaticResource T.Secondary}" HorizontalAlignment="Center" Margin="0,12,0,0" />
                 </StackPanel>
             </Grid>
 
