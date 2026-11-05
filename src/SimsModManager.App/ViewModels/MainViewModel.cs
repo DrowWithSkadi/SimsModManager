@@ -342,7 +342,7 @@ public sealed partial class MainViewModel : ObservableObject
         UpdateSummary();
         StartAnalysis();
         CheckGameVersion();
-        _ = RunHealthCheck();
+        _ = RunHealthCheckAsync(newModNames);
     }
 
     /// <summary>В фоне разбираем файлы модов: тип и картинка. Уже разобранное берём из кеша.</summary>

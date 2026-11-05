@@ -83,13 +83,23 @@ public sealed partial class ModItemViewModel : ObservableObject
     // ---------- Проблемы ----------
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(HasProblems), nameof(ProblemsText))]
+    [NotifyPropertyChangedFor(nameof(HasProblems), nameof(ProblemsText), nameof(ShowOldWarning))]
     private IReadOnlyList<string> _problems;
 
     public bool HasProblems => Problems.Count > 0;
     public string ProblemsText => string.Join(Environment.NewLine, Problems);
 
     [ObservableProperty] private bool _isDuplicate;
+
+    /// <summary>Причины красного флажка (из проверки модов) или null, если всё хорошо.</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasHealthFlag), nameof(ShowOldWarning))]
+    private string? _healthFlag;
+
+    public bool HasHealthFlag => HealthFlag is not null;
+
+    /// <summary>Старый жёлтый значок — только если проверка ещё ничего не сказала.</summary>
+    public bool ShowOldWarning => HasProblems && !HasHealthFlag;
 
     /// <summary>Настройки вещей менялись в менеджере (есть копия оригинала).</summary>
     [ObservableProperty] private bool _isModified;

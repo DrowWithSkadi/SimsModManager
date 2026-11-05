@@ -67,7 +67,10 @@ public sealed partial class MainViewModel
 
     /// <summary>Проверка идёт в фоне: после запуска, установки и по кнопке «Проверить снова».</summary>
     [RelayCommand]
-    private async Task RunHealthCheck()
+    private Task RunHealthCheck() => RunHealthCheckAsync(null);
+
+    /// <param name="newModNames">Только что установленные моды — если с ними проблема, сразу предупреждаем.</param>
+    private async Task RunHealthCheckAsync(ICollection<string>? newModNames)
     {
         if (_library is null) return;
         _healthCts?.Cancel();
@@ -83,6 +86,7 @@ public sealed partial class MainViewModel
             var report = await Task.Run(() => checker.Check(mods, progress, cts.Token), cts.Token);
             if (cts.IsCancellationRequested) return;
             ApplyHealthReport(report);
+            if (newModNames is { Count: > 0 }) await WarnAboutNewModsAsync(newModNames);
         }
         catch (OperationCanceledException)
         {
@@ -114,6 +118,49 @@ public sealed partial class MainViewModel
     {
         HealthProblemCount = HealthIssues.Count(i => i.Issue.Severity != HealthSeverity.Info);
         OnPropertyChanged(nameof(ShowHealthAllGood));
+        UpdateModFlags();
+    }
+
+    /// <summary>Красный флажок у модов в списке: причины — в подсказке при наведении.</summary>
+    private void UpdateModFlags()
+    {
+        var reasons = new Dictionary<ModItemViewModel, List<string>>();
+        foreach (var issue in HealthIssues.Where(i => i.Issue.Severity != HealthSeverity.Info))
+        foreach (var row in issue.Mods)
+        {
+            if (!reasons.TryGetValue(row.Mod, out var list)) reasons[row.Mod] = list = [];
+            list.Add(issue.FlagReason(row));
+        }
+        foreach (var mod in Mods)
+            mod.HealthFlag = reasons.TryGetValue(mod, out var list) ? string.Join(Environment.NewLine + Environment.NewLine, list) : null;
+    }
+
+    /// <summary>После установки: если новый мод с чем-то конфликтует — сразу говорим и предлагаем решение.</summary>
+    private async Task WarnAboutNewModsAsync(ICollection<string> newModNames)
+    {
+        var issues = HealthIssues
+            .Where(i => i.Issue.Severity != HealthSeverity.Info && i.Mods.Any(r => newModNames.Contains(r.Name)))
+            .ToList();
+        if (issues.Count == 0) return;
+
+        var first = issues[0];
+        var newMods = issues.SelectMany(i => i.Mods).Select(r => r.Mod).Where(m => newModNames.Contains(m.Name)).Distinct().ToList();
+        var single = newMods.Count == 1 ? newMods[0] : null;
+
+        var answer = await ShowDialogAsync(new DialogViewModel
+        {
+            Title = issues.Count == 1 ? first.Title : $"С новыми модами {Text.Plural(issues.Count, "проблема", "проблемы", "проблем")}",
+            Icon = (System.Windows.Media.Geometry)System.Windows.Application.Current.FindResource("Icon.Flag"),
+            IconIsDanger = true,
+            Message = issues.Count == 1 ? first.Explanation : string.Join(Environment.NewLine, issues.Take(4).Select(i => "• " + i.Title)),
+            Message2 = issues.Count == 1 ? first.Advice : "Проблемные моды отмечены в списке красным флажком — наведите на него, чтобы увидеть причину.",
+            PrimaryText = single is not null && single.IsEnabled ? $"Выключить «{single.Name}»" : "Посмотреть",
+            ExtraText = single is not null ? "Подробнее" : null,
+            SecondaryText = "Оставить как есть",
+        });
+
+        if (answer == DialogResult.Primary && single is { IsEnabled: true }) await IssueDisableMod(single);
+        else if (answer is DialogResult.Primary or DialogResult.Extra) Page = AppPage.Health;
     }
 
     /// <summary>Мод выключили или удалили — связанные с ним проблемы больше не актуальны.</summary>
@@ -525,6 +572,24 @@ public sealed partial class HealthIssueViewModel : ObservableObject
     [ObservableProperty] private bool _detailsExpanded;
 
     public bool Involves(ModItemViewModel mod) => Mods.Any(r => r.Mod == mod);
+
+    /// <summary>Короткая причина для подсказки у флажка в списке.</summary>
+    public string FlagReason(HealthModRow row)
+    {
+        var others = Mods.Where(r => r != row).Select(r => $"«{r.Name}»").ToList();
+        var text = Issue.Kind switch
+        {
+            HealthIssueKind.Conflict => $"Мешает моду {string.Join(", ", others)}: оба меняют одно и то же, работать будет только один.",
+            HealthIssueKind.ScriptConflict => $"Похоже на другую версию {string.Join(", ", others)} — две копии скрипта мешают друг другу.",
+            HealthIssueKind.Duplicate => $"Установлен ещё раз как {string.Join(", ", others)}.",
+            HealthIssueKind.TooDeep => "Файлы лежат слишком глубоко в папках — игра мод не видит.",
+            HealthIssueKind.Broken => "Файл повреждён — скорее всего, недокачался.",
+            HealthIssueKind.CausesErrors => "Из-за этого мода в игре были ошибки.",
+            _ => Issue.Title,
+        };
+        if (row.IsSuggested) text += " Лучше убрать именно этот.";
+        return text;
+    }
 }
 
 public sealed record HealthModRow(ModItemViewModel Mod, bool IsSuggested)

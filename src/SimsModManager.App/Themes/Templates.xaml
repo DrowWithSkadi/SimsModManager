@@ -44,8 +44,32 @@
     <!-- ═══════════ Метки типа ═══════════ -->
     <DataTemplate x:Key="ModTags" DataType="{x:Type vm:ModItemViewModel}">
         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+            <!-- Красный флажок: проверка нашла проблему. Подсказка — причина, клик — экран проверки. -->
+            <Button Cursor="Hand" Margin="0,0,6,0" ToolTipService.InitialShowDelay="150" ToolTipService.ShowDuration="30000"
+                    Command="{Binding DataContext.OpenHealthCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                    b:Anim.Show="{Binding HasHealthFlag}" b:Anim.Offset="0">
+                <Button.ToolTip>
+                    <StackPanel MaxWidth="320">
+                        <TextBlock Text="Проблема с модом" FontWeight="SemiBold" Margin="0,0,0,4" />
+                        <TextBlock Text="{Binding HealthFlag}" TextWrapping="Wrap" />
+                        <TextBlock Text="Нажмите, чтобы решить" Opacity="0.6" Margin="0,6,0,0" />
+                    </StackPanel>
+                </Button.ToolTip>
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bd" Width="20" Height="20" CornerRadius="5" Background="{DynamicResource B.Error}">
+                            <ctl:IconView Data="{StaticResource Icon.Flag}" Foreground="White" Width="12" Height="12" StrokeThickness="2.2" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Opacity" Value="0.85" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
             <Border Background="Transparent" Padding="2" Margin="0,0,6,0" ToolTip="{Binding ProblemsText}" ToolTipService.InitialShowDelay="200"
-                    Visibility="{Binding HasProblems, Converter={StaticResource BoolToVisibility}}">
+                    Visibility="{Binding ShowOldWarning, Converter={StaticResource BoolToVisibility}}">
                 <ctl:IconView Data="{StaticResource Icon.TriangleAlert}" Foreground="{DynamicResource B.Warning}" Width="14" Height="14" />
             </Border>
             <Border Style="{StaticResource Tag}" Visibility="{Binding ShowCategory, Converter={StaticResource BoolToVisibility}}">
