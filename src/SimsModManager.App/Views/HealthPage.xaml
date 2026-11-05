@@ -54,7 +54,7 @@
                 <Button Style="{StaticResource Btn.Icon}" ctl:Btn.Icon="{StaticResource Icon.ArrowLeft}" ToolTip="Назад (Esc)" VerticalAlignment="Top"
                         Margin="0,4,16,0" Command="{Binding GoLibraryCommand}" />
                 <StackPanel>
-                    <TextBlock Text="Проверка модов" Style="{StaticResource T.Page}" />
+                    <TextBlock Text="Состояние модов" Style="{StaticResource T.Page}" />
                     <TextBlock Text="{Binding HealthStatusText}" Style="{StaticResource T.Secondary}" Margin="0,4,0,0" />
                 </StackPanel>
             </StackPanel>
@@ -65,7 +65,7 @@
                 <Button Style="{StaticResource Btn.Secondary}" ctl:Btn.Icon="{StaticResource Icon.Trash2}" Content="Очистить отчёты об ошибках" Margin="8,0,0,0"
                         Command="{Binding ClearErrorReportsCommand}" Visibility="{Binding HasErrorReports, Converter={StaticResource BoolToVisibility}}"
                         ToolTip="Удалить файлы lastException*.txt. Сделайте это после исправления, чтобы новые ошибки было видно отдельно." />
-                <Button Style="{StaticResource Btn.Primary}" ctl:Btn.Icon="{StaticResource Icon.RefreshCw}" Content="Проверить снова" Margin="8,0,0,0"
+                <Button Style="{StaticResource Btn.Primary}" ctl:Btn.Icon="{StaticResource Icon.RefreshCw}" Content="Обновить" Margin="8,0,0,0"
                         Command="{Binding RunHealthCheckCommand}" IsEnabled="{Binding IsCheckingHealth, Converter={StaticResource InverseBool}}" />
             </StackPanel>
         </Grid>
@@ -134,12 +134,12 @@
             <Border Style="{StaticResource Card}" Padding="18,22" Margin="0,0,0,14" b:Anim.Show="{Binding ShowHealthAllGood}">
                 <StackPanel HorizontalAlignment="Center">
                     <Border Width="48" Height="48" CornerRadius="24" Background="{DynamicResource B.AccentSubtle}" HorizontalAlignment="Center">
-                        <ctl:IconView Data="{StaticResource Icon.ShieldCheck}" Foreground="{DynamicResource B.Accent}" Width="24" Height="24" />
+                        <ctl:IconView Data="{StaticResource Icon.CircleCheck}" Foreground="{DynamicResource B.Accent}" Width="24" Height="24" />
                     </Border>
-                    <TextBlock Text="Проблем не найдено" Style="{StaticResource T.Strong}" FontSize="15" HorizontalAlignment="Center" Margin="0,12,0,0" />
+                    <TextBlock Text="С модами всё хорошо" Style="{StaticResource T.Strong}" FontSize="15" HorizontalAlignment="Center" Margin="0,12,0,0" />
                     <TextBlock Style="{StaticResource T.Secondary}" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" Margin="0,6,0,0"
                                MaxWidth="460"
-                               Text="Конфликтов, дубликатов и ошибок от модов нет. Если в игре всё равно что-то не так — попробуйте «Найти виновника»." />
+                               Text="Моды не мешают друг другу и не вызывают ошибок. Если в игре всё равно что-то не так — попробуйте «Найти виновника»." />
                 </StackPanel>
             </Border>
         </StackPanel>

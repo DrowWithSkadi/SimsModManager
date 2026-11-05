@@ -51,10 +51,10 @@ public sealed partial class MainViewModel
     public bool ShowHealthAllGood => !IsCheckingHealth && HealthCheckedAt is not null && HealthIssues.Count == 0;
 
     public string HealthStatusText => IsCheckingHealth
-        ? "Проверяю моды…"
+        ? "Смотрю моды…"
         : HealthCheckedAt is { } at
-            ? $"Проверено {Text.Plural(HealthCheckedMods, "мод", "мода", "модов")} · {at:HH:mm}"
-            : "Ещё не проверялось";
+            ? $"{Text.Plural(HealthCheckedMods, "включённый мод", "включённых мода", "включённых модов")} · обновлено в {at:HH:mm}"
+            : "";
 
     private CancellationTokenSource? _healthCts;
 
@@ -94,7 +94,7 @@ public sealed partial class MainViewModel
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            ShowToast("Не получилось проверить моды: " + ex.Message, Icons.Alert);
+            ShowToast("Не получилось посмотреть моды: " + ex.Message, Icons.Alert);
         }
         finally
         {

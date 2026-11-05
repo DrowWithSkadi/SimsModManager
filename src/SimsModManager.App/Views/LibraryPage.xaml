@@ -221,7 +221,7 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <ctl:IconView Data="{StaticResource Icon.ShieldAlert}" Foreground="{DynamicResource B.Error}" Margin="0,0,12,0" />
+                    <ctl:IconView Data="{StaticResource Icon.Flag}" Foreground="{DynamicResource B.Error}" Margin="0,0,12,0" />
                     <TextBlock Grid.Column="1" Text="{Binding HealthBannerText}" FontSize="12" Foreground="{DynamicResource B.Text}" VerticalAlignment="Center"
                                TextTrimming="CharacterEllipsis" />
                     <StackPanel Grid.Column="2" Orientation="Horizontal">
