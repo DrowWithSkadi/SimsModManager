@@ -387,6 +387,13 @@ public sealed partial class MainViewModel : ObservableObject
         }, cts.Token);
     }
 
+    // ---------- Фильтры и сортировка ----------
+
+    [ObservableProperty] private string _searchText = "";
+    [ObservableProperty] private StateFilter _stateFilter = StateFilter.All;
+    [ObservableProperty] private TypeFilter _typeFilter = TypeFilter.All;
+    [ObservableProperty] private bool _duplicatesOnly;
+
     partial void OnSearchTextChanged(string value) => RefreshView();
     partial void OnStateFilterChanged(StateFilter value) => RefreshView();
     partial void OnTypeFilterChanged(TypeFilter value)
