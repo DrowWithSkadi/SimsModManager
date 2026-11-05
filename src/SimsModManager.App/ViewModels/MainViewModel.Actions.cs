@@ -209,7 +209,7 @@ public sealed partial class MainViewModel
             var text = enabled ? $"«{vm.Name}» включён" : $"«{vm.Name}» выключен";
             ShowToast(text, Icons.Check);
             SetLastAction(enabled ? "мод включён" : "мод выключен");
-            Application.Current.Dispatcher.InvokeAsync(RefreshView, DispatcherPriority.Background);
+            UpdateSummary(); // живой фильтр сам уберёт мод, если он больше не подходит
             return updated;
         }
         catch (InvalidOperationException ex)
@@ -258,7 +258,7 @@ public sealed partial class MainViewModel
         ShowToast((enabled ? "Включено: " : "Выключено: ") + word + (failed > 0 ? $", не получилось: {failed}" : ""),
             failed > 0 ? Icons.Alert : Icons.Check);
         SetLastAction((enabled ? "включено " : "выключено ") + word);
-        RefreshView();
+        UpdateSummary();
     }
 
     [RelayCommand]
@@ -351,7 +351,7 @@ public sealed partial class MainViewModel
         foreach (var (vm, _) in trashed) Mods.Remove(vm);
         lock (_pendingDeletes) _pendingDeletes.AddRange(trashed.Select(t => t.Trash));
         SelectedCount = 0;
-        RefreshView();
+        UpdateSummary();
 
         var message = trashed.Count == 1 ? "Мод удалён" : $"Удалено: {Text.Plural(trashed.Count, "мод", "мода", "модов")}";
         SetLastAction(trashed.Count == 1 ? "мод удалён" : "удалено " + Text.Plural(trashed.Count, "мод", "мода", "модов"));

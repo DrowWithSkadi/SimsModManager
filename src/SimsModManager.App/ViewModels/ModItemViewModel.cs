@@ -129,7 +129,9 @@ public sealed partial class ModItemViewModel : ObservableObject
 
     internal void ReplaceModel(ModItem model)
     {
+        var changed = !ReferenceEquals(Model, model);
         Model = model;
         SetEnabledSilently(model.IsEnabled);
+        if (changed) OnPropertyChanged(nameof(DetailsText));
     }
 }

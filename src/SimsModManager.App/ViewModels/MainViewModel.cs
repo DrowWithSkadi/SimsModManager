@@ -38,6 +38,15 @@ public sealed partial class MainViewModel : ObservableObject
     {
         ModsView = CollectionViewSource.GetDefaultView(Mods);
         ModsView.Filter = FilterMod;
+        // «Живой» фильтр: когда у мода меняется состояние или тип, из списка убирается/добавляется
+        // только он сам — остальные карточки не пересоздаются и не мигают анимацией появления.
+        if (ModsView is ICollectionViewLiveShaping live && live.CanChangeLiveFiltering)
+        {
+            live.LiveFilteringProperties.Add(nameof(ModItemViewModel.IsEnabled));
+            live.LiveFilteringProperties.Add(nameof(ModItemViewModel.Category));
+            live.LiveFilteringProperties.Add(nameof(ModItemViewModel.IsDuplicate));
+            live.IsLiveFiltering = true;
+        }
         _sortBy = _settings.SortBy;
         _sortDescending = _settings.SortDescending;
         _isGridView = _settings.GridView;
@@ -267,28 +276,53 @@ public sealed partial class MainViewModel : ObservableObject
         }
         if (library != _library) return; // пока читали — сменили папку
 
-        // Сохраняем уже загруженные картинки, чтобы список не «мигал».
-        var previous = Mods.ToDictionary(m => m.Model.Path, StringComparer.OrdinalIgnoreCase);
+        // Обновляем список точечно: существующие карточки остаются на месте (без анимации появления),
+        // добавляются только новые моды и убираются пропавшие.
+        var previous = new Dictionary<string, ModItemViewModel>(StringComparer.OrdinalIgnoreCase);
+        foreach (var m in Mods) previous.TryAdd(m.Model.Path, m);
         var duplicates = ModLibrary.FindDuplicates(items);
+        var keep = new HashSet<ModItemViewModel>();
+        var added = new List<ModItemViewModel>();
 
-        Mods.Clear();
         foreach (var item in items)
         {
-            var vm = new ModItemViewModel(item, this);
-            if (previous.TryGetValue(item.Path, out var old))
+            ModItemViewModel vm;
+            if (previous.TryGetValue(item.Path, out var old) && !keep.Contains(old)
+                && old.Name == item.Name && old.SizeBytes == item.SizeBytes && old.InstalledAt == item.InstalledAt)
             {
-                vm.Category = old.Category;
-                vm.Thumbnail = old.Thumbnail;
+                vm = old;
+                vm.ReplaceModel(item);
+                keep.Add(vm);
             }
+            else
+            {
+                vm = new ModItemViewModel(item, this);
+                if (old is not null)
+                {
+                    vm.Category = old.Category;
+                    vm.Thumbnail = old.Thumbnail;
+                }
+                added.Add(vm);
+            }
+
             if (duplicates.TryGetValue(item.Path, out var dupMessages))
             {
                 vm.IsDuplicate = true;
                 vm.Problems = [.. item.Problems, .. dupMessages];
             }
+            else
+            {
+                vm.IsDuplicate = false;
+                vm.Problems = item.Problems;
+            }
             if (newModNames?.Contains(item.Name) == true) vm.IsNew = true;
             if (!item.IsTray) vm.IsModified = _originals.HasBackup(item.Name);
-            Mods.Add(vm);
         }
+
+        for (var i = Mods.Count - 1; i >= 0; i--)
+            if (!keep.Contains(Mods[i])) Mods.RemoveAt(i);
+        foreach (var vm in added) Mods.Add(vm);
+        SelectedCount = Mods.Count(m => m.IsSelected);
 
         DuplicateCount = duplicates.Count;
         IsLoading = false;
@@ -344,7 +378,7 @@ public sealed partial class MainViewModel : ObservableObject
                 {
                     vm.Category = content.Category;
                     if (image is not null) vm.Thumbnail = image;
-                    if (TypeFilter != TypeFilter.All) RefreshViewSoon();
+                    UpdateSummary();
                 }, DispatcherPriority.Background);
 
                 if (++processed % 50 == 0) _cache.Save();
@@ -352,30 +386,6 @@ public sealed partial class MainViewModel : ObservableObject
             _cache.Save();
         }, cts.Token);
     }
-
-    private bool _refreshQueued;
-
-    /// <summary>Фильтр по типу пересчитываем не чаще раза в 300 мс, пока идёт фоновый разбор.</summary>
-    private void RefreshViewSoon()
-    {
-        if (_refreshQueued) return;
-        _refreshQueued = true;
-        var timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(300) };
-        timer.Tick += (_, _) =>
-        {
-            timer.Stop();
-            _refreshQueued = false;
-            RefreshView();
-        };
-        timer.Start();
-    }
-
-    // ---------- Фильтры и сортировка ----------
-
-    [ObservableProperty] private string _searchText = "";
-    [ObservableProperty] private StateFilter _stateFilter = StateFilter.All;
-    [ObservableProperty] private TypeFilter _typeFilter = TypeFilter.All;
-    [ObservableProperty] private bool _duplicatesOnly;
 
     partial void OnSearchTextChanged(string value) => RefreshView();
     partial void OnStateFilterChanged(StateFilter value) => RefreshView();
