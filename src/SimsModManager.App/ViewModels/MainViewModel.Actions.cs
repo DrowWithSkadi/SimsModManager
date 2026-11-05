@@ -130,7 +130,7 @@ public sealed partial class MainViewModel
 
     public string DuplicateText => "Найдено " + Text.Plural(DuplicateCount, "дубликат", "дубликата", "дубликатов")
                                    + " — одинаковые файлы в разных модах";
-    public bool HasDuplicates => DuplicateCount > 0 && !DuplicatesOnly;
+    public bool HasDuplicates => DuplicateCount > 0 && !DuplicatesOnly && !HasHealthBanner;
 
     partial void OnDuplicateCountChanged(int value)
     {
@@ -209,6 +209,7 @@ public sealed partial class MainViewModel
             var text = enabled ? $"«{vm.Name}» включён" : $"«{vm.Name}» выключен";
             ShowToast(text, Icons.Check);
             SetLastAction(enabled ? "мод включён" : "мод выключен");
+            if (!enabled) ResolveIssuesFor(vm);
             UpdateSummary(); // живой фильтр сам уберёт мод, если он больше не подходит
             return updated;
         }
@@ -348,7 +349,11 @@ public sealed partial class MainViewModel
             vm.IsRemoving = true;
         }
         await Task.Delay(230);
-        foreach (var (vm, _) in trashed) Mods.Remove(vm);
+        foreach (var (vm, _) in trashed)
+        {
+            Mods.Remove(vm);
+            ResolveIssuesFor(vm);
+        }
         lock (_pendingDeletes) _pendingDeletes.AddRange(trashed.Select(t => t.Trash));
         SelectedCount = 0;
         UpdateSummary();

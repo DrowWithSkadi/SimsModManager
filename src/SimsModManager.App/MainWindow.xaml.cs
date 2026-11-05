@@ -75,7 +75,7 @@ public partial class MainWindow : Window
         {
             if (vm.IsEditorPage) vm.CloseEditorCommand.Execute(null);
             else if (vm.IsCardPage) vm.CloseCardCommand.Execute(null);
-            else if (vm.IsSettingsPage || vm.IsInstallResultPage) vm.GoLibraryCommand.Execute(null);
+            else if (vm.IsSettingsPage || vm.IsInstallResultPage || vm.IsHealthPage) vm.GoLibraryCommand.Execute(null);
             else if (vm.SelectedCount > 0) vm.ClearSelectionCommand.Execute(null);
             else return;
             e.Handled = true;

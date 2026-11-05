@@ -179,6 +179,41 @@ public sealed class ModLibrary(SimsPaths paths, IFileDeleter? deleter = null)
         return mod with { Path = target, IsEnabled = enabled, Files = newFiles };
     }
 
+    /// <summary>
+    /// Переложить файлы, которые лежат слишком глубоко (игра их не видит), в верхнюю папку мода.
+    /// Возвращает обновлённый мод.
+    /// </summary>
+    public ModItem FixTooDeep(ModItem mod)
+    {
+        if (!mod.IsFolder || mod.IsTray) return mod;
+        var root = mod.IsEnabled ? paths.Mods : paths.DisabledMods;
+        var deep = Health.ModHealthChecker.TooDeepFiles(mod, root);
+        if (deep.Count == 0) return mod;
+
+        var files = mod.Files.ToList();
+        foreach (var file in deep)
+        {
+            var target = System.IO.Path.Combine(mod.Path, System.IO.Path.GetFileName(file));
+            var n = 2;
+            while (File.Exists(target))
+                target = System.IO.Path.Combine(mod.Path,
+                    $"{System.IO.Path.GetFileNameWithoutExtension(file)} ({n++}){System.IO.Path.GetExtension(file)}");
+            File.Move(file, target);
+            files[files.IndexOf(file)] = target;
+        }
+
+        // Пустые подпапки после переноса убираем.
+        foreach (var dir in Directory.EnumerateDirectories(mod.Path, "*", SearchOption.AllDirectories).OrderByDescending(d => d.Length).ToList())
+        {
+            try
+            {
+                if (!Directory.EnumerateFileSystemEntries(dir).Any()) Directory.Delete(dir);
+            }
+            catch (IOException) { }
+        }
+        return mod with { Files = files, Problems = [] };
+    }
+
     /// <summary>Переименовать мод: папку или файл в Mods либо запись участка/семьи.</summary>
     public ModItem Rename(ModItem mod, string newName)
     {

@@ -14,6 +14,15 @@ public sealed class AppSettings
     /// <summary>Тема оформления: Dark, Light или Glass.</summary>
     public string Theme { get; set; } = "Dark";
 
+    /// <summary>Версия игры, после которой пользователь подтвердил, что моды работают.</summary>
+    public string? AcknowledgedGameVersion { get; set; }
+
+    /// <summary>Проблемы, которые пользователь попросил больше не показывать.</summary>
+    public List<string> IgnoredIssues { get; set; } = [];
+
+    /// <summary>Когда заметили новую версию игры — скрипты старше этого момента могли сломаться.</summary>
+    public DateTime? GameUpdateDetectedAt { get; set; }
+
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
 
     public static string DefaultPath => Path.Combine(

@@ -71,6 +71,17 @@
                         <Button Style="{StaticResource Btn.Secondary}" ctl:Btn.Icon="{StaticResource Icon.BrushCleaning}" Content="Очистить кэш" Margin="8,0,0,0"
                                 Command="{Binding ClearCacheCommand}"
                                 ToolTip="Удаляет localthumbcache.package. Помогает, если после установки модов в игре видны старые или сломанные вещи." />
+                        <Grid Margin="8,0,0,0">
+                            <Button Style="{StaticResource Btn.Secondary}" ctl:Btn.Icon="{StaticResource Icon.ShieldCheck}" Content="Проверка"
+                                    Command="{Binding OpenHealthCommand}"
+                                    ToolTip="Конфликты модов, дубликаты, ошибки игры и поиск мода, который мешает" />
+                            <Border HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-6,-6,0" MinWidth="18" Height="18" CornerRadius="9"
+                                    Padding="5,0" Background="{DynamicResource B.Error}" IsHitTestVisible="False"
+                                    b:Anim.Show="{Binding HasHealthBadge}" b:Anim.Offset="0">
+                                <TextBlock Text="{Binding HealthBadgeText}" FontSize="10" FontWeight="SemiBold" Foreground="White"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </Border>
+                        </Grid>
                         <Button Style="{StaticResource Btn.Secondary}" ctl:Btn.Icon="{StaticResource Icon.Settings}" Content="Настройки" Margin="8,0,0,0"
                                 Command="{Binding OpenSettingsCommand}"
                                 Visibility="{Binding IsCompact, Converter={StaticResource InverseBoolToVisibility}}" />
@@ -92,6 +103,7 @@
                 <views:NotFoundPage b:Anim.Show="{Binding IsNotFoundPage}" />
                 <views:CardPage b:Anim.Show="{Binding IsCardPage}" DataContext="{Binding}" />
                 <views:EditorPage b:Anim.Show="{Binding IsEditorPage}" />
+                <views:HealthPage b:Anim.Show="{Binding IsHealthPage}" />
 
                 <!-- Панель выбора нескольких модов -->
                 <Border VerticalAlignment="Bottom" Background="{DynamicResource B.SelectionBar}" BorderBrush="{DynamicResource B.Accent}" BorderThickness="0,1,0,0"

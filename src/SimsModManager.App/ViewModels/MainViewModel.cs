@@ -17,7 +17,7 @@ namespace SimsModManager.App.ViewModels;
 
 public enum StateFilter { All, Enabled, Disabled }
 public enum TypeFilter { All, Clothing, Hair, Makeup, Objects, Scripts, Other, Tray }
-public enum AppPage { Library, InstallResult, Settings, NotFound, Card, Editor }
+public enum AppPage { Library, InstallResult, Settings, NotFound, Card, Editor, Health }
 
 /// <summary>
 /// Главная модель окна. Разбита на несколько файлов:
@@ -67,7 +67,7 @@ public sealed partial class MainViewModel : ObservableObject
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsLibraryPage), nameof(IsInstallResultPage), nameof(IsSettingsPage), nameof(IsNotFoundPage),
-        nameof(ShowLibraryChrome), nameof(IsCardPage), nameof(IsEditorPage))]
+        nameof(ShowLibraryChrome), nameof(IsCardPage), nameof(IsEditorPage), nameof(IsHealthPage))]
     private AppPage _page = AppPage.Library;
 
     public bool IsLibraryPage => Page == AppPage.Library;
@@ -137,6 +137,7 @@ public sealed partial class MainViewModel : ObservableObject
         SimsFolder = paths.Root;
         Page = AppPage.Library;
 
+        LoadBisect();
         try { _library.CleanupTrash(); }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
 
@@ -340,6 +341,8 @@ public sealed partial class MainViewModel : ObservableObject
         RefreshGameState();
         UpdateSummary();
         StartAnalysis();
+        CheckGameVersion();
+        _ = RunHealthCheck();
     }
 
     /// <summary>В фоне разбираем файлы модов: тип и картинка. Уже разобранное берём из кеша.</summary>

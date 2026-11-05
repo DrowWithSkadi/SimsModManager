@@ -175,6 +175,63 @@
                 </StackPanel>
             </Border>
 
+            <!-- Игра обновилась -->
+            <Border b:Anim.Show="{Binding HasGameUpdate}" Background="{DynamicResource B.WarningSubtle}" BorderBrush="{DynamicResource B.WarningBorder}"
+                    BorderThickness="1" CornerRadius="6" Padding="12,10" Margin="0,0,0,8">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <ctl:IconView Data="{StaticResource Icon.Download}" Foreground="{DynamicResource B.Warning}" Margin="0,0,12,0" VerticalAlignment="Top" />
+                    <TextBlock Grid.Column="1" Text="{Binding GameUpdateText}" FontSize="12" Foreground="{DynamicResource B.Text}" TextWrapping="Wrap"
+                               VerticalAlignment="Center" />
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="12,0,0,0" VerticalAlignment="Center">
+                        <Button Style="{StaticResource Btn.Ghost}" Content="Какие?" Command="{Binding ShowOutdatedScriptsCommand}" />
+                        <Button Style="{StaticResource Btn.Secondary}" Content="Выключить их" Margin="6,0,0,0" Command="{Binding DisableOutdatedScriptsCommand}"
+                                ToolTip="Выключить скриптовые моды, пока авторы не выпустят обновления" />
+                        <Button Style="{StaticResource Btn.Secondary}" Content="Всё работает" Margin="6,0,0,0" Command="{Binding AcknowledgeGameUpdateCommand}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Идёт поиск виновника -->
+            <Border b:Anim.Show="{Binding HasBisect}" Background="{DynamicResource B.AccentSubtle}" BorderBrush="{DynamicResource B.Accent}"
+                    BorderThickness="1" CornerRadius="6" Padding="12,6" Margin="0,0,0,8">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <ctl:IconView Data="{StaticResource Icon.ScanSearch}" Foreground="{DynamicResource B.Accent}" Margin="0,0,12,0" />
+                    <TextBlock Grid.Column="1" FontSize="12" Foreground="{DynamicResource B.Text}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                               Text="{Binding BisectStepText, StringFormat=Идёт поиск мода, который мешает игре · {0}}" />
+                    <Button Grid.Column="2" Style="{StaticResource Btn.Primary}" Content="Продолжить" Command="{Binding OpenHealthCommand}" />
+                </Grid>
+            </Border>
+
+            <!-- Найдены проблемы -->
+            <Border b:Anim.Show="{Binding HasHealthBanner}" Background="{DynamicResource B.ErrorSubtle}" BorderBrush="{DynamicResource B.ErrorBorder}"
+                    BorderThickness="1" CornerRadius="6" Padding="12,6" Margin="0,0,0,8">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <ctl:IconView Data="{StaticResource Icon.ShieldAlert}" Foreground="{DynamicResource B.Error}" Margin="0,0,12,0" />
+                    <TextBlock Grid.Column="1" Text="{Binding HealthBannerText}" FontSize="12" Foreground="{DynamicResource B.Text}" VerticalAlignment="Center"
+                               TextTrimming="CharacterEllipsis" />
+                    <StackPanel Grid.Column="2" Orientation="Horizontal">
+                        <Button Style="{StaticResource Btn.Primary}" Content="Посмотреть" Command="{Binding OpenHealthCommand}" />
+                        <Button Style="{StaticResource Btn.IconGhost}" ctl:Btn.Icon="{StaticResource Icon.X}" Margin="4,0,0,0" ToolTip="Скрыть"
+                                Command="{Binding HideHealthBannerCommand}" />
+                    </StackPanel>
+                </Grid>
+            </Border>
+
             <Border b:Anim.Show="{Binding HasDuplicates}" Background="{DynamicResource B.WarningSubtle}" BorderBrush="{DynamicResource B.WarningBorder}"
                     BorderThickness="1" CornerRadius="6" Padding="12,6" Margin="0,0,0,8">
                 <Grid>

@@ -13,11 +13,15 @@ public sealed partial class MainViewModel
 
     [ObservableProperty] private ModCardViewModel? _card;
 
+    /// <summary>Куда вернуться из карточки: в библиотеку или на экран проверки.</summary>
+    private AppPage _cardReturnPage = AppPage.Library;
+
     [RelayCommand]
     private async Task OpenCard(ModItemViewModel? mod)
     {
         if (mod is null || _library is null) return;
         Card = new ModCardViewModel(mod, _library.Paths, !mod.Model.IsTray && _originals.HasBackup(mod.Name));
+        if (Page is AppPage.Library or AppPage.Health) _cardReturnPage = Page;
         Page = AppPage.Card;
         await Card.LoadAsync(_cache);
     }
@@ -25,7 +29,7 @@ public sealed partial class MainViewModel
     [RelayCommand]
     private void CloseCard()
     {
-        Page = AppPage.Library;
+        Page = _cardReturnPage;
     }
 
     [RelayCommand]
@@ -35,7 +39,7 @@ public sealed partial class MainViewModel
         var mod = Card.Mod;
         var countBefore = Mods.Count;
         await DeleteMod(mod);
-        if (Mods.Count < countBefore || !Mods.Contains(mod)) Page = AppPage.Library;
+        if (Mods.Count < countBefore || !Mods.Contains(mod)) Page = _cardReturnPage;
     }
 
     [RelayCommand]

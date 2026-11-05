@@ -1,0 +1,272 @@
+<UserControl x:Class="SimsModManager.App.Views.HealthPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ctl="clr-namespace:SimsModManager.App.Controls"
+             xmlns:b="clr-namespace:SimsModManager.App.Behaviors">
+    <UserControl.Resources>
+        <!-- Цветная полоска слева у карточки проблемы -->
+        <Style x:Key="SeverityBar" TargetType="Border">
+            <Setter Property="Width" Value="3" />
+            <Setter Property="CornerRadius" Value="2" />
+            <Setter Property="Background" Value="{DynamicResource B.TextMuted}" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsProblem}" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource B.Error}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding IsWarning}" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource B.Warning}" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="SeverityText" TargetType="TextBlock" BasedOn="{StaticResource TagText}">
+            <Setter Property="Foreground" Value="{DynamicResource B.TextMuted}" />
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsProblem}" Value="True">
+                    <Setter Property="Foreground" Value="{DynamicResource B.Error}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding IsWarning}" Value="True">
+                    <Setter Property="Foreground" Value="{DynamicResource B.Warning}" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+        <Style x:Key="SeverityTag" TargetType="Border" BasedOn="{StaticResource Tag}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsProblem}" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource B.ErrorSubtle}" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding IsWarning}" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource B.WarningSubtle}" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Margin="24,20,24,16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- Заголовок -->
+        <Grid Margin="0,0,0,16">
+            <StackPanel Orientation="Horizontal">
+                <Button Style="{StaticResource Btn.Icon}" ctl:Btn.Icon="{StaticResource Icon.ArrowLeft}" ToolTip="Назад (Esc)" VerticalAlignment="Top"
+                        Margin="0,4,16,0" Command="{Binding GoLibraryCommand}" />
+                <StackPanel>
+                    <TextBlock Text="Проверка модов" Style="{StaticResource T.Page}" />
+                    <TextBlock Text="{Binding HealthStatusText}" Style="{StaticResource T.Secondary}" Margin="0,4,0,0" />
+                </StackPanel>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
+                <Button Style="{StaticResource Btn.Secondary}" ctl:Btn.Icon="{StaticResource Icon.ScanSearch}" Content="Найти виновника"
+                        Command="{Binding StartBisectCommand}" Visibility="{Binding HasBisect, Converter={StaticResource InverseBoolToVisibility}}"
+                        ToolTip="Если в игре что-то сломалось, а причина не видна: менеджер по очереди выключает половину модов и за несколько запусков находит нужный." />
+                <Button Style="{StaticResource Btn.Secondary}" ctl:Btn.Icon="{StaticResource Icon.Trash2}" Content="Очистить отчёты об ошибках" Margin="8,0,0,0"
+                        Command="{Binding ClearErrorReportsCommand}" Visibility="{Binding HasErrorReports, Converter={StaticResource BoolToVisibility}}"
+                        ToolTip="Удалить файлы lastException*.txt. Сделайте это после исправления, чтобы новые ошибки было видно отдельно." />
+                <Button Style="{StaticResource Btn.Primary}" ctl:Btn.Icon="{StaticResource Icon.RefreshCw}" Content="Проверить снова" Margin="8,0,0,0"
+                        Command="{Binding RunHealthCheckCommand}" IsEnabled="{Binding IsCheckingHealth, Converter={StaticResource InverseBool}}" />
+            </StackPanel>
+        </Grid>
+
+        <StackPanel Grid.Row="1">
+            <!-- Идёт проверка -->
+            <ProgressBar Style="{StaticResource Progress}" Value="{Binding HealthProgress, Mode=OneWay}" Maximum="1" Margin="0,0,0,14"
+                         b:Anim.Show="{Binding IsCheckingHealth}" b:Anim.Offset="0" />
+
+            <!-- Найти виновника: идёт поиск -->
+            <Border Style="{StaticResource Card}" Padding="18,16" Margin="0,0,0,14" b:Anim.Show="{Binding BisectInProgress}"
+                    BorderBrush="{DynamicResource B.Accent}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Border Width="36" Height="36" CornerRadius="18" Background="{DynamicResource B.AccentSubtle}" VerticalAlignment="Top" Margin="0,0,14,0">
+                        <ctl:IconView Data="{StaticResource Icon.ScanSearch}" Foreground="{DynamicResource B.Accent}" Width="18" Height="18" />
+                    </Border>
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Text="Ищем мод, который мешает игре" Style="{StaticResource T.Strong}" FontSize="14" />
+                        <TextBlock Text="{Binding BisectStepText}" Style="{StaticResource T.Muted}" Margin="0,3,0,0" />
+                        <TextBlock Text="{Binding BisectHint}" Style="{StaticResource T.Secondary}" TextWrapping="Wrap" Margin="0,10,0,0" MaxWidth="720"
+                                   HorizontalAlignment="Left" />
+                        <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
+                            <Button Style="{StaticResource Btn.Primary}" Content="Проблема осталась" Command="{Binding BisectAnswerCommand}" CommandParameter="yes" />
+                            <Button Style="{StaticResource Btn.Primary}" Content="Проблемы нет" Margin="8,0,0,0" Command="{Binding BisectAnswerCommand}" CommandParameter="no" />
+                            <Button Style="{StaticResource Btn.Ghost}" Content="Остановить и вернуть всё" Margin="16,0,0,0"
+                                    Command="{Binding FinishBisectCommand}" CommandParameter="keep" />
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Найти виновника: найден -->
+            <Border Style="{StaticResource Card}" Padding="18,16" Margin="0,0,0,14" b:Anim.Show="{Binding BisectFinished}"
+                    BorderBrush="{DynamicResource B.Accent}">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Border Width="36" Height="36" CornerRadius="18" Background="{DynamicResource B.AccentSubtle}" VerticalAlignment="Top" Margin="0,0,14,0">
+                        <ctl:IconView Data="{StaticResource Icon.CircleCheck}" Foreground="{DynamicResource B.Accent}" Width="18" Height="18" />
+                    </Border>
+                    <StackPanel Grid.Column="1">
+                        <TextBlock Text="{Binding BisectCulprit, StringFormat=Виновник найден: «{0}»}" Style="{StaticResource T.Strong}" FontSize="14"
+                                   TextWrapping="Wrap" />
+                        <TextBlock Text="{Binding BisectHint}" Style="{StaticResource T.Secondary}" TextWrapping="Wrap" Margin="0,8,0,0" />
+                        <TextBlock Style="{StaticResource T.Muted}" TextWrapping="Wrap" Margin="0,4,0,0"
+                                   Text="Сейчас он выключен, а остальные моды включены. Проверьте игру ещё раз, чтобы убедиться." />
+                        <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
+                            <Button Style="{StaticResource Btn.Primary}" ctl:Btn.Icon="{StaticResource Icon.Power}" Content="Оставить его выключенным"
+                                    Command="{Binding FinishBisectCommand}" CommandParameter="disable" />
+                            <Button Style="{StaticResource Btn.Danger}" ctl:Btn.Icon="{StaticResource Icon.Trash2}" Content="Удалить его" Margin="8,0,0,0"
+                                    Command="{Binding FinishBisectCommand}" CommandParameter="delete" />
+                            <Button Style="{StaticResource Btn.Ghost}" Content="Вернуть всё как было" Margin="16,0,0,0"
+                                    Command="{Binding FinishBisectCommand}" CommandParameter="keep" />
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- Всё хорошо -->
+            <Border Style="{StaticResource Card}" Padding="18,22" Margin="0,0,0,14" b:Anim.Show="{Binding ShowHealthAllGood}">
+                <StackPanel HorizontalAlignment="Center">
+                    <Border Width="48" Height="48" CornerRadius="24" Background="{DynamicResource B.AccentSubtle}" HorizontalAlignment="Center">
+                        <ctl:IconView Data="{StaticResource Icon.ShieldCheck}" Foreground="{DynamicResource B.Accent}" Width="24" Height="24" />
+                    </Border>
+                    <TextBlock Text="Проблем не найдено" Style="{StaticResource T.Strong}" FontSize="15" HorizontalAlignment="Center" Margin="0,12,0,0" />
+                    <TextBlock Style="{StaticResource T.Secondary}" HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap" Margin="0,6,0,0"
+                               MaxWidth="460"
+                               Text="Конфликтов, дубликатов и ошибок от модов нет. Если в игре всё равно что-то не так — попробуйте «Найти виновника»." />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+
+        <!-- Список проблем -->
+        <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+                <ItemsControl ItemsSource="{Binding HealthIssues}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Border Style="{StaticResource Card}" Padding="0" Margin="0,0,0,10" b:Anim.Appear="True">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border Style="{StaticResource SeverityBar}" Margin="0,12,0,12" />
+                                    <StackPanel Grid.Column="1" Margin="16,14,16,14">
+                                        <!-- Заголовок -->
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel>
+                                                <Border Style="{StaticResource SeverityTag}" HorizontalAlignment="Left" Margin="0,0,0,6">
+                                                    <TextBlock Style="{StaticResource SeverityText}" Text="{Binding SeverityText}" />
+                                                </Border>
+                                                <TextBlock Text="{Binding Title}" Style="{StaticResource T.Strong}" FontSize="14" TextWrapping="Wrap" />
+                                            </StackPanel>
+                                            <Button Grid.Column="1" Style="{StaticResource Btn.IconGhost}" ctl:Btn.Icon="{StaticResource Icon.EyeOff}"
+                                                    ToolTip="Не показывать это предупреждение" VerticalAlignment="Top"
+                                                    Command="{Binding DataContext.IgnoreIssueCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}" />
+                                        </Grid>
+
+                                        <!-- Что случилось и что делать -->
+                                        <TextBlock Text="{Binding Explanation}" Style="{StaticResource T.Secondary}" TextWrapping="Wrap" LineHeight="18" Margin="0,8,0,0" />
+                                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                            <ctl:IconView Data="{StaticResource Icon.Sparkles}" Foreground="{DynamicResource B.Accent}" Width="14" Height="14"
+                                                          VerticalAlignment="Top" Margin="0,2,8,0" />
+                                            <TextBlock Text="{Binding Advice}" Style="{StaticResource T.Body}" TextWrapping="Wrap" MaxWidth="760" />
+                                        </StackPanel>
+
+                                        <!-- Моды, о которых речь -->
+                                        <ItemsControl ItemsSource="{Binding Mods}" Margin="0,12,0,0" Visibility="{Binding HasMods, Converter={StaticResource BoolToVisibility}}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border Background="{DynamicResource B.Control}" CornerRadius="6" Padding="12,8" Margin="0,0,0,6">
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="Auto" />
+                                                                <ColumnDefinition Width="*" />
+                                                                <ColumnDefinition Width="Auto" />
+                                                            </Grid.ColumnDefinitions>
+                                                            <Border Width="32" Height="32" CornerRadius="4" Background="{DynamicResource B.Surface}" ClipToBounds="True"
+                                                                    Margin="0,0,12,0">
+                                                                <Grid>
+                                                                    <ctl:IconView Data="{StaticResource Icon.Package}" Width="14" Height="14"
+                                                                                  Foreground="{DynamicResource B.TextMuted}" />
+                                                                    <Image Source="{Binding Mod.Thumbnail}" Stretch="UniformToFill" />
+                                                                </Grid>
+                                                            </Border>
+                                                            <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                                                <StackPanel Orientation="Horizontal">
+                                                                    <TextBlock Text="{Binding Name}" Style="{StaticResource T.Strong}" TextTrimming="CharacterEllipsis" />
+                                                                    <Border Style="{StaticResource Tag}" Background="{DynamicResource B.AccentSubtle}" Margin="8,0,0,0" Height="18"
+                                                                            Visibility="{Binding IsSuggested, Converter={StaticResource BoolToVisibility}}">
+                                                                        <TextBlock Style="{StaticResource TagText}" Text="Лучше убрать этот" Foreground="{DynamicResource B.Accent}"
+                                                                                   FontSize="10" />
+                                                                    </Border>
+                                                                    <Border Style="{StaticResource Tag}" Margin="8,0,0,0" Height="18"
+                                                                            Visibility="{Binding Mod.IsEnabled, Converter={StaticResource InverseBoolToVisibility}}">
+                                                                        <TextBlock Style="{StaticResource TagText}" Text="Выключен" FontSize="10" />
+                                                                    </Border>
+                                                                </StackPanel>
+                                                                <TextBlock Text="{Binding DateText}" Style="{StaticResource T.Muted}" Margin="0,2,0,0" />
+                                                            </StackPanel>
+                                                            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                                                <Button Style="{StaticResource Btn.Ghost}" Content="Открыть" ToolTip="Карточка мода"
+                                                                        Command="{Binding DataContext.OpenCardCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                        CommandParameter="{Binding Mod}" />
+                                                                <Button Style="{StaticResource Btn.Secondary}" ctl:Btn.Icon="{StaticResource Icon.Power}" Content="Выключить"
+                                                                        Margin="6,0,0,0" IsEnabled="{Binding Mod.IsEnabled}"
+                                                                        Command="{Binding DataContext.IssueDisableModCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                        CommandParameter="{Binding Mod}" />
+                                                                <Button Style="{StaticResource Btn.Danger}" ctl:Btn.Icon="{StaticResource Icon.Trash2}" Content="Удалить"
+                                                                        Margin="6,0,0,0"
+                                                                        Command="{Binding DataContext.IssueDeleteModCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                        CommandParameter="{Binding Mod}" />
+                                                            </StackPanel>
+                                                        </Grid>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+
+                                        <!-- Кнопки «Исправить» / «Установить» / подробности -->
+                                        <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                            <Button Style="{StaticResource Btn.Primary}" ctl:Btn.Icon="{StaticResource Icon.Wrench}" Content="{Binding FixText}"
+                                                    Margin="0,0,8,0" Visibility="{Binding HasFix, Converter={StaticResource BoolToVisibility}}"
+                                                    Command="{Binding DataContext.FixIssueCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}" />
+                                            <ToggleButton Content="Подробности" IsChecked="{Binding DetailsExpanded}" Cursor="Hand"
+                                                          Visibility="{Binding HasDetails, Converter={StaticResource BoolToVisibility}}">
+                                                <ToggleButton.Template>
+                                                    <ControlTemplate TargetType="ToggleButton">
+                                                        <TextBlock Text="{TemplateBinding Content}" Style="{StaticResource T.Muted}" TextDecorations="Underline"
+                                                                   VerticalAlignment="Center" Background="Transparent" />
+                                                    </ControlTemplate>
+                                                </ToggleButton.Template>
+                                            </ToggleButton>
+                                        </StackPanel>
+                                        <TextBox Text="{Binding Details, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap" FontFamily="Consolas" FontSize="11"
+                                                 Background="{DynamicResource B.Control}" Foreground="{DynamicResource B.TextSecondary}" BorderThickness="0"
+                                                 Padding="10,8" Margin="0,8,0,0" MaxHeight="160" VerticalScrollBarVisibility="Auto"
+                                                 b:Anim.Show="{Binding DetailsExpanded}" b:Anim.Offset="-4" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+
+                <Button Style="{StaticResource Btn.Link}" Content="Показать скрытые предупреждения" HorizontalAlignment="Left" Margin="0,6,0,0"
+                        Command="{Binding ResetIgnoredIssuesCommand}" />
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>
