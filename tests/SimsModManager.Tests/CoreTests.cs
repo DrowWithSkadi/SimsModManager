@@ -1,0 +1,211 @@
+using System.IO.Compression;
+using SimsModManager.Core;
+using SimsModManager.Core.Archives;
+
+namespace SimsModManager.Tests;
+
+public class GameLocatorTests
+{
+    [Fact]
+    public void FindsSimsFolderInDocuments()
+    {
+        using var t = new TestFolder();
+        Assert.Equal(Path.GetFullPath(t.Sims), GameLocator.FindSimsFolder([t.Documents]));
+    }
+
+    [Fact]
+    public void FindsLocalizedFolderName()
+    {
+        using var t = new TestFolder();
+        var german = Path.Combine(t.Documents, "Electronic Arts", "Die Sims 4");
+        Directory.Move(t.Sims, german);
+        Assert.Equal(Path.GetFullPath(german), GameLocator.FindSimsFolder([t.Documents]));
+    }
+
+    [Fact]
+    public void ReturnsNullWhenNothingFound()
+    {
+        using var t = new TestFolder();
+        Assert.Null(GameLocator.FindSimsFolder([t.Downloads]));
+    }
+}
+
+public class InstallerTests
+{
+    private static (ModInstaller Installer, ModLibrary Library, SimsPaths Paths) Create(TestFolder t)
+    {
+        var paths = new SimsPaths(t.Sims);
+        return (new ModInstaller(paths, new SharpCompressExtractor()), new ModLibrary(paths), paths);
+    }
+
+    [Fact]
+    public void FlattensNestedFoldersSoScriptsAreOneLevelDeep()
+    {
+        using var t = new TestFolder();
+        var (installer, library, paths) = Create(t);
+        var zip = t.MakeZip("Cool Mod v2.zip",
+            ("CoolMod/Scripts/cool.ts4script", "script"),
+            ("CoolMod/Package/cool.package", "pkg"),
+            ("CoolMod/readme.txt", "hello"));
+
+        var result = installer.InstallOne(zip);
+
+        Assert.Equal(InstallStatus.Installed, result.Status);
+        Assert.True(File.Exists(Path.Combine(paths.Mods, "Cool Mod v2", "cool.ts4script")));
+        Assert.True(File.Exists(Path.Combine(paths.Mods, "Cool Mod v2", "cool.package")));
+        Assert.False(File.Exists(Path.Combine(paths.Mods, "Cool Mod v2", "readme.txt")));
+
+        var mod = Assert.Single(library.Scan());
+        Assert.Equal(1, mod.ScriptCount);
+        Assert.Equal(1, mod.PackageCount);
+        Assert.Empty(mod.Problems);
+    }
+
+    [Fact]
+    public void ReinstallReplacesOldVersion()
+    {
+        using var t = new TestFolder();
+        var (installer, _, paths) = Create(t);
+        installer.InstallOne(t.MakeZip("Hair.zip", ("old.package", "1")));
+        File.Delete(Path.Combine(t.Downloads, "Hair.zip"));
+
+        var result = installer.InstallOne(t.MakeZip("Hair.zip", ("new.package", "2")));
+
+        Assert.Equal(InstallStatus.Updated, result.Status);
+        var files = Directory.GetFiles(Path.Combine(paths.Mods, "Hair")).Select(Path.GetFileName);
+        Assert.Equal(["new.package"], files);
+    }
+
+    [Fact]
+    public void ExtractsArchivesInsideArchives()
+    {
+        using var t = new TestFolder();
+        var (installer, _, paths) = Create(t);
+        var inner = t.MakeZip("inner.zip", ("dress.package", "x"));
+        var outer = Path.Combine(t.Downloads, "Pack.zip");
+        using (var zip = ZipFile.Open(outer, ZipArchiveMode.Create))
+            zip.CreateEntryFromFile(inner, "files/inner.zip");
+
+        var result = installer.InstallOne(outer);
+
+        Assert.True(result.Succeeded);
+        Assert.True(File.Exists(Path.Combine(paths.Mods, "Pack", "dress.package")));
+    }
+
+    [Fact]
+    public void SameFileNameInDifferentFoldersIsKept()
+    {
+        using var t = new TestFolder();
+        var (installer, _, paths) = Create(t);
+        installer.InstallOne(t.MakeZip("Set.zip", ("a/item.package", "aaa"), ("b/item.package", "bbbbbb")));
+
+        Assert.True(File.Exists(Path.Combine(paths.Mods, "Set", "item.package")));
+        Assert.True(File.Exists(Path.Combine(paths.Mods, "Set", "item (2).package")));
+    }
+
+    [Fact]
+    public void ArchiveWithoutModsFails()
+    {
+        using var t = new TestFolder();
+        var (installer, _, paths) = Create(t);
+        var result = installer.InstallOne(t.MakeZip("Junk.zip", ("readme.txt", "x")));
+
+        Assert.Equal(InstallStatus.Failed, result.Status);
+        Assert.False(Directory.Exists(Path.Combine(paths.Mods, "Junk")));
+    }
+
+    [Fact]
+    public void BrokenArchiveFailsGracefully()
+    {
+        using var t = new TestFolder();
+        var (installer, _, _) = Create(t);
+        var path = Path.Combine(t.Downloads, "broken.zip");
+        File.WriteAllText(path, "это не архив");
+
+        Assert.Equal(InstallStatus.Failed, installer.InstallOne(path).Status);
+    }
+
+    [Fact]
+    public void InstallsLoosePackageFile()
+    {
+        using var t = new TestFolder();
+        var (installer, _, paths) = Create(t);
+        var file = Path.Combine(t.Downloads, "shoes.package");
+        File.WriteAllText(file, "x");
+
+        Assert.True(installer.InstallOne(file).Succeeded);
+        Assert.True(File.Exists(Path.Combine(paths.Mods, "shoes", "shoes.package")));
+        Assert.True(File.Exists(file)); // оригинал не трогаем
+    }
+
+    [Fact]
+    public void BlocksPathTraversal()
+    {
+        Assert.Null(SafePath.Resolve("/tmp/a", "../../etc/evil.package"));
+        Assert.NotNull(SafePath.Resolve("/tmp/a", "ok/file.package"));
+    }
+}
+
+public class LibraryTests
+{
+    [Fact]
+    public void DisableAndEnableMovesModOutOfModsFolder()
+    {
+        using var t = new TestFolder();
+        var paths = new SimsPaths(t.Sims);
+        var library = new ModLibrary(paths);
+        Directory.CreateDirectory(Path.Combine(paths.Mods, "Top"));
+        File.WriteAllText(Path.Combine(paths.Mods, "Top", "top.package"), "x");
+
+        var mod = Assert.Single(library.Scan());
+        var disabled = library.SetEnabled(mod, false);
+
+        Assert.False(Directory.Exists(Path.Combine(paths.Mods, "Top")));
+        Assert.True(File.Exists(Path.Combine(paths.DisabledMods, "Top", "top.package")));
+        Assert.False(Assert.Single(library.Scan()).IsEnabled);
+
+        library.SetEnabled(disabled, true);
+        Assert.True(Assert.Single(library.Scan()).IsEnabled);
+    }
+
+    [Fact]
+    public void DetectsScriptTooDeep()
+    {
+        using var t = new TestFolder();
+        var paths = new SimsPaths(t.Sims);
+        var deep = Path.Combine(paths.Mods, "Bad", "Inner");
+        Directory.CreateDirectory(deep);
+        File.WriteAllText(Path.Combine(deep, "x.ts4script"), "x");
+
+        Assert.NotEmpty(Assert.Single(new ModLibrary(paths).Scan()).Problems);
+    }
+
+    [Fact]
+    public void DeleteRemovesMod()
+    {
+        using var t = new TestFolder();
+        var paths = new SimsPaths(t.Sims);
+        var library = new ModLibrary(paths);
+        File.WriteAllText(Path.Combine(paths.Mods, "loose.package"), "x");
+
+        library.Delete(Assert.Single(library.Scan()));
+        Assert.Empty(library.Scan());
+    }
+}
+
+public class GameOptionsTests
+{
+    [Fact]
+    public void DetectsAndFixesDisabledMods()
+    {
+        using var t = new TestFolder();
+        var paths = new SimsPaths(t.Sims);
+        File.WriteAllText(paths.OptionsIni, "[options]\r\nmodsdisabled = 1\r\nscriptmodsenabled = 0\r\nother = 5\r\n");
+
+        Assert.False(GameOptions.ReadModSettings(paths).AllGood);
+        GameOptions.EnableMods(paths);
+
+        Assert.True(GameOptions.ReadModSettings(paths).AllGood);
+        Assert.Equal("[options]\r\nmodsdisabled = 0\r\nscriptmodsenabled = 1\r\nother = 5\r\n", File.ReadAllText(paths.OptionsIni));
+    }
+}

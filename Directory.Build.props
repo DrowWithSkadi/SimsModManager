@@ -1,0 +1,12 @@
+<Project>
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Позволяет собирать WPF-проект не только на Windows (например, в облаке) -->
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <Version>0.1.0</Version>
+    <Authors>DrowWithSkadi</Authors>
+    <Product>Sims Mod Manager</Product>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <RootNamespace>SimsModManager.Core</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Распаковка ZIP, RAR и 7z -->
+    <PackageReference Include="SharpCompress" Version="0.38.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="SimsModManager.Tests" />
+  </ItemGroup>
+
+</Project>
