@@ -145,12 +145,23 @@ public sealed partial class MainViewModel
     {
         try
         {
-            var mgr = new Velopack.UpdateManager(new Velopack.Sources.GithubSource(RepoUrl, null, true));
+            // Сначала берём файлы тестовой сборки напрямую (github.com/.../releases/download/dev/) —
+            // это не API GitHub, у него нет лимитов и он реже отвечает 503. Если не вышло — через API.
+            var mgr = new Velopack.UpdateManager(new Velopack.Sources.SimpleWebSource(RepoUrl + "/releases/download/dev/"));
             if (mgr.IsInstalled)
             {
                 IsCheckingUpdates = true;
                 UpdateStatus = "Проверяем…";
-                var info = await mgr.CheckForUpdatesAsync();
+                Velopack.UpdateInfo? info;
+                try
+                {
+                    info = await mgr.CheckForUpdatesAsync();
+                }
+                catch (Exception)
+                {
+                    mgr = new Velopack.UpdateManager(new Velopack.Sources.GithubSource(RepoUrl, null, true));
+                    info = await mgr.CheckForUpdatesAsync();
+                }
                 if (info is null)
                 {
                     UpdateStatus = $"У вас последняя версия. Последняя проверка: сегодня, {DateTime.Now:HH:mm}";
@@ -181,7 +192,9 @@ public sealed partial class MainViewModel
         }
         catch (Exception ex)
         {
-            UpdateStatus = "Не удалось обновиться: " + ex.Message;
+            UpdateStatus = ex is HttpRequestException or TaskCanceledException
+                ? "GitHub сейчас не отвечает. Попробуйте через пару минут — или скачайте установщик на странице GitHub."
+                : "Не удалось обновиться: " + ex.Message;
             IsCheckingUpdates = false;
             return;
         }
