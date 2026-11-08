@@ -29,11 +29,61 @@ public class CasEditTests
         Assert.True(part.Flags.HasFlag(CasParamFlags.RestrictOppositeGender));
         Assert.True(part.Flags2.HasFlag(CasParamFlags2.RestrictOppositeFrame));
         Assert.True(part.Flags.HasFlag(CasParamFlags.ShowInUi)); // чужие флаги не тронуты
-        // Посторонние метки и неизвестные значения категории одежды (например, погода) сохраняются
+        // Посторонние метки и неизвестные значения категории одежды сохраняются
         Assert.Contains(part.Tags, t => t.Category == 5 && t.Value == 999);
         Assert.Contains(part.Tags, t => t.Category == OutfitTags.TagCategory && t.Value == 2000);
         Assert.Equal(CasPart.BodyFull, part.BodyType);
         Assert.Equal("yfBody_Test", part.Name);
+    }
+
+    [Fact]
+    public void WriterChangesWeatherAndSeasons()
+    {
+        var data = Fake.CasPart(CasPart.BodyTop, AgeGender.Female | Adults,
+            tags: [(OutfitTags.TagCategory, OutfitTags.Everyday), (OutfitTags.TagCategory, OutfitTags.ColdWeather),
+                   (SeasonTags.TagCategory, SeasonTags.Winter), (SeasonTags.TagCategory, 1234)]);
+
+        var before = CasSettings.From(CasPart.Parse(data));
+        Assert.True(before.Outfits.SetEquals([OutfitTags.Everyday, OutfitTags.ColdWeather]));
+        Assert.True(before.Seasons!.SetEquals([SeasonTags.Winter]));
+
+        var edited = CasPartWriter.Apply(data, before with
+        {
+            Outfits = new HashSet<uint> { OutfitTags.Everyday, OutfitTags.HotWeather },
+            Seasons = new HashSet<uint> { SeasonTags.Spring, SeasonTags.Summer },
+        });
+        var part = CasPart.Parse(edited);
+        var after = CasSettings.From(part);
+
+        Assert.True(after.Outfits.SetEquals([OutfitTags.Everyday, OutfitTags.HotWeather]));
+        Assert.True(after.Seasons!.SetEquals([SeasonTags.Spring, SeasonTags.Summer]));
+        Assert.Contains(part.Tags, t => t.Category == SeasonTags.TagCategory && t.Value == 1234); // чужая метка стиля цела
+    }
+
+    [Fact]
+    public void SeasonsKeptWhenNotGiven()
+    {
+        var data = Fake.CasPart(CasPart.BodyTop, AgeGender.Female | Adults,
+            tags: [(OutfitTags.TagCategory, OutfitTags.Everyday), (SeasonTags.TagCategory, SeasonTags.Fall)]);
+
+        var edited = CasPartWriter.Apply(data, new CasSettings(Adults, true, false, new HashSet<uint> { OutfitTags.Formal }, false));
+
+        Assert.True(CasSettings.From(CasPart.Parse(edited)).Seasons!.SetEquals([SeasonTags.Fall]));
+    }
+
+    [Fact]
+    public void SmallBusinessTagIsNotSwimwear()
+    {
+        // 79 — OutfitCategory_SmallBusiness; раньше менеджер ошибочно считал её купальной
+        var data = Fake.CasPart(CasPart.BodyFull, AgeGender.Female | Adults,
+            tags: [(OutfitTags.TagCategory, 79), (OutfitTags.TagCategory, OutfitTags.Swimwear)]);
+
+        var s = CasSettings.From(CasPart.Parse(data));
+        Assert.True(s.Outfits.SetEquals([OutfitTags.Swimwear]));
+
+        var edited = CasPart.Parse(CasPartWriter.Apply(data, s with { Outfits = new HashSet<uint>() }));
+        Assert.Contains(edited.Tags, t => t.Category == OutfitTags.TagCategory && t.Value == 79);
+        Assert.DoesNotContain(edited.Tags, t => t.Value == OutfitTags.Swimwear);
     }
 
     [Fact]
