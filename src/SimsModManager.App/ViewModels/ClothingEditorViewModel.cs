@@ -99,9 +99,13 @@ public sealed partial class ClothingEditorViewModel : ObservableObject
             Ages.Add(Watch(new TriOption(name, Common(all, s => s.Ages.HasFlag(age))) { Age = age }));
         foreach (var (value, name) in OutfitTags.Known.Where(k => k.Value != OutfitTags.Bathing && k.Value != OutfitTags.Situation))
             Outfits.Add(Watch(new TriOption(name, Common(all, s => s.Outfits.Contains(value))) { TagValue = value }));
+        foreach (var (value, name) in OutfitTags.Weather)
+            Weather.Add(Watch(new TriOption(name, Common(all, s => s.Outfits.Contains(value))) { TagValue = value }));
+        foreach (var (value, name) in SeasonTags.Known)
+            Seasons.Add(Watch(new TriOption(name, Common(all, s => s.Seasons?.Contains(value) == true)) { TagValue = value }));
         Random = Watch(new TriOption("Случайные симы", Common(all, s => s.AllowRandom)));
 
-        HasMixedValues = _originalGender == GenderChoice.Mixed || Ages.Concat(Outfits).Append(Random).Any(o => o.Original is null);
+        HasMixedValues = _originalGender == GenderChoice.Mixed || AllOptions.Any(o => o.Original is null);
     }
 
     private TriOption Watch(TriOption o)
@@ -112,7 +116,7 @@ public sealed partial class ClothingEditorViewModel : ObservableObject
 
     private void NotifyChanges()
     {
-        foreach (var name in new[] { nameof(HasChanges), nameof(AgesChanged), nameof(OutfitsChanged), nameof(RandomChanged),
+        foreach (var name in new[] { nameof(HasChanges), nameof(AgesChanged), nameof(OutfitsChanged), nameof(WeatherChanged), nameof(SeasonsChanged), nameof(RandomChanged),
                                      nameof(RandomIsMixed), nameof(RandomOn), nameof(ChangeSummary) })
             OnPropertyChanged(name);
     }
@@ -142,7 +146,13 @@ public sealed partial class ClothingEditorViewModel : ObservableObject
     public ObservableCollection<SwatchChoice> Swatches { get; } = [];
     public ObservableCollection<TriOption> Ages { get; } = [];
     public ObservableCollection<TriOption> Outfits { get; } = [];
+    /// <summary>Жаркая / холодная погода (метки категории одежды).</summary>
+    public ObservableCollection<TriOption> Weather { get; } = [];
+    /// <summary>Весна, лето, осень, зима (метки стиля для фильтра в редакторе).</summary>
+    public ObservableCollection<TriOption> Seasons { get; } = [];
     public TriOption Random { get; }
+
+    private IEnumerable<TriOption> AllOptions => Ages.Concat(Outfits).Concat(Weather).Concat(Seasons).Append(Random);
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(SwatchText), nameof(ChangeSummary))]
@@ -171,17 +181,19 @@ public sealed partial class ClothingEditorViewModel : ObservableObject
     public bool GenderChanged => Gender != _originalGender;
     public bool AgesChanged => Ages.Any(a => a.IsChanged);
     public bool OutfitsChanged => Outfits.Any(o => o.IsChanged);
+    public bool WeatherChanged => Weather.Any(o => o.IsChanged);
+    public bool SeasonsChanged => Seasons.Any(o => o.IsChanged);
     public bool RandomChanged => Random.IsChanged;
     public bool RandomIsMixed => Random.IsChecked is null;
 
-    public bool HasChanges => GenderChanged || AgesChanged || OutfitsChanged || RandomChanged;
+    public bool HasChanges => GenderChanged || AgesChanged || OutfitsChanged || WeatherChanged || SeasonsChanged || RandomChanged;
 
     /// <summary>Для строки состояния: «Изменено 3 параметра · 12 расцветок».</summary>
     public string ChangeSummary
     {
         get
         {
-            var count = (GenderChanged ? 1 : 0) + Ages.Count(a => a.IsChanged) + Outfits.Count(o => o.IsChanged) + (RandomChanged ? 1 : 0);
+            var count = (GenderChanged ? 1 : 0) + AllOptions.Count(o => o.IsChanged);
             if (count == 0) return "Изменений пока нет";
             var scope = IsBulk
                 ? Text.Plural(_targets.Count, "вещь", "вещи", "вещей")
@@ -227,8 +239,7 @@ public sealed partial class ClothingEditorViewModel : ObservableObject
     private void Reset()
     {
         Gender = _originalGender;
-        foreach (var o in Ages.Concat(Outfits)) o.IsChecked = o.Original;
-        Random.IsChecked = Random.Original;
+        foreach (var o in AllOptions) o.IsChecked = o.Original;
         NotifyChanges();
     }
 
@@ -263,14 +274,13 @@ public sealed partial class ClothingEditorViewModel : ObservableObject
                 };
 
                 var outfits = cur.Outfits.ToHashSet();
-                foreach (var o in Outfits.Where(o => o.IsChecked is not null && o.IsChanged))
-                {
-                    if (o.IsChecked == true) outfits.Add(o.TagValue);
-                    else outfits.Remove(o.TagValue);
-                }
+                Toggle(outfits, Outfits.Concat(Weather));
+
+                var seasons = cur.Seasons?.ToHashSet() ?? new HashSet<uint>();
+                Toggle(seasons, Seasons);
 
                 var random = RandomChanged && Random.IsChecked is { } r ? r : cur.AllowRandom;
-                var updated = new CasSettings(ages, female, male, outfits, random);
+                var updated = new CasSettings(ages, female, male, outfits, random, seasons);
                 if (!updated.SameAs(cur)) changes[swatch.Entry.Key] = updated;
             }
             if (changes.Count > 0) result.Add((target, changes));
@@ -278,11 +288,21 @@ public sealed partial class ClothingEditorViewModel : ObservableObject
         return result;
     }
 
+    /// <summary>Включает или убирает метки по изменённым чипам; «по-разному» оставляет как было у каждой вещи.</summary>
+    private static void Toggle(HashSet<uint> set, IEnumerable<TriOption> options)
+    {
+        foreach (var o in options.Where(o => o.IsChecked is not null && o.IsChanged))
+        {
+            if (o.IsChecked == true) set.Add(o.TagValue);
+            else set.Remove(o.TagValue);
+        }
+    }
+
     /// <summary>Предупреждение, если после изменений вещь не будет доступна никому.</summary>
     public string? Validate()
     {
         if (Ages.All(a => a.IsChecked == false)) return "Выберите хотя бы один возраст — иначе вещь пропадёт из игры.";
-        if (Outfits.All(o => o.IsChecked == false))
+        if (Outfits.Concat(Weather).All(o => o.IsChecked == false))
             return "Не выбрана ни одна категория одежды. Вещь будет видна в редакторе, но игра не будет её использовать в нарядах.";
         return null;
     }

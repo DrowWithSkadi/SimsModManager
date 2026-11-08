@@ -192,7 +192,7 @@ public sealed partial class CasItemViewModel : ObservableObject
         get
         {
             var s = Item.Swatches[0].Settings;
-            var names = OutfitTags.Known.Where(k => s.Outfits.Contains(k.Value)).Select(k => k.Name.ToLowerInvariant()).ToList();
+            var names = OutfitTags.Known.Concat(OutfitTags.Weather).Where(k => s.Outfits.Contains(k.Value)).Select(k => k.Name.ToLowerInvariant()).ToList();
             var outfits = names.Count == 0 ? "категории не указаны" : string.Join(", ", names);
             return outfits + (s.AllowRandom ? " · для случайных симов" : " · не для случайных симов");
         }

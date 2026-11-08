@@ -157,6 +157,7 @@
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
                                 <RowDefinition Height="Auto" />
+                                <RowDefinition Height="Auto" />
                             </Grid.RowDefinitions>
 
                             <!-- Пол -->
@@ -203,20 +204,27 @@
                             <ContentPresenter Grid.Row="2" Grid.Column="1" Content="{Binding Outfits}" ContentTemplate="{StaticResource OptionChips}" Margin="0,0,0,6" />
 
                             <!-- Погода -->
-                            <TextBlock Grid.Row="3" Text="Погода" Style="{StaticResource RowLabel}" />
-                            <WrapPanel Grid.Row="3" Grid.Column="1" Margin="0,0,0,6"
-                                       ToolTip="Скоро: номера меток погоды ещё не подтверждены. Сейчас менеджер их не меняет — авторские метки сохраняются.">
-                                <ToggleButton Style="{StaticResource Chip}" Content="Жаркая" IsEnabled="False" Height="30" Padding="11,0" FontSize="13" Margin="0,0,6,6" />
-                                <ToggleButton Style="{StaticResource Chip}" Content="Холодная" IsEnabled="False" Height="30" Padding="11,0" FontSize="13" Margin="0,0,6,6" />
-                                <Border Style="{StaticResource Tag}" Margin="2,0,0,6">
-                                    <TextBlock Style="{StaticResource TagText}" Text="Времена года" />
-                                </Border>
-                            </WrapPanel>
+                            <StackPanel Grid.Row="3" Orientation="Horizontal">
+                                <TextBlock Text="Погода" Style="{StaticResource RowLabel}" />
+                                <Ellipse Width="5" Height="5" Fill="{DynamicResource B.Accent}" Margin="6,13,0,0" VerticalAlignment="Top"
+                                         Visibility="{Binding WeatherChanged, Converter={StaticResource BoolToVisibility}}" />
+                            </StackPanel>
+                            <ContentPresenter Grid.Row="3" Grid.Column="1" Content="{Binding Weather}" ContentTemplate="{StaticResource OptionChips}" Margin="0,0,0,6"
+                                              ToolTip="Нужны «Времена года». В жаркую и холодную погоду симы сами переодеваются в такую одежду." />
 
-                            <Border Grid.Row="4" Grid.ColumnSpan="2" Height="1" Background="{DynamicResource B.Hover}" Margin="0,8,0,14" />
+                            <!-- Времена года -->
+                            <StackPanel Grid.Row="4" Orientation="Horizontal">
+                                <TextBlock Text="Сезоны" Style="{StaticResource RowLabel}" />
+                                <Ellipse Width="5" Height="5" Fill="{DynamicResource B.Accent}" Margin="6,13,0,0" VerticalAlignment="Top"
+                                         Visibility="{Binding SeasonsChanged, Converter={StaticResource BoolToVisibility}}" />
+                            </StackPanel>
+                            <ContentPresenter Grid.Row="4" Grid.Column="1" Content="{Binding Seasons}" ContentTemplate="{StaticResource OptionChips}" Margin="0,0,0,6"
+                                              ToolTip="Метки стиля для фильтра в редакторе персонажа. На переодевание по погоде не влияют." />
+
+                            <Border Grid.Row="5" Grid.ColumnSpan="2" Height="1" Background="{DynamicResource B.Hover}" Margin="0,8,0,14" />
 
                             <!-- Случайные симы -->
-                            <Grid Grid.Row="5" Grid.ColumnSpan="2">
+                            <Grid Grid.Row="6" Grid.ColumnSpan="2">
                                 <StackPanel Margin="0,0,60,0">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="Случайные симы" Style="{StaticResource T.Strong}" FontSize="14" />
