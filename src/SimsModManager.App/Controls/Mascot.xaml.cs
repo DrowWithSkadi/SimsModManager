@@ -28,6 +28,15 @@ public partial class Mascot : UserControl
     private bool _sleeping;
     private Window? _window;
 
+    // Поглаживание: считаем смены направления движения мыши над Коробком
+    private double? _lastX;
+    private int _direction;
+    private readonly Queue<DateTime> _strokes = new();
+    private DateTime _lastStroke;
+    private DateTime _lastHeart;
+    private bool _petting;
+    private bool _strokedSinceDown;
+
     public Mascot()
     {
         InitializeComponent();
@@ -38,12 +47,16 @@ public partial class Mascot : UserControl
         Loaded += OnLoaded;
         Unloaded += OnUnloaded;
         _timer.Tick += OnTick;
+        MouseLeftButtonDown += (_, _) => _strokedSinceDown = false;
         MouseLeftButtonUp += (_, _) =>
         {
             Activity();
+            if (_petting || _strokedSinceDown) return; // гладили, а не нажимали
             Jump(14);
             WaveFlaps(2);
         };
+        MouseMove += OnPetMove;
+        MouseLeave += (_, _) => _lastX = null;
     }
 
     // ---------- Свойства-состояния ----------
@@ -92,7 +105,7 @@ public partial class Mascot : UserControl
     private void OnWindowMouseMove(object sender, MouseEventArgs e)
     {
         Activity();
-        if (IsBusy || IsExcited) return;
+        if (IsBusy || IsExcited || _petting) return;
 
         // Зрачки смотрят на курсор (не дальше края глаза)
         var p = e.GetPosition(Body);
@@ -120,6 +133,8 @@ public partial class Mascot : UserControl
     private void OnTick(object? sender, EventArgs e)
     {
         var now = DateTime.Now;
+        if (_petting && now - _lastStroke > TimeSpan.FromMilliseconds(700)) StopPetting();
+        if (_petting) return;
         if (!_sleeping && !IsBusy && !IsExcited && now - _lastActivity > SleepAfter)
         {
             FallAsleep();
@@ -233,6 +248,109 @@ public partial class Mascot : UserControl
         BlinkR.BeginAnimation(ScaleTransform.ScaleYProperty, open);
         Jump(6); // встряхнулся
         _nextBlink = DateTime.Now.AddSeconds(1);
+    }
+
+    // ---------- Поглаживание ----------
+
+    private void OnPetMove(object sender, MouseEventArgs e)
+    {
+        var x = e.GetPosition(Root).X;
+        if (_lastX is not { } last)
+        {
+            _lastX = x;
+            return;
+        }
+        var dx = x - last;
+        if (Math.Abs(dx) < 2) return;
+        _lastX = x;
+
+        var dir = Math.Sign(dx);
+        if (dir == _direction) return;
+        _direction = dir;
+
+        // Смена направления — один «гладь»
+        var now = DateTime.Now;
+        _lastStroke = now;
+        _strokedSinceDown = true;
+        _strokes.Enqueue(now);
+        while (_strokes.Count > 0 && now - _strokes.Peek() > TimeSpan.FromSeconds(1.2)) _strokes.Dequeue();
+
+        if (!_petting && _strokes.Count >= 3 && !IsBusy && !IsExcited) StartPetting();
+        if (_petting) OnStroke(dir);
+    }
+
+    private void StartPetting()
+    {
+        _petting = true;
+        if (_sleeping) WakeUp();
+        BlinkL.BeginAnimation(ScaleTransform.ScaleYProperty, null);
+        BlinkR.BeginAnimation(ScaleTransform.ScaleYProperty, null);
+        var fast = TimeSpan.FromSeconds(0.15);
+        foreach (var eye in new UIElement[] { EyeL, EyeR }) eye.BeginAnimation(OpacityProperty, new DoubleAnimation(0, fast));
+        foreach (var happy in new UIElement[] { HappyL, HappyR }) happy.BeginAnimation(OpacityProperty, new DoubleAnimation(1, fast));
+        foreach (var blush in new UIElement[] { BlushL, BlushR }) blush.BeginAnimation(OpacityProperty, new DoubleAnimation(0.75, TimeSpan.FromSeconds(0.4)));
+        // Клапаны расслабленно опускаются
+        FlapL.BeginAnimation(RotateTransform.AngleProperty, new DoubleAnimation(-12, TimeSpan.FromSeconds(0.3)));
+        FlapR.BeginAnimation(RotateTransform.AngleProperty, new DoubleAnimation(12, TimeSpan.FromSeconds(0.3)));
+    }
+
+    /// <summary>Каждое движение руки: Коробок чуть приминается, клонится за рукой и иногда выпускает сердечко.</summary>
+    private void OnStroke(int direction)
+    {
+        Squash.BeginAnimation(ScaleTransform.ScaleYProperty, Keys((0, Squash.ScaleY), (0.08, 0.92), (0.25, 1)));
+        Squash.BeginAnimation(ScaleTransform.ScaleXProperty, Keys((0, Squash.ScaleX), (0.08, 1.05), (0.25, 1)));
+        Tilt.BeginAnimation(RotateTransform.AngleProperty, new DoubleAnimation(direction * 4, TimeSpan.FromSeconds(0.2)) { EasingFunction = new QuadraticEase() });
+
+        var now = DateTime.Now;
+        if (now - _lastHeart > TimeSpan.FromMilliseconds(300))
+        {
+            _lastHeart = now;
+            SpawnHeart();
+        }
+    }
+
+    private void SpawnHeart()
+    {
+        var heart = new System.Windows.Shapes.Path
+        {
+            Data = Geometry.Parse("M6,11 C-3,4 1,-2 6,2.5 C11,-2 15,4 6,11 Z"),
+            Fill = new SolidColorBrush(Color.FromRgb(0xF0, 0x8F, 0xA6)),
+            IsHitTestVisible = false,
+            RenderTransformOrigin = new Point(0.5, 0.5),
+        };
+        var move = new TranslateTransform();
+        var scale = new ScaleTransform(0.4, 0.4);
+        heart.RenderTransform = new TransformGroup { Children = { scale, move } };
+        Canvas.SetLeft(heart, 40 + _random.Next(34));
+        Canvas.SetTop(heart, 2);
+        Root.Children.Add(heart);
+
+        var life = TimeSpan.FromSeconds(1.1);
+        var drift = _random.Next(-10, 11);
+        move.BeginAnimation(TranslateTransform.YProperty, new DoubleAnimation(0, -26, life) { EasingFunction = new QuadraticEase { EasingMode = EasingMode.EaseOut } });
+        move.BeginAnimation(TranslateTransform.XProperty, new DoubleAnimation(0, drift, life));
+        var grow = new DoubleAnimation(0.4, 1.1, TimeSpan.FromSeconds(0.3)) { EasingFunction = new BackEase { EasingMode = EasingMode.EaseOut } };
+        scale.BeginAnimation(ScaleTransform.ScaleXProperty, grow);
+        scale.BeginAnimation(ScaleTransform.ScaleYProperty, grow);
+        var fade = Keys((0, 1), (0.6, 1), (1.1, 0));
+        fade.Completed += (_, _) => Root.Children.Remove(heart);
+        heart.BeginAnimation(OpacityProperty, fade);
+    }
+
+    private void StopPetting()
+    {
+        _petting = false;
+        _strokes.Clear();
+        var fast = TimeSpan.FromSeconds(0.2);
+        foreach (var eye in new UIElement[] { EyeL, EyeR }) eye.BeginAnimation(OpacityProperty, new DoubleAnimation(1, fast));
+        foreach (var happy in new UIElement[] { HappyL, HappyR }) happy.BeginAnimation(OpacityProperty, new DoubleAnimation(0, fast));
+        foreach (var blush in new UIElement[] { BlushL, BlushR }) blush.BeginAnimation(OpacityProperty, new DoubleAnimation(0, TimeSpan.FromSeconds(0.8)));
+        Tilt.BeginAnimation(RotateTransform.AngleProperty, new DoubleAnimation(IsWorried ? -7 : 0, fast));
+        StopFlaps();
+        // Довольный подскок и последнее сердечко
+        Jump(8);
+        SpawnHeart();
+        _nextBlink = DateTime.Now.AddSeconds(1.5);
     }
 
     // ---------- Реакции на программу ----------
