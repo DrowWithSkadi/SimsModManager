@@ -155,6 +155,8 @@
 
         <!-- ═══ Плашки-предупреждения ═══ -->
         <StackPanel Grid.Row="2" Margin="24,0,24,0">
+            <!-- Когда Коробок включён, эти предупреждения говорит он (в облачке), а плашки прячем -->
+            <StackPanel Visibility="{Binding ShowMascot, Converter={StaticResource InverseBoolToVisibility}}">
             <Border b:Anim.Show="{Binding HasOptionsWarning}" Background="{DynamicResource B.WarningSubtle}" BorderBrush="{DynamicResource B.WarningBorder}"
                     BorderThickness="1" CornerRadius="6" Padding="12,10" Margin="0,0,0,8">
                 <Grid>
@@ -253,6 +255,8 @@
                     <Button Grid.Column="2" Style="{StaticResource Btn.Secondary}" Content="Показать" Command="{Binding ShowDuplicatesCommand}" />
                 </Grid>
             </Border>
+
+            </StackPanel>
 
             <Border b:Anim.Show="{Binding DuplicatesOnly}" Background="{DynamicResource B.Surface}" BorderBrush="{DynamicResource B.Border}"
                     BorderThickness="1" CornerRadius="6" Padding="12,6" Margin="0,0,0,8">
