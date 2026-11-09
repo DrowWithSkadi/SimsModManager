@@ -1,0 +1,52 @@
+<UserControl x:Class="SimsModManager.App.Controls.MascotStage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ctl="clr-namespace:SimsModManager.App.Controls"
+             xmlns:b="clr-namespace:SimsModManager.App.Behaviors">
+    <!-- Слой поверх окна: Коробок стоит на линиях интерфейса и прыгает между ними.
+         Сам слой прозрачен для мыши — нажимаются только Коробок и облачко. -->
+    <Canvas x:Name="Stage" ClipToBounds="False">
+        <ctl:Mascot x:Name="Buddy"
+                    IsExcited="{Binding IsDragOver}" IsBusy="{Binding IsInstalling}" IsWorried="{Binding MascotWorried}" />
+
+        <!-- «!» над головой: есть что сказать, облачко закрыто -->
+        <Border x:Name="Alert" Width="18" Height="18" CornerRadius="9" Visibility="Collapsed" IsHitTestVisible="False"
+                b:Anim.Bob="True">
+            <TextBlock Text="!" FontSize="13" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,-1,0,0" />
+        </Border>
+
+        <!-- Облачко с сообщением -->
+        <Grid x:Name="Bubble" Width="290" Visibility="Collapsed" RenderTransformOrigin="0.5,0">
+            <Grid.RenderTransform><ScaleTransform x:Name="BubbleScale" /></Grid.RenderTransform>
+            <Path x:Name="TailTop" Data="M0,9 L9,0 L18,9 Z" Fill="White" HorizontalAlignment="Left" VerticalAlignment="Top" />
+            <Border Background="White" CornerRadius="12" Padding="14,12,10,12" Margin="0,8,0,8">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="18" ShadowDepth="4" Opacity="0.35" Color="Black" />
+                </Border.Effect>
+                <StackPanel>
+                    <Grid>
+                        <TextBlock Text="{Binding Title}" FontSize="13" FontWeight="SemiBold" Foreground="#1A1F1E" TextWrapping="Wrap" Margin="0,2,26,0" />
+                        <Button Style="{StaticResource Btn.IconGhost}" ctl:Btn.Icon="{StaticResource Icon.X}" Foreground="#5C6A68"
+                                Width="24" Height="24" Padding="0" HorizontalAlignment="Right" VerticalAlignment="Top"
+                                ToolTip="Закрыть" Click="OnCloseBubble" />
+                    </Grid>
+                    <TextBlock Text="{Binding Detail}" FontSize="12" Foreground="#4A5654" TextWrapping="Wrap" Margin="0,4,8,0" LineHeight="17"
+                               Visibility="{Binding Detail, Converter={StaticResource NullToVisibility}}" />
+                    <WrapPanel Margin="0,10,0,0" Visibility="{Binding ActionText, Converter={StaticResource NullToVisibility}}">
+                        <Button Style="{StaticResource Btn.Primary}" Content="{Binding ActionText}" Command="{Binding Action}" Height="28" FontSize="12"
+                                Margin="0,0,6,0" Click="OnBubbleAction" />
+                        <Button Style="{StaticResource Btn.Secondary}" Content="{Binding SecondaryText}" Command="{Binding Secondary}" Height="28" FontSize="12"
+                                Background="#EEF2F1" BorderBrush="#D5DCDA" Foreground="#1A1F1E"
+                                Visibility="{Binding SecondaryText, Converter={StaticResource NullToVisibility}}" Click="OnBubbleAction" />
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+            <Path x:Name="TailBottom" Data="M0,0 L9,9 L18,0 Z" Fill="White" HorizontalAlignment="Left" VerticalAlignment="Bottom" />
+            <!-- Восклицательный знак на углу — для предупреждений и ошибок -->
+            <Border x:Name="Badge" Width="22" Height="22" CornerRadius="11" HorizontalAlignment="Left" VerticalAlignment="Top"
+                    Margin="-7,0,0,0" BorderBrush="White" BorderThickness="2">
+                <TextBlock Text="!" FontSize="13" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,-1,0,0" />
+            </Border>
+        </Grid>
+    </Canvas>
+</UserControl>

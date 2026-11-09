@@ -58,6 +58,7 @@ public sealed partial class MainViewModel : ObservableObject
 
         InitSettingsPage();
         InitGameFolder();
+        HookMascot();
     }
 
     public ObservableCollection<ModItemViewModel> Mods { get; } = [];

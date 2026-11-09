@@ -52,12 +52,15 @@ public partial class Mascot : UserControl
         {
             Activity();
             if (_petting || _strokedSinceDown) return; // гладили, а не нажимали
-            Jump(14);
-            WaveFlaps(2);
+            Ouch();
+            Poked?.Invoke();
         };
         MouseMove += OnPetMove;
         MouseLeave += (_, _) => _lastX = null;
     }
+
+    /// <summary>По Коробку нажали (не погладили).</summary>
+    public event Action? Poked;
 
     // ---------- Свойства-состояния ----------
 
@@ -248,6 +251,60 @@ public partial class Mascot : UserControl
         BlinkR.BeginAnimation(ScaleTransform.ScaleYProperty, open);
         Jump(6); // встряхнулся
         _nextBlink = DateTime.Now.AddSeconds(1);
+    }
+
+    // ---------- Тычки, головокружение, прыжки по окну ----------
+
+    /// <summary>Тычок: приплющился, зажмурился, качнулся.</summary>
+    private void Ouch()
+    {
+        Squash.BeginAnimation(ScaleTransform.ScaleYProperty, Keys((0, 1), (0.06, 0.78), (0.3, 1)));
+        Squash.BeginAnimation(ScaleTransform.ScaleXProperty, Keys((0, 1), (0.06, 1.12), (0.3, 1)));
+        var squint = Keys((0, 1), (0.05, 0.25), (0.3, 0.25), (0.4, 1));
+        BlinkL.BeginAnimation(ScaleTransform.ScaleYProperty, squint);
+        BlinkR.BeginAnimation(ScaleTransform.ScaleYProperty, squint);
+        Shake.BeginAnimation(TranslateTransform.XProperty, Keys((0, 0), (0.05, -3), (0.1, 3), (0.15, -2), (0.2, 0)));
+    }
+
+    /// <summary>Закружилась голова: крутится вокруг себя и шатается.</summary>
+    public void Dizzy()
+    {
+        Activity();
+        var baseAngle = IsWorried ? -7.0 : 0.0;
+        var spin = Keys((0, baseAngle), (0.45, baseAngle + 360), (0.6, baseAngle + 350), (0.75, baseAngle + 368), (0.9, baseAngle + 360));
+        spin.Completed += (_, _) =>
+        {
+            Tilt.BeginAnimation(RotateTransform.AngleProperty, null);
+            Tilt.BeginAnimation(RotateTransform.AngleProperty, new DoubleAnimation(IsWorried ? -7 : 0, TimeSpan.Zero));
+        };
+        Tilt.BeginAnimation(RotateTransform.AngleProperty, spin);
+        WaveFlaps(2);
+    }
+
+    /// <summary>Прыжок на новое место: вытягивается в полёте, сплющивается при приземлении.</summary>
+    public void Leap(double seconds)
+    {
+        Activity();
+        Squash.BeginAnimation(ScaleTransform.ScaleYProperty,
+            Keys((0, 1), (0.08, 0.8), (0.2, 1.15), (seconds - 0.1, 1.1), (seconds, 0.82), (seconds + 0.15, 1)));
+        Squash.BeginAnimation(ScaleTransform.ScaleXProperty,
+            Keys((0, 1), (0.08, 1.12), (0.2, 0.9), (seconds - 0.1, 0.92), (seconds, 1.12), (seconds + 0.15, 1)));
+        FlapForever(40, 0.12);
+        var stop = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(seconds) };
+        stop.Tick += (_, _) =>
+        {
+            stop.Stop();
+            if (!IsExcited && !IsBusy) StopFlaps();
+        };
+        stop.Start();
+    }
+
+    /// <summary>Хочет что-то сказать: подпрыгивает и машет.</summary>
+    public void Announce()
+    {
+        Activity();
+        Jump(10);
+        WaveFlaps(2);
     }
 
     // ---------- Поглаживание ----------

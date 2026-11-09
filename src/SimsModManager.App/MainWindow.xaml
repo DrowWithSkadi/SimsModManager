@@ -63,10 +63,6 @@
                         <TextBlock Text="{Binding SimsFolder}" FontSize="11" Foreground="{DynamicResource B.TextMuted}" Margin="0,4,0,0"
                                    TextTrimming="CharacterEllipsis" Visibility="{Binding HasGame, Converter={StaticResource BoolToVisibility}}" />
                     </StackPanel>
-                    <!-- Коробок стоит на нижней линии шапки -->
-                    <ctl:Mascot VerticalAlignment="Bottom" Margin="20,0,0,-1"
-                                IsExcited="{Binding IsDragOver}" IsBusy="{Binding IsInstalling}" IsWorried="{Binding HasHealthBanner}"
-                                Visibility="{Binding ShowMascot, Converter={StaticResource BoolToVisibility}}" />
                     </StackPanel>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center"
                                 Visibility="{Binding HasGame, Converter={StaticResource BoolToVisibility}}">
@@ -217,6 +213,10 @@
                     </StackPanel>
                 </Border>
             </Grid>
+
+            <!-- ═══ Коробок: живёт поверх шапки, страниц и строки состояния ═══ -->
+            <ctl:MascotStage Grid.Row="1" Grid.RowSpan="3" Page="{Binding Page}" Notice="{Binding MascotNotice}"
+                             Visibility="{Binding ShowMascot, Converter={StaticResource BoolToVisibility}}" />
 
             <!-- ═══ Диалог ═══ -->
             <Grid Grid.Row="0" Grid.RowSpan="4" Background="{DynamicResource B.Overlay}" b:Anim.Show="{Binding HasDialog}" b:Anim.Offset="0"
