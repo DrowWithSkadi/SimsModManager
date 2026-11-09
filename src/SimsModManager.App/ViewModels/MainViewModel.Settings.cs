@@ -24,6 +24,7 @@ public sealed partial class MainViewModel
     [ObservableProperty] private bool _optionsFileFound;
     [ObservableProperty] private bool _autoClearCache;
     [ObservableProperty] private bool _deleteToRecycleBin;
+    [ObservableProperty] private bool _showSplash;
     [ObservableProperty] private string _updateStatus = "";
     [ObservableProperty] private bool _isCheckingUpdates;
     [ObservableProperty] private bool _folderLooksValid;
@@ -60,6 +61,7 @@ public sealed partial class MainViewModel
         Theme = Services.ThemeService.Current;
         AutoClearCache = _settings.AutoClearCache;
         DeleteToRecycleBin = _settings.DeleteToRecycleBin;
+        ShowSplash = _settings.ShowSplash;
         _loadingSettings = false;
     }
 
@@ -111,6 +113,13 @@ public sealed partial class MainViewModel
     {
         if (_loadingSettings) return;
         _settings.AutoClearCache = value;
+        SaveSettings();
+    }
+
+    partial void OnShowSplashChanged(bool value)
+    {
+        if (_loadingSettings) return;
+        _settings.ShowSplash = value;
         SaveSettings();
     }
 

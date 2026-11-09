@@ -1,0 +1,279 @@
+<Window x:Class="SimsModManager.App.SplashWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Sims Mod Manager" Width="300" Height="330"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent" ResizeMode="NoResize"
+        ShowInTaskbar="False" WindowStartupLocation="CenterScreen" Opacity="0"
+        MouseLeftButtonDown="OnSkip">
+    <!-- Заставка: кристалл быстро прокручивается вокруг своей оси, вспыхивает блик,
+         появляются звёздочки и пару раз мигают, переливаясь. Клик — пропустить. -->
+    <Window.Resources>
+        <Storyboard x:Key="Intro" Completed="OnIntroCompleted">
+            <DoubleAnimation Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.2" />
+
+            <!-- Появление кристалла -->
+            <DoubleAnimation Storyboard.TargetName="Crystal" Storyboard.TargetProperty="Opacity" From="0" To="1" Duration="0:0:0.2" />
+            <DoubleAnimation Storyboard.TargetName="Grow" Storyboard.TargetProperty="ScaleX" From="0.4" To="1" Duration="0:0:0.45">
+                <DoubleAnimation.EasingFunction><BackEase EasingMode="EaseOut" Amplitude="0.5" /></DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+            <DoubleAnimation Storyboard.TargetName="Grow" Storyboard.TargetProperty="ScaleY" From="0.4" To="1" Duration="0:0:0.45">
+                <DoubleAnimation.EasingFunction><BackEase EasingMode="EaseOut" Amplitude="0.5" /></DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+
+            <!-- Два оборота вокруг вертикальной оси -->
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Spin" Storyboard.TargetProperty="ScaleX">
+                    <LinearDoubleKeyFrame KeyTime="0:0:0.150" Value="1.000" />
+                    <LinearDoubleKeyFrame KeyTime="0:0:0.169" Value="0.719" />
+                    <LinearDoubleKeyFrame KeyTime="0:0:0.188" Value="0.064" />
+                    <LinearDoubleKeyFrame KeyTime="0:0:0.206" Value="-0.598" />
+                    <LinearDoubleKeyFrame KeyTime="0:0:0.225" Value="-0.968" />
+                    <LinearDoubleKeyFrame KeyTime="0:0:0.244" Value="-0.925" />
+                    <LinearDoubleKeyFrame KeyTime="0:0:0.263" Value="-0.535" />
+                    <LinearDoubleKeyFrame KeyTime="0:0:0.281" Value="0.023" />
+                    <LinearDoubleKeyFrame KeyTime="0:0:0.300" Value="0.550" />
+                    <LinearDoubleKeyFrame KeyTime="0:0:0.319" Value="0.897" />
+                    <LinearDoubleKeyFrame KeyTime="0:0:0.338" Value="0.999" />
+                    <LinearDoubleKeyFrame KeyTime="0:0:0.356" Value="0.864" />
+                    <LinearDoubleKeyFrame KeyTime="0:0:0.375" Value="0.556" />
+                    <LinearDoubleKeyFrame KeyTime="0:0:0.394" Value="0.159" />
+                    <LinearDoubleKeyFrame KeyTime="0:0:0.412" Value="-0.244" />
+                    <LinearDoubleKeyFrame KeyTime="0:0:0.431" Value="-0.588" />
+                    <LinearDoubleKeyFrame KeyTime="0:0:0.450" Value="-0.835" />
+                    <LinearDoubleKeyFrame KeyTime="0:0:0.469" Value="-0.970" />
+                    <LinearDoubleKeyFrame KeyTime="0:0:0.488" Value="-0.997" />
+                    <LinearDoubleKeyFrame KeyTime="0:0:0.506" Value="-0.932" />
+                    <LinearDoubleKeyFrame KeyTime="0:0:0.525" Value="-0.798" />
+                    <LinearDoubleKeyFrame KeyTime="0:0:0.544" Value="-0.618" />
+                    <LinearDoubleKeyFrame KeyTime="0:0:0.562" Value="-0.414" />
+                    <LinearDoubleKeyFrame KeyTime="0:0:0.581" Value="-0.203" />
+                    <LinearDoubleKeyFrame KeyTime="0:0:0.600" Value="-0.000" />
+                    <LinearDoubleKeyFrame KeyTime="0:0:0.619" Value="0.187" />
+                    <LinearDoubleKeyFrame KeyTime="0:0:0.637" Value="0.353" />
+                    <LinearDoubleKeyFrame KeyTime="0:0:0.656" Value="0.496" />
+                    <LinearDoubleKeyFrame KeyTime="0:0:0.675" Value="0.615" />
+                    <LinearDoubleKeyFrame KeyTime="0:0:0.694" Value="0.711" />
+                    <LinearDoubleKeyFrame KeyTime="0:0:0.713" Value="0.788" />
+                    <LinearDoubleKeyFrame KeyTime="0:0:0.731" Value="0.848" />
+                    <LinearDoubleKeyFrame KeyTime="0:0:0.750" Value="0.894" />
+                    <LinearDoubleKeyFrame KeyTime="0:0:0.769" Value="0.927" />
+                    <LinearDoubleKeyFrame KeyTime="0:0:0.788" Value="0.952" />
+                    <LinearDoubleKeyFrame KeyTime="0:0:0.806" Value="0.969" />
+                    <LinearDoubleKeyFrame KeyTime="0:0:0.825" Value="0.981" />
+                    <LinearDoubleKeyFrame KeyTime="0:0:0.844" Value="0.989" />
+                    <LinearDoubleKeyFrame KeyTime="0:0:0.863" Value="0.994" />
+                    <LinearDoubleKeyFrame KeyTime="0:0:0.881" Value="0.997" />
+                    <LinearDoubleKeyFrame KeyTime="0:0:0.900" Value="0.998" />
+                    <LinearDoubleKeyFrame KeyTime="0:0:0.919" Value="0.999" />
+                    <LinearDoubleKeyFrame KeyTime="0:0:0.938" Value="1.000" />
+                    <LinearDoubleKeyFrame KeyTime="0:0:0.956" Value="1.000" />
+                    <LinearDoubleKeyFrame KeyTime="0:0:0.975" Value="1.000" />
+                    <LinearDoubleKeyFrame KeyTime="0:0:0.994" Value="1.000" />
+                    <LinearDoubleKeyFrame KeyTime="0:0:1.012" Value="1.000" />
+                    <LinearDoubleKeyFrame KeyTime="0:0:1.031" Value="1.000" />
+                    <LinearDoubleKeyFrame KeyTime="0:0:1.050" Value="1.000" />
+            </DoubleAnimationUsingKeyFrames>
+
+            <!-- Блик пробегает по граням -->
+            <DoubleAnimation Storyboard.TargetName="ShineMove" Storyboard.TargetProperty="X" From="-90" To="130" BeginTime="0:0:1.0" Duration="0:0:0.55">
+                <DoubleAnimation.EasingFunction><CubicEase EasingMode="EaseInOut" /></DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+
+            <!-- Мягкое сияние за кристаллом -->
+            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Halo" Storyboard.TargetProperty="Opacity">
+                <EasingDoubleKeyFrame KeyTime="0:0:1.0" Value="0" />
+                <EasingDoubleKeyFrame KeyTime="0:0:1.3" Value="1" />
+                <EasingDoubleKeyFrame KeyTime="0:0:1.8" Value="0.55" />
+                <EasingDoubleKeyFrame KeyTime="0:0:2.3" Value="0.9" />
+            </DoubleAnimationUsingKeyFrames>
+
+            <!-- Звёздочки -->
+                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Spark1Scale" Storyboard.TargetProperty="ScaleX">
+                    <DiscreteDoubleKeyFrame KeyTime="0:0:0.00" Value="0" />
+                    <DiscreteDoubleKeyFrame KeyTime="0:0:1.05" Value="0" />
+                    <EasingDoubleKeyFrame KeyTime="0:0:1.35" Value="1" />
+                    <EasingDoubleKeyFrame KeyTime="0:0:1.55" Value="0.35" />
+                    <EasingDoubleKeyFrame KeyTime="0:0:1.75" Value="1.15" />
+                    <EasingDoubleKeyFrame KeyTime="0:0:1.95" Value="0.35" />
+                    <EasingDoubleKeyFrame KeyTime="0:0:2.15" Value="1" />
+                </DoubleAnimationUsingKeyFrames>
+                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Spark1Scale" Storyboard.TargetProperty="ScaleY">
+                    <DiscreteDoubleKeyFrame KeyTime="0:0:0.00" Value="0" />
+                    <DiscreteDoubleKeyFrame KeyTime="0:0:1.05" Value="0" />
+                    <EasingDoubleKeyFrame KeyTime="0:0:1.35" Value="1" />
+                    <EasingDoubleKeyFrame KeyTime="0:0:1.55" Value="0.35" />
+                    <EasingDoubleKeyFrame KeyTime="0:0:1.75" Value="1.15" />
+                    <EasingDoubleKeyFrame KeyTime="0:0:1.95" Value="0.35" />
+                    <EasingDoubleKeyFrame KeyTime="0:0:2.15" Value="1" />
+                </DoubleAnimationUsingKeyFrames>
+                <DoubleAnimation Storyboard.TargetName="Spark1" Storyboard.TargetProperty="Opacity" To="1" BeginTime="0:0:1.05" Duration="0:0:0.1" />
+                <DoubleAnimation Storyboard.TargetName="Spark1Rot" Storyboard.TargetProperty="Angle" From="-45" To="90" BeginTime="0:0:1.05" Duration="0:0:1.1">
+                    <DoubleAnimation.EasingFunction><CubicEase EasingMode="EaseOut" /></DoubleAnimation.EasingFunction>
+                </DoubleAnimation>
+                <ColorAnimationUsingKeyFrames Storyboard.TargetName="Spark1Brush" Storyboard.TargetProperty="Color" BeginTime="0:0:1.05">
+                    <LinearColorKeyFrame KeyTime="0:0:0.25" Value="#FFFFFF" />
+                    <LinearColorKeyFrame KeyTime="0:0:0.45" Value="#9AE4FF" />
+                    <LinearColorKeyFrame KeyTime="0:0:0.65" Value="#D9C8FF" />
+                    <LinearColorKeyFrame KeyTime="0:0:0.85" Value="#FFFFFF" />
+                    <LinearColorKeyFrame KeyTime="0:0:1.10" Value="#E9FFF9" />
+                </ColorAnimationUsingKeyFrames>
+                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Spark2Scale" Storyboard.TargetProperty="ScaleX">
+                    <DiscreteDoubleKeyFrame KeyTime="0:0:0.00" Value="0" />
+                    <DiscreteDoubleKeyFrame KeyTime="0:0:1.15" Value="0" />
+                    <EasingDoubleKeyFrame KeyTime="0:0:1.45" Value="1" />
+                    <EasingDoubleKeyFrame KeyTime="0:0:1.65" Value="0.35" />
+                    <EasingDoubleKeyFrame KeyTime="0:0:1.85" Value="1.15" />
+                    <EasingDoubleKeyFrame KeyTime="0:0:2.05" Value="0.35" />
+                    <EasingDoubleKeyFrame KeyTime="0:0:2.25" Value="1" />
+                </DoubleAnimationUsingKeyFrames>
+                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Spark2Scale" Storyboard.TargetProperty="ScaleY">
+                    <DiscreteDoubleKeyFrame KeyTime="0:0:0.00" Value="0" />
+                    <DiscreteDoubleKeyFrame KeyTime="0:0:1.15" Value="0" />
+                    <EasingDoubleKeyFrame KeyTime="0:0:1.45" Value="1" />
+                    <EasingDoubleKeyFrame KeyTime="0:0:1.65" Value="0.35" />
+                    <EasingDoubleKeyFrame KeyTime="0:0:1.85" Value="1.15" />
+                    <EasingDoubleKeyFrame KeyTime="0:0:2.05" Value="0.35" />
+                    <EasingDoubleKeyFrame KeyTime="0:0:2.25" Value="1" />
+                </DoubleAnimationUsingKeyFrames>
+                <DoubleAnimation Storyboard.TargetName="Spark2" Storyboard.TargetProperty="Opacity" To="1" BeginTime="0:0:1.15" Duration="0:0:0.1" />
+                <DoubleAnimation Storyboard.TargetName="Spark2Rot" Storyboard.TargetProperty="Angle" From="-45" To="90" BeginTime="0:0:1.15" Duration="0:0:1.1">
+                    <DoubleAnimation.EasingFunction><CubicEase EasingMode="EaseOut" /></DoubleAnimation.EasingFunction>
+                </DoubleAnimation>
+                <ColorAnimationUsingKeyFrames Storyboard.TargetName="Spark2Brush" Storyboard.TargetProperty="Color" BeginTime="0:0:1.15">
+                    <LinearColorKeyFrame KeyTime="0:0:0.25" Value="#FFFFFF" />
+                    <LinearColorKeyFrame KeyTime="0:0:0.45" Value="#9AE4FF" />
+                    <LinearColorKeyFrame KeyTime="0:0:0.65" Value="#D9C8FF" />
+                    <LinearColorKeyFrame KeyTime="0:0:0.85" Value="#FFFFFF" />
+                    <LinearColorKeyFrame KeyTime="0:0:1.10" Value="#82EACF" />
+                </ColorAnimationUsingKeyFrames>
+                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Spark3Scale" Storyboard.TargetProperty="ScaleX">
+                    <DiscreteDoubleKeyFrame KeyTime="0:0:0.00" Value="0" />
+                    <DiscreteDoubleKeyFrame KeyTime="0:0:1.25" Value="0" />
+                    <EasingDoubleKeyFrame KeyTime="0:0:1.55" Value="1" />
+                    <EasingDoubleKeyFrame KeyTime="0:0:1.75" Value="0.35" />
+                    <EasingDoubleKeyFrame KeyTime="0:0:1.95" Value="1.15" />
+                    <EasingDoubleKeyFrame KeyTime="0:0:2.15" Value="0.35" />
+                    <EasingDoubleKeyFrame KeyTime="0:0:2.35" Value="1" />
+                </DoubleAnimationUsingKeyFrames>
+                <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Spark3Scale" Storyboard.TargetProperty="ScaleY">
+                    <DiscreteDoubleKeyFrame KeyTime="0:0:0.00" Value="0" />
+                    <DiscreteDoubleKeyFrame KeyTime="0:0:1.25" Value="0" />
+                    <EasingDoubleKeyFrame KeyTime="0:0:1.55" Value="1" />
+                    <EasingDoubleKeyFrame KeyTime="0:0:1.75" Value="0.35" />
+                    <EasingDoubleKeyFrame KeyTime="0:0:1.95" Value="1.15" />
+                    <EasingDoubleKeyFrame KeyTime="0:0:2.15" Value="0.35" />
+                    <EasingDoubleKeyFrame KeyTime="0:0:2.35" Value="1" />
+                </DoubleAnimationUsingKeyFrames>
+                <DoubleAnimation Storyboard.TargetName="Spark3" Storyboard.TargetProperty="Opacity" To="1" BeginTime="0:0:1.25" Duration="0:0:0.1" />
+                <DoubleAnimation Storyboard.TargetName="Spark3Rot" Storyboard.TargetProperty="Angle" From="-45" To="90" BeginTime="0:0:1.25" Duration="0:0:1.1">
+                    <DoubleAnimation.EasingFunction><CubicEase EasingMode="EaseOut" /></DoubleAnimation.EasingFunction>
+                </DoubleAnimation>
+                <ColorAnimationUsingKeyFrames Storyboard.TargetName="Spark3Brush" Storyboard.TargetProperty="Color" BeginTime="0:0:1.25">
+                    <LinearColorKeyFrame KeyTime="0:0:0.25" Value="#FFFFFF" />
+                    <LinearColorKeyFrame KeyTime="0:0:0.45" Value="#9AE4FF" />
+                    <LinearColorKeyFrame KeyTime="0:0:0.65" Value="#D9C8FF" />
+                    <LinearColorKeyFrame KeyTime="0:0:0.85" Value="#FFFFFF" />
+                    <LinearColorKeyFrame KeyTime="0:0:1.10" Value="#B8F5E6" />
+                </ColorAnimationUsingKeyFrames>
+
+            <!-- Название -->
+            <DoubleAnimation Storyboard.TargetName="Title" Storyboard.TargetProperty="Opacity" From="0" To="1" BeginTime="0:0:0.7" Duration="0:0:0.4" />
+            <DoubleAnimation Storyboard.TargetName="TitleMove" Storyboard.TargetProperty="Y" From="8" To="0" BeginTime="0:0:0.7" Duration="0:0:0.4">
+                <DoubleAnimation.EasingFunction><CubicEase EasingMode="EaseOut" /></DoubleAnimation.EasingFunction>
+            </DoubleAnimation>
+
+            <!-- Пауза, чтобы досмотреть -->
+            <DoubleAnimation Storyboard.TargetName="Title" Storyboard.TargetProperty="Opacity" To="1" BeginTime="0:0:2.4" Duration="0:0:0.15" />
+        </Storyboard>
+    </Window.Resources>
+
+    <Border Margin="12" CornerRadius="28" Background="#141817" BorderBrush="#26302D" BorderThickness="1">
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="24" ShadowDepth="4" Opacity="0.5" Color="Black" />
+        </Border.Effect>
+        <Grid>
+            <Ellipse x:Name="Halo" Width="230" Height="230" VerticalAlignment="Top" Margin="0,8,0,0" Opacity="0" IsHitTestVisible="False">
+                <Ellipse.Fill>
+                    <RadialGradientBrush>
+                        <GradientStop Color="#5577E1C7" Offset="0" />
+                        <GradientStop Color="#0077E1C7" Offset="1" />
+                    </RadialGradientBrush>
+                </Ellipse.Fill>
+            </Ellipse>
+
+            <Canvas Width="200" Height="200" VerticalAlignment="Top" Margin="0,24,0,0">
+                <Canvas x:Name="Crystal" Width="200" Height="200" Opacity="0" RenderTransformOrigin="0.5,0.5">
+                    <Canvas.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform x:Name="Spin" />
+                            <ScaleTransform x:Name="Grow" />
+                        </TransformGroup>
+                    </Canvas.RenderTransform>
+                    <Canvas.Clip>
+                        <PathGeometry Figures="M100,20 L134,90 L100,180 L66,90 Z" />
+                    </Canvas.Clip>
+                    <Polygon Points="100,20 66,90 100,100">
+                        <Polygon.Fill>
+                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                <GradientStop Color="#E9FFF9" Offset="0" />
+                                <GradientStop Color="#9AF0DA" Offset="1" />
+                            </LinearGradientBrush>
+                        </Polygon.Fill>
+                    </Polygon>
+                    <Polygon Points="100,20 100,100 134,90" Fill="#82EACF" />
+                    <Polygon Points="66,90 100,100 100,180" Fill="#4FC9AC" />
+                    <Polygon Points="100,100 134,90 100,180" Fill="#1F7F69" />
+                    <Polygon Points="66,90 80,94 100,180" Fill="#3DBB9C" />
+                    <Polygon Points="86,52 93,40 92,84" Fill="#A6FFFFFF" />
+                    <!-- Блик -->
+                    <Rectangle Width="40" Height="240" Canvas.Top="-20" Canvas.Left="60" RenderTransformOrigin="0.5,0.5">
+                        <Rectangle.Fill>
+                            <LinearGradientBrush StartPoint="0,0.5" EndPoint="1,0.5">
+                                <GradientStop Color="#00FFFFFF" Offset="0" />
+                                <GradientStop Color="#B3FFFFFF" Offset="0.5" />
+                                <GradientStop Color="#00FFFFFF" Offset="1" />
+                            </LinearGradientBrush>
+                        </Rectangle.Fill>
+                        <Rectangle.RenderTransform>
+                            <TransformGroup>
+                                <SkewTransform AngleX="-18" />
+                                <TranslateTransform x:Name="ShineMove" X="-90" />
+                            </TransformGroup>
+                        </Rectangle.RenderTransform>
+                    </Rectangle>
+                </Canvas>
+                <Path x:Name="Spark1" Canvas.Left="40" Canvas.Top="32" Data="M12.0,0.0 L15.4,8.6 L24.0,12.0 L15.4,15.4 L12.0,24.0 L8.6,15.4 L0.0,12.0 L8.6,8.6 Z" RenderTransformOrigin="0.5,0.5" Opacity="0">
+                    <Path.Fill><SolidColorBrush x:Name="Spark1Brush" Color="#E9FFF9" /></Path.Fill>
+                    <Path.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform x:Name="Spark1Scale" ScaleX="0" ScaleY="0" />
+                            <RotateTransform x:Name="Spark1Rot" />
+                        </TransformGroup>
+                    </Path.RenderTransform>
+                </Path>
+                <Path x:Name="Spark2" Canvas.Left="140" Canvas.Top="64" Data="M8.0,0.0 L10.2,5.8 L16.0,8.0 L10.2,10.2 L8.0,16.0 L5.8,10.2 L0.0,8.0 L5.8,5.8 Z" RenderTransformOrigin="0.5,0.5" Opacity="0">
+                    <Path.Fill><SolidColorBrush x:Name="Spark2Brush" Color="#82EACF" /></Path.Fill>
+                    <Path.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform x:Name="Spark2Scale" ScaleX="0" ScaleY="0" />
+                            <RotateTransform x:Name="Spark2Rot" />
+                        </TransformGroup>
+                    </Path.RenderTransform>
+                </Path>
+                <Path x:Name="Spark3" Canvas.Left="134" Canvas.Top="146" Data="M6.0,0.0 L7.7,4.3 L12.0,6.0 L7.7,7.7 L6.0,12.0 L4.3,7.7 L0.0,6.0 L4.3,4.3 Z" RenderTransformOrigin="0.5,0.5" Opacity="0">
+                    <Path.Fill><SolidColorBrush x:Name="Spark3Brush" Color="#B8F5E6" /></Path.Fill>
+                    <Path.RenderTransform>
+                        <TransformGroup>
+                            <ScaleTransform x:Name="Spark3Scale" ScaleX="0" ScaleY="0" />
+                            <RotateTransform x:Name="Spark3Rot" />
+                        </TransformGroup>
+                    </Path.RenderTransform>
+                </Path>
+            </Canvas>
+
+            <TextBlock x:Name="Title" Text="Sims Mod Manager" FontFamily="{StaticResource Font.Ui}" FontSize="17" FontWeight="SemiBold" Foreground="#E8EEEC"
+                       HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,30" Opacity="0">
+                <TextBlock.RenderTransform><TranslateTransform x:Name="TitleMove" /></TextBlock.RenderTransform>
+            </TextBlock>
+        </Grid>
+    </Border>
+</Window>

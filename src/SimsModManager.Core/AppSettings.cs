@@ -14,6 +14,9 @@ public sealed class AppSettings
     /// <summary>Тема оформления: Dark, Light или Glass.</summary>
     public string Theme { get; set; } = "Dark";
 
+    /// <summary>Показывать анимацию с логотипом при запуске.</summary>
+    public bool ShowSplash { get; set; } = true;
+
     /// <summary>Версия игры, после которой пользователь подтвердил, что моды работают.</summary>
     public string? AcknowledgedGameVersion { get; set; }
 

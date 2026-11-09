@@ -138,6 +138,11 @@
                                 <TextBlock Text="Очищать кэш после установки" Style="{StaticResource T.Strong}" FontSize="12" VerticalAlignment="Center" />
                                 <CheckBox Style="{StaticResource Switch}" HorizontalAlignment="Right" IsChecked="{Binding AutoClearCache}" />
                             </Grid>
+                            <Border Height="1" Background="{DynamicResource B.Hover}" Margin="0,12" />
+                            <Grid>
+                                <TextBlock Text="Анимация с логотипом при запуске" Style="{StaticResource T.Strong}" FontSize="12" VerticalAlignment="Center" />
+                                <CheckBox Style="{StaticResource Switch}" HorizontalAlignment="Right" IsChecked="{Binding ShowSplash}" />
+                            </Grid>
                         </StackPanel>
                     </Border>
                 </StackPanel>
