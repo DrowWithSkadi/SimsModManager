@@ -165,12 +165,24 @@
             <!-- ═══ Перетаскивание файлов ═══ -->
             <Grid Grid.Row="1" Grid.RowSpan="3" Background="{DynamicResource B.DropOverlay}" IsHitTestVisible="False"
                   b:Anim.Show="{Binding IsDragOver}" b:Anim.Offset="0">
+                <!-- Рамка: бегущий пунктир + «дышащая» подсветка поверх -->
                 <Rectangle Margin="32" RadiusX="12" RadiusY="12" Stroke="{DynamicResource B.Accent}" StrokeThickness="1.5" StrokeDashArray="6 4"
-                           Fill="{DynamicResource B.DropFill}" />
+                           Fill="{DynamicResource B.DropFill}" b:Anim.March="{Binding IsDragOver}" />
+                <Rectangle Margin="32" RadiusX="12" RadiusY="12" Stroke="{DynamicResource B.Accent}" StrokeThickness="3"
+                           Fill="Transparent" Opacity="0"
+                           b:Anim.GlowScale="1.008" b:Anim.Glow="{Binding IsDragOver}" />
                 <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
-                    <ctl:IconView Data="{StaticResource Icon.Download}" Foreground="{DynamicResource B.Accent}" Width="36" Height="36" />
+                    <!-- Круги расходятся от иконки, сама иконка покачивается -->
+                    <Grid Width="96" Height="96" HorizontalAlignment="Center">
+                        <Ellipse Stroke="{DynamicResource B.Accent}" StrokeThickness="2" Opacity="0" b:Anim.Ripple="{Binding IsDragOver}" />
+                        <Ellipse Stroke="{DynamicResource B.Accent}" StrokeThickness="2" Opacity="0"
+                                 b:Anim.RippleDelay="900" b:Anim.Ripple="{Binding IsDragOver}" />
+                        <Ellipse Width="64" Height="64" Fill="{DynamicResource B.AccentSubtle}" />
+                        <ctl:IconView Data="{StaticResource Icon.Download}" Foreground="{DynamicResource B.Accent}" Width="32" Height="32"
+                                      b:Anim.Bob="{Binding IsDragOver}" />
+                    </Grid>
                     <TextBlock Text="Отпустите, чтобы установить" FontSize="24" FontWeight="SemiBold" Foreground="{DynamicResource B.Text}"
-                               HorizontalAlignment="Center" Margin="0,18,0,12" />
+                               HorizontalAlignment="Center" Margin="0,10,0,12" />
                     <Border Style="{StaticResource Tag}" Background="{DynamicResource B.AccentSubtle}" HorizontalAlignment="Center" Height="22" Padding="10,0">
                         <TextBlock Style="{StaticResource TagText}" Text="{Binding DragCountText}" Foreground="{DynamicResource B.Accent}" FontSize="11" />
                     </Border>
