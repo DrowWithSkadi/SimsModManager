@@ -12,7 +12,12 @@ public partial class SplashWindow : Window
     public SplashWindow()
     {
         InitializeComponent();
-        Loaded += (_, _) => ((Storyboard)Resources["Intro"]).Begin(this, true);
+        Loaded += (_, _) =>
+        {
+            // Если анимация почему-то не запустилась — не задерживаем программу
+            try { ((Storyboard)Resources["Intro"]).Begin(this, true); }
+            catch (Exception) { Finish(); }
+        };
     }
 
     /// <summary>Пора показывать программу.</summary>
@@ -32,7 +37,7 @@ public partial class SplashWindow : Window
     /// <summary>Плавно гаснет и закрывается.</summary>
     public void FadeOutAndClose()
     {
-        ((Storyboard)Resources["Intro"]).Stop(this);
+        try { ((Storyboard)Resources["Intro"]).Stop(this); } catch (Exception) { }
         var fade = new DoubleAnimation(Opacity, 0, TimeSpan.FromMilliseconds(250));
         fade.Completed += (_, _) => Close();
         BeginAnimation(OpacityProperty, fade);

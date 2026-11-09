@@ -29,13 +29,21 @@ public partial class App : Application
         }
 
         // Сначала заставка; главное окно создаём, когда заставка уже на экране.
-        var splash = new SplashWindow();
-        splash.Finished += () =>
+        try
         {
-            ShowMain();
-            splash.FadeOutAndClose();
-        };
-        splash.Show();
+            var splash = new SplashWindow();
+            splash.Finished += () =>
+            {
+                ShowMain();
+                splash.FadeOutAndClose();
+            };
+            splash.Show();
+        }
+        catch (Exception)
+        {
+            ShowMain(); // заставка не важнее программы
+            return;
+        }
         Dispatcher.InvokeAsync(EnsureMain, DispatcherPriority.ApplicationIdle);
     }
 
