@@ -19,6 +19,50 @@ public partial class App : Application
         app.Run();
     }
 
+    protected override void OnStartup(StartupEventArgs e)
+    {
+        base.OnStartup(e);
+        if (!Core.AppSettings.Load().ShowSplash)
+        {
+            ShowMain();
+            return;
+        }
+
+        // Сначала заставка; главное окно создаём, когда заставка уже на экране.
+        try
+        {
+            var splash = new SplashWindow();
+            splash.Finished += () =>
+            {
+                ShowMain();
+                splash.FadeOutAndClose();
+            };
+            splash.Show();
+        }
+        catch (Exception)
+        {
+            ShowMain(); // заставка не важнее программы
+            return;
+        }
+        Dispatcher.InvokeAsync(EnsureMain, DispatcherPriority.ApplicationIdle);
+    }
+
+    private MainWindow? _main;
+
+    private void EnsureMain()
+    {
+        if (_main is not null) return;
+        _main = new MainWindow();
+        MainWindow = _main;
+    }
+
+    private void ShowMain()
+    {
+        EnsureMain();
+        _main!.Show();
+        _main.Activate();
+    }
+
     private void OnUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
     {
         // Вместо молчаливого вылета показываем ошибку — её текст удобно прислать для исправления.
