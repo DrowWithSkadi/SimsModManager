@@ -17,7 +17,12 @@
                               Width="14" Height="14" />
             </Border>
             <Border x:Name="Pic" CornerRadius="4" Background="{DynamicResource B.Control}" Visibility="Collapsed" ClipToBounds="True">
-                <Image Source="{Binding Thumbnail}" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality" />
+                <Grid>
+                    <Image Source="{Binding Thumbnail}" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality" />
+                    <!-- Выключенный мод — картинка плавно становится чёрно-белой -->
+                    <Image x:Name="GrayPic" Source="{Binding Thumbnail, Converter={StaticResource Grayscale}}" Stretch="UniformToFill"
+                           RenderOptions.BitmapScalingMode="HighQuality" Opacity="0" />
+                </Grid>
             </Border>
         </Grid>
         <DataTemplate.Triggers>
@@ -26,6 +31,22 @@
             </DataTrigger>
             <DataTrigger Binding="{Binding IsTray}" Value="True">
                 <Setter TargetName="PlaceholderIcon" Property="Data" Value="{StaticResource Icon.House}" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding IsEnabled}" Value="False">
+                <DataTrigger.EnterActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetName="GrayPic" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.3" />
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.EnterActions>
+                <DataTrigger.ExitActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetName="GrayPic" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.3" />
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.ExitActions>
             </DataTrigger>
             <DataTrigger Binding="{Binding HasThumbnail}" Value="True">
                 <Setter TargetName="Pic" Property="Visibility" Value="Visible" />
@@ -101,14 +122,25 @@
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
+            <!-- Вспышка после установки -->
+            <Border x:Name="Flash" Grid.ColumnSpan="5" Margin="-12,0" Background="{DynamicResource B.AccentSubtle}" Opacity="0" IsHitTestVisible="False" />
+
             <!-- Галочка выбора — выезжает, когда выбрано больше одного мода -->
             <Border x:Name="SelectHolder" Width="0" ClipToBounds="True" VerticalAlignment="Center">
                 <CheckBox Style="{StaticResource SelectBox}" HorizontalAlignment="Left"
                           IsChecked="{Binding IsSelected}" />
             </Border>
 
-            <ContentPresenter Grid.Column="1" Content="{Binding}" ContentTemplate="{StaticResource ModPreview}"
-                              Width="36" Height="36" Margin="0,0,12,0" />
+            <Grid Grid.Column="1" Width="36" Height="36" Margin="0,0,12,0">
+                <ContentPresenter x:Name="Preview" Content="{Binding}" ContentTemplate="{StaticResource ModPreview}" />
+                <!-- Галочка «установлен» — выпрыгивает с пружинкой и исчезает -->
+                <Border x:Name="NewBadge" Width="16" Height="16" CornerRadius="8" Background="{DynamicResource B.Accent}"
+                        HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-5,-4" Opacity="0"
+                        RenderTransformOrigin="0.5,0.5" IsHitTestVisible="False">
+                    <Border.RenderTransform><ScaleTransform ScaleX="0" ScaleY="0" /></Border.RenderTransform>
+                    <ctl:IconView Data="{StaticResource Icon.Check}" Foreground="{DynamicResource B.OnAccent}" Width="10" Height="10" StrokeThickness="2.6" />
+                </Border>
+            </Grid>
 
             <StackPanel x:Name="Texts" Grid.Column="2" VerticalAlignment="Center">
                 <TextBlock Text="{Binding Name}" FontSize="13" FontWeight="SemiBold" Foreground="{DynamicResource B.Text}"
@@ -131,7 +163,39 @@
         </Grid>
         <DataTemplate.Triggers>
             <DataTrigger Binding="{Binding IsEnabled}" Value="False">
-                <Setter TargetName="Texts" Property="Opacity" Value="0.55" />
+                <Setter TargetName="Texts" Property="Opacity" Value="0.5" />
+                <Setter TargetName="Preview" Property="Opacity" Value="0.7" />
+                <Setter TargetName="Tags" Property="Opacity" Value="0.6" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding IsNew}" Value="True">
+                <DataTrigger.EnterActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <!-- Вспышка цвета акцента -->
+                            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Flash" Storyboard.TargetProperty="Opacity">
+                                <EasingDoubleKeyFrame KeyTime="0:0:0.15" Value="1" />
+                                <EasingDoubleKeyFrame KeyTime="0:0:0.7" Value="1" />
+                                <EasingDoubleKeyFrame KeyTime="0:0:1.7" Value="0">
+                                    <EasingDoubleKeyFrame.EasingFunction><CubicEase EasingMode="EaseInOut" /></EasingDoubleKeyFrame.EasingFunction>
+                                </EasingDoubleKeyFrame>
+                            </DoubleAnimationUsingKeyFrames>
+                            <!-- Галочка: пружинка 0 → 1, держится и тает -->
+                            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="NewBadge" Storyboard.TargetProperty="Opacity">
+                                <DiscreteDoubleKeyFrame KeyTime="0:0:0.1" Value="1" />
+                                <DiscreteDoubleKeyFrame KeyTime="0:0:1.4" Value="1" />
+                                <LinearDoubleKeyFrame KeyTime="0:0:1.8" Value="0" />
+                            </DoubleAnimationUsingKeyFrames>
+                            <DoubleAnimation Storyboard.TargetName="NewBadge" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                             From="0" To="1" BeginTime="0:0:0.1" Duration="0:0:0.5">
+                                <DoubleAnimation.EasingFunction><ElasticEase EasingMode="EaseOut" Oscillations="1" Springiness="4" /></DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                            <DoubleAnimation Storyboard.TargetName="NewBadge" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                             From="0" To="1" BeginTime="0:0:0.1" Duration="0:0:0.5">
+                                <DoubleAnimation.EasingFunction><ElasticEase EasingMode="EaseOut" Oscillations="1" Springiness="4" /></DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.EnterActions>
             </DataTrigger>
             <DataTrigger Binding="{Binding DataContext.IsMultiSelect, RelativeSource={RelativeSource AncestorType=ListBox}}" Value="True">
                 <DataTrigger.EnterActions>
@@ -164,7 +228,17 @@
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
-            <ContentPresenter Content="{Binding}" ContentTemplate="{StaticResource ModPreview}" />
+            <!-- Вспышка после установки (на всю плитку, за содержимым) -->
+            <Border x:Name="Flash" Grid.RowSpan="3" Margin="-10" CornerRadius="8" Background="{DynamicResource B.AccentSubtle}"
+                    BorderBrush="{DynamicResource B.Accent}" BorderThickness="1" Opacity="0" IsHitTestVisible="False" />
+            <ContentPresenter x:Name="Preview" Content="{Binding}" ContentTemplate="{StaticResource ModPreview}" />
+                <!-- Галочка «установлен» — выпрыгивает с пружинкой и исчезает -->
+                <Border x:Name="NewBadge" Width="26" Height="26" CornerRadius="13" Background="{DynamicResource B.Accent}"
+                        HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,8,8" Opacity="0"
+                        RenderTransformOrigin="0.5,0.5" IsHitTestVisible="False">
+                    <Border.RenderTransform><ScaleTransform ScaleX="0" ScaleY="0" /></Border.RenderTransform>
+                    <ctl:IconView Data="{StaticResource Icon.Check}" Foreground="{DynamicResource B.OnAccent}" Width="15" Height="15" StrokeThickness="2.6" />
+                </Border>
             <CheckBox Style="{StaticResource SelectBox}" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="8"
                       IsChecked="{Binding IsSelected}"
                       Visibility="{Binding DataContext.IsMultiSelect, RelativeSource={RelativeSource AncestorType=ListBox}, Converter={StaticResource BoolToVisibility}}" />
@@ -177,13 +251,45 @@
         </Grid>
         <DataTemplate.Triggers>
             <DataTrigger Binding="{Binding IsEnabled}" Value="False">
-                <Setter TargetName="Title" Property="Opacity" Value="0.55" />
+                <Setter TargetName="Title" Property="Opacity" Value="0.5" />
+                <Setter TargetName="Preview" Property="Opacity" Value="0.7" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding IsNew}" Value="True">
+                <DataTrigger.EnterActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <!-- Вспышка цвета акцента -->
+                            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Flash" Storyboard.TargetProperty="Opacity">
+                                <EasingDoubleKeyFrame KeyTime="0:0:0.15" Value="1" />
+                                <EasingDoubleKeyFrame KeyTime="0:0:0.7" Value="1" />
+                                <EasingDoubleKeyFrame KeyTime="0:0:1.7" Value="0">
+                                    <EasingDoubleKeyFrame.EasingFunction><CubicEase EasingMode="EaseInOut" /></EasingDoubleKeyFrame.EasingFunction>
+                                </EasingDoubleKeyFrame>
+                            </DoubleAnimationUsingKeyFrames>
+                            <!-- Галочка: пружинка 0 → 1, держится и тает -->
+                            <DoubleAnimationUsingKeyFrames Storyboard.TargetName="NewBadge" Storyboard.TargetProperty="Opacity">
+                                <DiscreteDoubleKeyFrame KeyTime="0:0:0.1" Value="1" />
+                                <DiscreteDoubleKeyFrame KeyTime="0:0:1.4" Value="1" />
+                                <LinearDoubleKeyFrame KeyTime="0:0:1.8" Value="0" />
+                            </DoubleAnimationUsingKeyFrames>
+                            <DoubleAnimation Storyboard.TargetName="NewBadge" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                                             From="0" To="1" BeginTime="0:0:0.1" Duration="0:0:0.5">
+                                <DoubleAnimation.EasingFunction><ElasticEase EasingMode="EaseOut" Oscillations="1" Springiness="4" /></DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                            <DoubleAnimation Storyboard.TargetName="NewBadge" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                             From="0" To="1" BeginTime="0:0:0.1" Duration="0:0:0.5">
+                                <DoubleAnimation.EasingFunction><ElasticEase EasingMode="EaseOut" Oscillations="1" Springiness="4" /></DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.EnterActions>
             </DataTrigger>
         </DataTemplate.Triggers>
     </DataTemplate>
 
     <!-- ═══════════ Контейнеры: подсветка при наведении и выборе, анимация удаления ═══════════ -->
     <Style x:Key="ModRowContainer" TargetType="ListBoxItem">
+        <Setter Property="b:Anim.Wave" Value="True" />
         <Setter Property="Height" Value="48" />
         <Setter Property="Padding" Value="12,0" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
@@ -197,7 +303,14 @@
                         <Border x:Name="HoverBg" Background="{DynamicResource B.Control}" Opacity="0" Margin="0,0,0,1" />
                         <Border x:Name="SelBg" Background="{DynamicResource B.AccentSubtle}" BorderBrush="{DynamicResource B.Accent}"
                                 BorderThickness="1" CornerRadius="2" Opacity="0" />
-                        <ContentPresenter Margin="{TemplateBinding Padding}" VerticalAlignment="Center" />
+                        <!-- Полоска акцента слева выезжает при наведении -->
+                        <Border x:Name="HoverBar" Width="3" HorizontalAlignment="Left" Margin="0,10" CornerRadius="1.5"
+                                Background="{DynamicResource B.Accent}" Opacity="0" RenderTransformOrigin="0.5,0.5">
+                            <Border.RenderTransform><ScaleTransform ScaleY="0.3" /></Border.RenderTransform>
+                        </Border>
+                        <ContentPresenter x:Name="Body" Margin="{TemplateBinding Padding}" VerticalAlignment="Center">
+                            <ContentPresenter.RenderTransform><TranslateTransform /></ContentPresenter.RenderTransform>
+                        </ContentPresenter>
                     </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
@@ -205,6 +318,15 @@
                                 <BeginStoryboard>
                                     <Storyboard>
                                         <DoubleAnimation Storyboard.TargetName="HoverBg" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.12" />
+                                        <DoubleAnimation Storyboard.TargetName="HoverBar" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.15" />
+                                        <DoubleAnimation Storyboard.TargetName="HoverBar" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                                         To="1" Duration="0:0:0.25">
+                                            <DoubleAnimation.EasingFunction><BackEase EasingMode="EaseOut" Amplitude="0.5" /></DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
+                                        <DoubleAnimation Storyboard.TargetName="Body" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
+                                                         To="3" Duration="0:0:0.2">
+                                            <DoubleAnimation.EasingFunction><CubicEase EasingMode="EaseOut" /></DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
                                     </Storyboard>
                                 </BeginStoryboard>
                             </Trigger.EnterActions>
@@ -212,6 +334,13 @@
                                 <BeginStoryboard>
                                     <Storyboard>
                                         <DoubleAnimation Storyboard.TargetName="HoverBg" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.25" />
+                                        <DoubleAnimation Storyboard.TargetName="HoverBar" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.2" />
+                                        <DoubleAnimation Storyboard.TargetName="HoverBar" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                                                         To="0.3" Duration="0:0:0.2" />
+                                        <DoubleAnimation Storyboard.TargetName="Body" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
+                                                         To="0" Duration="0:0:0.25">
+                                            <DoubleAnimation.EasingFunction><CubicEase EasingMode="EaseOut" /></DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
                                     </Storyboard>
                                 </BeginStoryboard>
                             </Trigger.ExitActions>
@@ -257,6 +386,7 @@
     </Style>
 
     <Style x:Key="ModTileContainer" TargetType="ListBoxItem">
+        <Setter Property="b:Anim.Wave" Value="True" />
         <Setter Property="Margin" Value="0,0,12,12" />
         <Setter Property="Padding" Value="10" />
         <Setter Property="FocusVisualStyle" Value="{x:Null}" />
@@ -264,7 +394,14 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ListBoxItem">
-                    <Grid>
+                    <Grid x:Name="Card">
+                        <Grid.RenderTransform><TranslateTransform /></Grid.RenderTransform>
+                        <!-- Тень появляется, когда плитка приподнимается -->
+                        <Border x:Name="Shadow" Background="{DynamicResource B.Surface}" CornerRadius="8" Opacity="0">
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="22" ShadowDepth="6" Direction="270" Opacity="0.45" Color="Black" />
+                            </Border.Effect>
+                        </Border>
                         <Border Background="{DynamicResource B.Surface}" BorderBrush="{DynamicResource B.Border}" BorderThickness="1" CornerRadius="8" />
                         <Border x:Name="HoverBg" Background="{DynamicResource B.Control}" BorderBrush="{DynamicResource B.BorderHover}" BorderThickness="1" CornerRadius="8" Opacity="0" />
                         <Border x:Name="SelBg" Background="{DynamicResource B.AccentSubtle}" BorderBrush="{DynamicResource B.Accent}" BorderThickness="1"
@@ -277,6 +414,11 @@
                                 <BeginStoryboard>
                                     <Storyboard>
                                         <DoubleAnimation Storyboard.TargetName="HoverBg" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.12" />
+                                        <DoubleAnimation Storyboard.TargetName="Shadow" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.2" />
+                                        <DoubleAnimation Storyboard.TargetName="Card" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                                                         To="-4" Duration="0:0:0.25">
+                                            <DoubleAnimation.EasingFunction><BackEase EasingMode="EaseOut" Amplitude="0.4" /></DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
                                     </Storyboard>
                                 </BeginStoryboard>
                             </Trigger.EnterActions>
@@ -284,6 +426,11 @@
                                 <BeginStoryboard>
                                     <Storyboard>
                                         <DoubleAnimation Storyboard.TargetName="HoverBg" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.25" />
+                                        <DoubleAnimation Storyboard.TargetName="Shadow" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.25" />
+                                        <DoubleAnimation Storyboard.TargetName="Card" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                                                         To="0" Duration="0:0:0.25">
+                                            <DoubleAnimation.EasingFunction><CubicEase EasingMode="EaseOut" /></DoubleAnimation.EasingFunction>
+                                        </DoubleAnimation>
                                     </Storyboard>
                                 </BeginStoryboard>
                             </Trigger.ExitActions>

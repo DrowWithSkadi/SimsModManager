@@ -51,3 +51,25 @@ public sealed class EqualsToVisibilityConverter : IValueConverter
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) =>
         throw new NotSupportedException();
 }
+
+/// <summary>Чёрно-белая копия картинки — для выключенных модов.</summary>
+public sealed class GrayscaleConverter : IValueConverter
+{
+    public object? Convert(object? value, Type targetType, object parameter, CultureInfo culture)
+    {
+        if (value is not System.Windows.Media.Imaging.BitmapSource source) return null;
+        try
+        {
+            var gray = new System.Windows.Media.Imaging.FormatConvertedBitmap(source, System.Windows.Media.PixelFormats.Gray8, null, 0);
+            gray.Freeze();
+            return gray;
+        }
+        catch (Exception)
+        {
+            return null; // необычный формат картинки — просто без серой версии
+        }
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) =>
+        throw new NotSupportedException();
+}
