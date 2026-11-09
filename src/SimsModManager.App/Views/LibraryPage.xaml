@@ -127,9 +127,15 @@
         </StackPanel>
 
         <!-- ═══ Зона установки ═══ -->
-        <Grid Grid.Row="1" Margin="24,0,24,8" Height="40">
+        <!-- При наведении: подсветка «дышит», пунктир бежит по рамке, стрелка покачивается -->
+        <Grid x:Name="DropStrip" Grid.Row="1" Margin="24,0,24,8" Height="40">
             <Rectangle RadiusX="6" RadiusY="6" Fill="{DynamicResource B.Surface}" Stroke="{DynamicResource B.Border}"
                        StrokeThickness="1" StrokeDashArray="4 3" SnapsToDevicePixels="True" />
+            <Rectangle RadiusX="6" RadiusY="6" Fill="{DynamicResource B.AccentSubtle}" Stroke="{DynamicResource B.Accent}"
+                       StrokeThickness="1" StrokeDashArray="4 3" Opacity="0" IsHitTestVisible="False"
+                       b:Anim.GlowScale="1.006"
+                       b:Anim.Glow="{Binding IsMouseOver, ElementName=DropStrip}"
+                       b:Anim.March="{Binding IsMouseOver, ElementName=DropStrip}" />
             <Grid Margin="12,0,4,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
@@ -137,7 +143,8 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <ctl:IconView Data="{StaticResource Icon.Upload}" Foreground="{DynamicResource B.Accent}" />
+                <ctl:IconView Data="{StaticResource Icon.Upload}" Foreground="{DynamicResource B.Accent}"
+                              b:Anim.Bob="{Binding IsMouseOver, ElementName=DropStrip}" />
                 <TextBlock Grid.Column="1" Text="Перетащите архивы сюда" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource B.Text}"
                            VerticalAlignment="Center" Margin="12,0,0,0" />
                 <TextBlock Grid.Column="2" Text="ZIP / RAR / 7z / .package / .ts4script / дома и семьи" FontSize="10" Foreground="{DynamicResource B.TextMuted}"

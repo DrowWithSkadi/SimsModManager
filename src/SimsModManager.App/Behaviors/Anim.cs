@@ -22,6 +22,7 @@ public static class Anim
     {
         ((Freezable)EaseOut).Freeze();
         ((Freezable)EaseIn).Freeze();
+        ((Freezable)Breathe).Freeze();
     }
 
     // ---------- Show ----------
@@ -130,6 +131,137 @@ public static class Anim
         var (translate, _) = EnsureTransforms(el);
         el.BeginAnimation(UIElement.OpacityProperty, new DoubleAnimation(0, 1, Normal) { EasingFunction = EaseOut });
         translate.BeginAnimation(TranslateTransform.YProperty, new DoubleAnimation(GetOffset(el), 0, Normal) { EasingFunction = EaseOut });
+    }
+
+    // ---------- Живые анимации: подсветка, бегущий пунктир, круги, покачивание ----------
+
+    private static readonly IEasingFunction Breathe = new SineEase { EasingMode = EasingMode.EaseInOut };
+
+    /// <summary>
+    /// Пульсирующая подсветка: пока true, элемент «дышит» — прозрачность 0.45 ↔ 1 и лёгкое увеличение.
+    /// Когда false — плавно гаснет до 0. Ставить на отдельный слой-подсветку (у него в XAML Opacity="0").
+    /// </summary>
+    public static readonly DependencyProperty GlowProperty = DependencyProperty.RegisterAttached(
+        "Glow", typeof(bool), typeof(Anim), new PropertyMetadata(false, OnGlowChanged));
+
+    public static bool GetGlow(DependencyObject d) => (bool)d.GetValue(GlowProperty);
+    public static void SetGlow(DependencyObject d, bool value) => d.SetValue(GlowProperty, value);
+
+    /// <summary>Насколько увеличивается подсветка на вдохе (1.02 — на 2%).</summary>
+    public static readonly DependencyProperty GlowScaleProperty = DependencyProperty.RegisterAttached(
+        "GlowScale", typeof(double), typeof(Anim), new PropertyMetadata(1.02));
+
+    public static double GetGlowScale(DependencyObject d) => (double)d.GetValue(GlowScaleProperty);
+    public static void SetGlowScale(DependencyObject d, double value) => d.SetValue(GlowScaleProperty, value);
+
+    private static void OnGlowChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is not FrameworkElement el) return;
+        var (_, scale) = EnsureTransforms(el);
+        var period = TimeSpan.FromMilliseconds(900);
+
+        if (e.NewValue is true)
+        {
+            var grow = new DoubleAnimation(1, GetGlowScale(el), period)
+                { AutoReverse = true, RepeatBehavior = RepeatBehavior.Forever, EasingFunction = Breathe };
+            scale.BeginAnimation(ScaleTransform.ScaleXProperty, grow);
+            scale.BeginAnimation(ScaleTransform.ScaleYProperty, grow);
+
+            // Сначала быстро проявляемся, потом начинаем дышать
+            var fadeIn = new DoubleAnimation(0, 1, Fast) { EasingFunction = EaseOut };
+            fadeIn.Completed += (_, _) =>
+            {
+                if (GetGlow(el))
+                    el.BeginAnimation(UIElement.OpacityProperty, new DoubleAnimation(1, 0.45, period)
+                        { AutoReverse = true, RepeatBehavior = RepeatBehavior.Forever, EasingFunction = Breathe });
+            };
+            el.BeginAnimation(UIElement.OpacityProperty, fadeIn);
+        }
+        else
+        {
+            scale.BeginAnimation(ScaleTransform.ScaleXProperty, new DoubleAnimation(1, Normal) { EasingFunction = EaseOut });
+            scale.BeginAnimation(ScaleTransform.ScaleYProperty, new DoubleAnimation(1, Normal) { EasingFunction = EaseOut });
+            el.BeginAnimation(UIElement.OpacityProperty, new DoubleAnimation(0, Normal) { EasingFunction = EaseOut });
+        }
+    }
+
+    /// <summary>Бегущий пунктир по рамке (Rectangle/Ellipse с StrokeDashArray), пока true.</summary>
+    public static readonly DependencyProperty MarchProperty = DependencyProperty.RegisterAttached(
+        "March", typeof(bool), typeof(Anim), new PropertyMetadata(false, OnMarchChanged));
+
+    public static bool GetMarch(DependencyObject d) => (bool)d.GetValue(MarchProperty);
+    public static void SetMarch(DependencyObject d, bool value) => d.SetValue(MarchProperty, value);
+
+    private static void OnMarchChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is not System.Windows.Shapes.Shape shape) return;
+        if (e.NewValue is true)
+        {
+            // Сдвиг на один полный шаг узора — тогда повтор бесшовный
+            var step = shape.StrokeDashArray is { Count: > 0 } dashes ? dashes.Sum() : 10;
+            shape.BeginAnimation(System.Windows.Shapes.Shape.StrokeDashOffsetProperty,
+                new DoubleAnimation(0, -step, TimeSpan.FromMilliseconds(step * 70)) { RepeatBehavior = RepeatBehavior.Forever });
+        }
+        else
+        {
+            shape.BeginAnimation(System.Windows.Shapes.Shape.StrokeDashOffsetProperty, null);
+        }
+    }
+
+    /// <summary>Расходящиеся круги (как от капли на воде), пока true. Задержку для второго круга — через RippleDelay.</summary>
+    public static readonly DependencyProperty RippleProperty = DependencyProperty.RegisterAttached(
+        "Ripple", typeof(bool), typeof(Anim), new PropertyMetadata(false, OnRippleChanged));
+
+    public static bool GetRipple(DependencyObject d) => (bool)d.GetValue(RippleProperty);
+    public static void SetRipple(DependencyObject d, bool value) => d.SetValue(RippleProperty, value);
+
+    /// <summary>Задержка начала круга в миллисекундах.</summary>
+    public static readonly DependencyProperty RippleDelayProperty = DependencyProperty.RegisterAttached(
+        "RippleDelay", typeof(double), typeof(Anim), new PropertyMetadata(0.0));
+
+    public static double GetRippleDelay(DependencyObject d) => (double)d.GetValue(RippleDelayProperty);
+    public static void SetRippleDelay(DependencyObject d, double value) => d.SetValue(RippleDelayProperty, value);
+
+    private static void OnRippleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is not FrameworkElement el) return;
+        var (_, scale) = EnsureTransforms(el);
+        if (e.NewValue is true)
+        {
+            var duration = TimeSpan.FromMilliseconds(1800);
+            var delay = TimeSpan.FromMilliseconds(GetRippleDelay(el));
+            var grow = new DoubleAnimation(0.6, 1.9, duration)
+                { BeginTime = delay, RepeatBehavior = RepeatBehavior.Forever, EasingFunction = EaseOut };
+            scale.BeginAnimation(ScaleTransform.ScaleXProperty, grow);
+            scale.BeginAnimation(ScaleTransform.ScaleYProperty, grow);
+            el.Opacity = 0;
+            el.BeginAnimation(UIElement.OpacityProperty, new DoubleAnimation(0.55, 0, duration)
+                { BeginTime = delay, RepeatBehavior = RepeatBehavior.Forever, EasingFunction = EaseOut });
+        }
+        else
+        {
+            scale.BeginAnimation(ScaleTransform.ScaleXProperty, null);
+            scale.BeginAnimation(ScaleTransform.ScaleYProperty, null);
+            el.BeginAnimation(UIElement.OpacityProperty, null);
+            el.Opacity = 0;
+        }
+    }
+
+    /// <summary>Мягкое покачивание вверх-вниз (для иконки), пока true.</summary>
+    public static readonly DependencyProperty BobProperty = DependencyProperty.RegisterAttached(
+        "Bob", typeof(bool), typeof(Anim), new PropertyMetadata(false, OnBobChanged));
+
+    public static bool GetBob(DependencyObject d) => (bool)d.GetValue(BobProperty);
+    public static void SetBob(DependencyObject d, bool value) => d.SetValue(BobProperty, value);
+
+    private static void OnBobChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is not FrameworkElement el) return;
+        var (translate, _) = EnsureTransforms(el);
+        translate.BeginAnimation(TranslateTransform.YProperty, e.NewValue is true
+            ? new DoubleAnimation(0, -6, TimeSpan.FromMilliseconds(700))
+                { AutoReverse = true, RepeatBehavior = RepeatBehavior.Forever, EasingFunction = Breathe }
+            : new DoubleAnimation(0, Fast) { EasingFunction = EaseOut });
     }
 
     // ---------- SmoothValue ----------
