@@ -17,6 +17,9 @@ public sealed class AppSettings
     /// <summary>Показывать анимацию с логотипом при запуске.</summary>
     public bool ShowSplash { get; set; } = true;
 
+    /// <summary>Показывать Коробка — помощника в шапке.</summary>
+    public bool ShowMascot { get; set; } = true;
+
     /// <summary>Версия игры, после которой пользователь подтвердил, что моды работают.</summary>
     public string? AcknowledgedGameVersion { get; set; }
 

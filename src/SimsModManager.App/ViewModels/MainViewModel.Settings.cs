@@ -25,6 +25,7 @@ public sealed partial class MainViewModel
     [ObservableProperty] private bool _autoClearCache;
     [ObservableProperty] private bool _deleteToRecycleBin;
     [ObservableProperty] private bool _showSplash;
+    [ObservableProperty] private bool _showMascot = true;
     [ObservableProperty] private string _updateStatus = "";
     [ObservableProperty] private bool _isCheckingUpdates;
     [ObservableProperty] private bool _folderLooksValid;
@@ -62,6 +63,7 @@ public sealed partial class MainViewModel
         AutoClearCache = _settings.AutoClearCache;
         DeleteToRecycleBin = _settings.DeleteToRecycleBin;
         ShowSplash = _settings.ShowSplash;
+        ShowMascot = _settings.ShowMascot;
         _loadingSettings = false;
     }
 
@@ -113,6 +115,13 @@ public sealed partial class MainViewModel
     {
         if (_loadingSettings) return;
         _settings.AutoClearCache = value;
+        SaveSettings();
+    }
+
+    partial void OnShowMascotChanged(bool value)
+    {
+        if (_loadingSettings) return;
+        _settings.ShowMascot = value;
         SaveSettings();
     }
 
