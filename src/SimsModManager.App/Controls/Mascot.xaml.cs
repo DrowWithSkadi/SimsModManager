@@ -35,6 +35,10 @@ public partial class Mascot : UserControl
     private DateTime _lastStroke;
     private DateTime _lastHeart;
     private bool _petting;
+    private DateTime _travelUntil;
+
+    /// <summary>Коробок в прыжке — пока он летит, его нельзя «гладить» и тыкать, чтобы не сбить анимацию.</summary>
+    public bool IsTraveling => DateTime.Now < _travelUntil;
     private bool _strokedSinceDown;
 
     public Mascot()
@@ -51,7 +55,7 @@ public partial class Mascot : UserControl
         MouseLeftButtonUp += (_, _) =>
         {
             Activity();
-            if (_petting || _strokedSinceDown) return; // гладили, а не нажимали
+            if (_petting || _strokedSinceDown || IsTraveling) return; // гладили, а не нажимали; или он в полёте
             Ouch();
             Poked?.Invoke();
         };
@@ -270,10 +274,12 @@ public partial class Mascot : UserControl
     public void Dizzy()
     {
         Activity();
+        _travelUntil = DateTime.Now.AddSeconds(1.2);
         var baseAngle = IsWorried ? -7.0 : 0.0;
         var spin = Keys((0, baseAngle), (0.45, baseAngle + 360), (0.6, baseAngle + 350), (0.75, baseAngle + 368), (0.9, baseAngle + 360));
         spin.Completed += (_, _) =>
         {
+            if (IsTraveling) return; // прыжок сам вернёт наклон
             Tilt.BeginAnimation(RotateTransform.AngleProperty, null);
             Tilt.BeginAnimation(RotateTransform.AngleProperty, new DoubleAnimation(IsWorried ? -7 : 0, TimeSpan.Zero));
         };
@@ -286,6 +292,8 @@ public partial class Mascot : UserControl
     {
         Activity();
         var land = crouch + flight;
+        _travelUntil = DateTime.Now.AddSeconds(land + 0.3);
+        if (_petting) { _petting = false; _strokes.Clear(); }
         Squash.BeginAnimation(ScaleTransform.ScaleYProperty,
             Keys((0, 1), (crouch, 0.75), (crouch + 0.12, 1.15), (crouch + flight * 0.5, 1.03), (land - 0.05, 1.1), (land, 0.78), (land + 0.12, 1.05), (land + 0.25, 1)));
         Squash.BeginAnimation(ScaleTransform.ScaleXProperty,
@@ -324,7 +332,8 @@ public partial class Mascot : UserControl
 
     private void OnPetMove(object sender, MouseEventArgs e)
     {
-        var x = e.GetPosition(Root).X;
+        if (IsTraveling) { _lastX = null; return; }
+        var x = e.GetPosition(_window ?? (IInputElement)this).X;
         if (_lastX is not { } last)
         {
             _lastX = x;

@@ -207,6 +207,7 @@ public partial class MascotStage : UserControl
 
     private void OnPoked()
     {
+        if (_flying) return;
         var now = DateTime.Now;
         _pokes.Add(now);
         _pokes.RemoveAll(t => now - t > TimeSpan.FromSeconds(1.5));
@@ -218,7 +219,7 @@ public partial class MascotStage : UserControl
             // Отбегает на любое другое место
             var others = Enumerable.Range(0, 4).Where(p => p != _perch).ToList();
             var target = others[_random.Next(others.Count)];
-            var later = new DispatcherTimer { Interval = TimeSpan.FromSeconds(0.9) };
+            var later = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1.0) };
             later.Tick += (_, _) =>
             {
                 later.Stop();
