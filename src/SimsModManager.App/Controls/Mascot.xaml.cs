@@ -281,16 +281,29 @@ public partial class Mascot : UserControl
         WaveFlaps(2);
     }
 
-    /// <summary>Прыжок на новое место: вытягивается в полёте, сплющивается при приземлении.</summary>
-    public void Leap(double seconds)
+    /// <summary>Прыжок на новое место: приседает, в полёте вытягивается и клонится по ходу, при приземлении сплющивается.</summary>
+    public void Leap(double crouch, double flight, int direction)
     {
         Activity();
+        var land = crouch + flight;
         Squash.BeginAnimation(ScaleTransform.ScaleYProperty,
-            Keys((0, 1), (0.08, 0.8), (0.2, 1.15), (seconds - 0.1, 1.1), (seconds, 0.82), (seconds + 0.15, 1)));
+            Keys((0, 1), (crouch, 0.75), (crouch + 0.12, 1.15), (crouch + flight * 0.5, 1.03), (land - 0.05, 1.1), (land, 0.78), (land + 0.12, 1.05), (land + 0.25, 1)));
         Squash.BeginAnimation(ScaleTransform.ScaleXProperty,
-            Keys((0, 1), (0.08, 1.12), (0.2, 0.9), (seconds - 0.1, 0.92), (seconds, 1.12), (seconds + 0.15, 1)));
-        FlapForever(40, 0.12);
-        var stop = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(seconds) };
+            Keys((0, 1), (crouch, 1.15), (crouch + 0.12, 0.9), (crouch + flight * 0.5, 0.98), (land - 0.05, 0.92), (land, 1.16), (land + 0.12, 0.97), (land + 0.25, 1)));
+        var baseAngle = IsWorried ? -7.0 : 0.0;
+        Tilt.BeginAnimation(RotateTransform.AngleProperty,
+            Keys((0, baseAngle), (crouch, baseAngle), (crouch + 0.15, baseAngle + direction * 10), (land - 0.1, baseAngle - direction * 4), (land + 0.2, baseAngle)));
+        // Клапаны: прижаты при приседании, машут в полёте
+        FlapL.BeginAnimation(RotateTransform.AngleProperty, new DoubleAnimation(-15, TimeSpan.FromSeconds(crouch)));
+        FlapR.BeginAnimation(RotateTransform.AngleProperty, new DoubleAnimation(15, TimeSpan.FromSeconds(crouch)));
+        var flapStart = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(crouch) };
+        flapStart.Tick += (_, _) =>
+        {
+            flapStart.Stop();
+            FlapForever(40, 0.12);
+        };
+        flapStart.Start();
+        var stop = new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromSeconds(land) };
         stop.Tick += (_, _) =>
         {
             stop.Stop();

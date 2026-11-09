@@ -46,6 +46,13 @@ public partial class MascotStage : UserControl
         {
             if (!_flying) PlaceAt(_perch);
         };
+        LayoutUpdated += (_, _) =>
+        {
+            // Шапка поменялась (другой путь, появились кнопки) — тихо пересаживаемся
+            if (_flying || !IsLoaded || _perch != 0) return;
+            var p = PerchPoint(0);
+            if (Math.Abs(p.X - Canvas.GetLeft(Buddy)) > 1) PlaceAt(0);
+        };
         _infoTimer.Tick += (_, _) =>
         {
             _infoTimer.Stop();
@@ -76,20 +83,37 @@ public partial class MascotStage : UserControl
         _ => 3, // карточка мода, настройка одежды
     };
 
-    /// <summary>Левый верхний угол Коробка для места: ноги стоят на линии интерфейса.</summary>
+    /// <summary>
+    /// Левый верхний угол Коробка для места: ноги стоят на линии интерфейса.
+    /// В шапке он садится в свободный промежуток между названием (с путём к папке) и кнопками, чтобы ничего не закрывать.
+    /// </summary>
     private Point PerchPoint(int perch)
     {
         var w = Math.Max(ActualWidth, 400);
         var h = Math.Max(ActualHeight, 300);
+        if (perch == 0) return new Point(HeaderGapX(w), HeaderLine - BuddyHeight + 1);
         var x = perch switch
         {
-            0 => 290,                     // в шапке, справа от названия
-            1 => w * 0.52,                // в шапке, посередине
+            1 => w / 2 - BuddyWidth / 2,  // на строке состояния посередине
             2 => 200,                     // на строке состояния слева
             _ => Math.Max(300, w - 320),  // на строке состояния справа
         };
-        var line = perch is 0 or 1 ? HeaderLine : h - StatusBar;
-        return new Point(x, line - BuddyHeight + 1);
+        return new Point(x, h - StatusBar - BuddyHeight + 1);
+    }
+
+    /// <summary>Середина пустого места в шапке между текстом слева и кнопками справа.</summary>
+    private double HeaderGapX(double width)
+    {
+        var window = Window.GetWindow(this);
+        var left = 300.0;
+        var right = width - 24;
+        if (window?.FindName("HeaderTexts") is FrameworkElement texts && texts.IsVisible)
+            left = texts.TranslatePoint(new Point(texts.ActualWidth, 0), this).X + 16;
+        if (window?.FindName("HeaderButtons") is FrameworkElement buttons && buttons.IsVisible)
+            right = buttons.TranslatePoint(new Point(0, 0), this).X - 16;
+        // Места мало — встаём вплотную к кнопкам
+        if (right - left < BuddyWidth) return Math.Max(left, right - BuddyWidth);
+        return (left + right) / 2 - BuddyWidth / 2;
     }
 
     private void PlaceAt(int perch)
@@ -109,7 +133,10 @@ public partial class MascotStage : UserControl
         if (target != _perch) LeapTo(target);
     }
 
-    /// <summary>Прыжок дугой на другое место.</summary>
+    /// <summary>
+    /// Прыжок на другое место: сначала приседает, потом летит по настоящей параболе
+    /// (вверх быстрее, на вершине замедляется, вниз ускоряется), в конце сплющивается.
+    /// </summary>
     private void LeapTo(int perch)
     {
         _perch = perch;
@@ -117,23 +144,53 @@ public partial class MascotStage : UserControl
         if (double.IsNaN(from.X)) { PlaceAt(perch); return; }
         var to = PerchPoint(perch);
 
-        var distance = Math.Abs(to.X - from.X) + Math.Abs(to.Y - from.Y);
-        var seconds = Math.Clamp(distance / 900, 0.45, 0.9);
-        var peak = Math.Min(from.Y, to.Y) - 60;
+        var dx = to.X - from.X;
+        var dy = to.Y - from.Y;
+        var distance = Math.Sqrt(dx * dx + dy * dy);
+        if (distance < 4) { PlaceAt(perch); return; }
+
+        // Чем дальше — тем дольше и выше полёт
+        var flight = Math.Clamp(0.5 + distance / 1400, 0.6, 1.25);
+        var crouch = 0.18;
+        var apex = Math.Min(from.Y, to.Y) - Math.Clamp(40 + distance * 0.08, 50, 110);
+        apex = Math.Max(apex, -24); // не улетаем далеко за верх окна
+
+        // Парабола через три точки: старт, вершина, финиш. Вершина ближе к той точке, что выше.
+        var a0 = from.Y - apex;
+        var a1 = to.Y - apex;
+        var tApex = Math.Sqrt(a0) / (Math.Sqrt(a0) + Math.Sqrt(a1));
 
         _flying = true;
         Alert.Visibility = Visibility.Collapsed;
         var wasOpen = _bubbleOpen;
         if (wasOpen) HideBubbleQuick();
 
-        var ease = new SineEase { EasingMode = EasingMode.EaseInOut };
-        var x = new DoubleAnimation(from.X, to.X, TimeSpan.FromSeconds(seconds)) { EasingFunction = ease };
+        var x = new DoubleAnimationUsingKeyFrames();
         var y = new DoubleAnimationUsingKeyFrames();
-        y.KeyFrames.Add(new LinearDoubleKeyFrame(from.Y, KeyTime.FromTimeSpan(TimeSpan.Zero)));
-        y.KeyFrames.Add(new EasingDoubleKeyFrame(peak, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(seconds * 0.45)),
-            new QuadraticEase { EasingMode = EasingMode.EaseOut }));
-        y.KeyFrames.Add(new EasingDoubleKeyFrame(to.Y, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(seconds)),
-            new QuadraticEase { EasingMode = EasingMode.EaseIn }));
+        x.KeyFrames.Add(new DiscreteDoubleKeyFrame(from.X, KeyTime.FromTimeSpan(TimeSpan.Zero)));
+        y.KeyFrames.Add(new DiscreteDoubleKeyFrame(from.Y, KeyTime.FromTimeSpan(TimeSpan.Zero)));
+        x.KeyFrames.Add(new DiscreteDoubleKeyFrame(from.X, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(crouch))));
+        y.KeyFrames.Add(new DiscreteDoubleKeyFrame(from.Y, KeyTime.FromTimeSpan(TimeSpan.FromSeconds(crouch))));
+        const int steps = 36;
+        for (var i = 1; i <= steps; i++)
+        {
+            var t = (double)i / steps;
+            var time = KeyTime.FromTimeSpan(TimeSpan.FromSeconds(crouch + flight * t));
+            x.KeyFrames.Add(new LinearDoubleKeyFrame(from.X + dx * t, time));
+            // Высота: до вершины — подъём (замедляясь), после — падение (ускоряясь)
+            double yy;
+            if (t <= tApex)
+            {
+                var u = t / tApex;
+                yy = from.Y - a0 * (1 - (1 - u) * (1 - u));
+            }
+            else
+            {
+                var u = (t - tApex) / (1 - tApex);
+                yy = apex + a1 * u * u;
+            }
+            y.KeyFrames.Add(new LinearDoubleKeyFrame(yy, time));
+        }
         y.Completed += (_, _) =>
         {
             _flying = false;
@@ -141,7 +198,7 @@ public partial class MascotStage : UserControl
             if (wasOpen && Notice is not null) OpenBubble();
         };
 
-        Buddy.Leap(seconds);
+        Buddy.Leap(crouch, flight, Math.Sign(dx));
         Buddy.BeginAnimation(Canvas.LeftProperty, x);
         Buddy.BeginAnimation(Canvas.TopProperty, y);
     }

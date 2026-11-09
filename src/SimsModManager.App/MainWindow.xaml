@@ -58,13 +58,13 @@
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Stretch" Margin="0,0,16,0">
                     <Image Source="pack://application:,,,/Assets/logo-mark.png" Width="34" Height="34" Margin="0,0,12,0" VerticalAlignment="Center"
                            RenderOptions.BitmapScalingMode="HighQuality" />
-                    <StackPanel VerticalAlignment="Center">
+                    <StackPanel x:Name="HeaderTexts" VerticalAlignment="Center">
                         <TextBlock Text="Sims Mod Manager" Style="{StaticResource T.Title}" />
                         <TextBlock Text="{Binding SimsFolder}" FontSize="11" Foreground="{DynamicResource B.TextMuted}" Margin="0,4,0,0"
                                    TextTrimming="CharacterEllipsis" Visibility="{Binding HasGame, Converter={StaticResource BoolToVisibility}}" />
                     </StackPanel>
                     </StackPanel>
-                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center"
+                    <StackPanel x:Name="HeaderButtons" Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center"
                                 Visibility="{Binding HasGame, Converter={StaticResource BoolToVisibility}}">
                         <Button Style="{StaticResource Btn.Secondary}" ctl:Btn.Icon="{StaticResource Icon.FolderOpen}" Content="Папка Mods"
                                 Command="{Binding OpenModsFolderCommand}" ToolTip="Открыть папку Mods в проводнике" />
