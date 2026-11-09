@@ -143,6 +143,11 @@
                                 <TextBlock Text="Анимация с логотипом при запуске" Style="{StaticResource T.Strong}" FontSize="12" VerticalAlignment="Center" />
                                 <CheckBox Style="{StaticResource Switch}" HorizontalAlignment="Right" IsChecked="{Binding ShowSplash}" />
                             </Grid>
+                            <Border Height="1" Background="{DynamicResource B.Hover}" Margin="0,12" />
+                            <Grid>
+                                <TextBlock Text="Коробок — помощник в шапке" Style="{StaticResource T.Strong}" FontSize="12" VerticalAlignment="Center" />
+                                <CheckBox Style="{StaticResource Switch}" HorizontalAlignment="Right" IsChecked="{Binding ShowMascot}" />
+                            </Grid>
                         </StackPanel>
                     </Border>
                 </StackPanel>
