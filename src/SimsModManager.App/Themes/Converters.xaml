@@ -7,4 +7,5 @@
     <conv:NullToVisibilityConverter x:Key="NullToVisibility" />
     <conv:EqualsConverter x:Key="Equals" />
     <conv:EqualsToVisibilityConverter x:Key="EqualsToVisibility" />
+    <conv:GrayscaleConverter x:Key="Grayscale" />
 </ResourceDictionary>

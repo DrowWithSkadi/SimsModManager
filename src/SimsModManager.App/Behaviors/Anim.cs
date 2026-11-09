@@ -264,6 +264,86 @@ public static class Anim
             : new DoubleAnimation(0, Fast) { EasingFunction = EaseOut });
     }
 
+    // ---------- Wave: карточки появляются волной ----------
+
+    /// <summary>
+    /// Ставится на контейнер элемента списка (ListBoxItem). Когда список показывается (открыли библиотеку,
+    /// переключили вид), видимые карточки проявляются по очереди, снизу вверх. При поиске и прокрутке — без анимации.
+    /// </summary>
+    public static readonly DependencyProperty WaveProperty = DependencyProperty.RegisterAttached(
+        "Wave", typeof(bool), typeof(Anim), new PropertyMetadata(false, OnWaveChanged));
+
+    public static bool GetWave(DependencyObject d) => (bool)d.GetValue(WaveProperty);
+    public static void SetWave(DependencyObject d, bool value) => d.SetValue(WaveProperty, value);
+
+    private sealed class WaveState
+    {
+        public DateTime Start = DateTime.Now;
+        public int Count;
+    }
+
+    private static readonly DependencyProperty WaveStateProperty = DependencyProperty.RegisterAttached(
+        "WaveState", typeof(WaveState), typeof(Anim));
+
+    private const int WaveMaxItems = 14;
+    private static readonly TimeSpan WaveWindow = TimeSpan.FromMilliseconds(600);
+
+    private static void OnWaveChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is not FrameworkElement item) return;
+        item.Loaded -= OnWaveItemLoaded;
+        if (e.NewValue is true) item.Loaded += OnWaveItemLoaded;
+    }
+
+    private static void OnWaveItemLoaded(object sender, RoutedEventArgs e)
+    {
+        var item = (FrameworkElement)sender;
+        if (System.Windows.Controls.ItemsControl.ItemsControlFromItemContainer(item) is not { } list) return;
+        var state = EnsureWaveState(list);
+        if (DateTime.Now - state.Start < WaveWindow) PlayWave(item, state.Count++);
+    }
+
+    private static WaveState EnsureWaveState(System.Windows.Controls.ItemsControl list)
+    {
+        if (list.GetValue(WaveStateProperty) is WaveState existing) return existing;
+        var state = new WaveState();
+        list.SetValue(WaveStateProperty, state);
+        list.IsVisibleChanged += (_, e) =>
+        {
+            if (e.NewValue is not true) return;
+            state.Start = DateTime.Now;
+            state.Count = 0;
+            // Карточки, которые уже созданы, проигрываем по порядку, когда разметка готова
+            list.Dispatcher.InvokeAsync(() =>
+            {
+                for (var i = 0; i < list.Items.Count && state.Count < WaveMaxItems; i++)
+                    if (list.ItemContainerGenerator.ContainerFromIndex(i) is FrameworkElement { IsLoaded: true, IsVisible: true } c)
+                        PlayWave(c, state.Count++);
+            }, System.Windows.Threading.DispatcherPriority.Loaded);
+        };
+        return state;
+    }
+
+    private static void PlayWave(FrameworkElement item, int order)
+    {
+        if (order >= WaveMaxItems) return;
+        var (translate, _) = EnsureTransforms(item);
+        var delay = TimeSpan.FromMilliseconds(order * 35);
+        var duration = TimeSpan.FromMilliseconds(280);
+        item.BeginAnimation(UIElement.OpacityProperty, Delayed(0, 1, delay, duration));
+        translate.BeginAnimation(TranslateTransform.YProperty, Delayed(12, 0, delay, duration));
+    }
+
+    /// <summary>Анимация с задержкой, которая держит начальное значение всю задержку (без мигания).</summary>
+    private static DoubleAnimationUsingKeyFrames Delayed(double from, double to, TimeSpan delay, TimeSpan duration)
+    {
+        var a = new DoubleAnimationUsingKeyFrames();
+        a.KeyFrames.Add(new DiscreteDoubleKeyFrame(from, KeyTime.FromTimeSpan(TimeSpan.Zero)));
+        if (delay > TimeSpan.Zero) a.KeyFrames.Add(new DiscreteDoubleKeyFrame(from, KeyTime.FromTimeSpan(delay)));
+        a.KeyFrames.Add(new EasingDoubleKeyFrame(to, KeyTime.FromTimeSpan(delay + duration), EaseOut));
+        return a;
+    }
+
     // ---------- SmoothValue ----------
 
     public static readonly DependencyProperty SmoothValueProperty = DependencyProperty.RegisterAttached(
