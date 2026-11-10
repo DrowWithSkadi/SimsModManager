@@ -164,6 +164,7 @@ public partial class PlayButton : UserControl
     private void OnHover(bool over)
     {
         Glow.BeginAnimation(OpacityProperty, new DoubleAnimation(over ? 0.6 : 0.3, TimeSpan.FromSeconds(0.25)));
+        HoverTint.BeginAnimation(OpacityProperty, new DoubleAnimation(over ? 1 : 0, TimeSpan.FromSeconds(0.2)));
         if (!over) return;
         var spin = new DoubleAnimationUsingKeyFrames();
         const int steps = 20;
