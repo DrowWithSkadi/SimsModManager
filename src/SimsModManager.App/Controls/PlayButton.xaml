@@ -1,0 +1,129 @@
+<UserControl x:Class="SimsModManager.App.Controls.PlayButton"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:ctl="clr-namespace:SimsModManager.App.Controls"
+             Height="52" MinWidth="200">
+    <!-- Плавающая кнопка «Играть»: ждёт (блик, кристалл), готовит игру (шаги и прогресс), игра идёт (дышащая точка).
+         Состояния переключаются в PlayButton.xaml.cs по свойствам IsLaunching и IsRunning. -->
+    <UserControl.Resources>
+        <Style x:Key="PlayPart" TargetType="Button">
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Focusable" Value="False" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Bg" Background="Transparent">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bg" Property="Background" Value="#14FFFFFF" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid x:Name="Root" RenderTransformOrigin="0.5,0.5">
+        <Grid.RenderTransform><ScaleTransform x:Name="Press" /></Grid.RenderTransform>
+
+        <!-- Мягкое свечение под кнопкой -->
+        <Border x:Name="Glow" CornerRadius="26" Background="{DynamicResource B.Accent}" Margin="6,8,6,0" Opacity="0.3" IsHitTestVisible="False">
+            <Border.Effect><BlurEffect Radius="22" /></Border.Effect>
+        </Border>
+
+        <!-- ═══ Ждёт ═══ -->
+        <Grid x:Name="IdleState">
+            <Border x:Name="Pill" CornerRadius="26" Background="{DynamicResource B.Accent}" BorderBrush="#99FFFFFF" BorderThickness="1.5">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <Button x:Name="MainPart" Style="{StaticResource PlayPart}" Click="OnPlay" ToolTip="Проверить моды, сделать бэкап сохранений и запустить игру">
+                        <StackPanel Orientation="Horizontal" Margin="20,0,16,0">
+                            <!-- Кристалл, который крутится при наведении -->
+                            <Canvas Width="16" Height="26" Margin="0,0,10,0" RenderTransformOrigin="0.5,0.5">
+                                <Canvas.RenderTransform><ScaleTransform x:Name="CrystalSpin" /></Canvas.RenderTransform>
+                                <Polygon Points="8,0 0,11 8,13" Fill="#0F2A23" />
+                                <Polygon Points="8,0 8,13 16,11" Fill="#1F5C4E" />
+                                <Polygon Points="0,11 8,13 8,26" Fill="#1F5C4E" />
+                                <Polygon Points="8,13 16,11 8,26" Fill="#0F2A23" />
+                            </Canvas>
+                            <TextBlock Text="Играть" FontSize="17" FontWeight="SemiBold" Foreground="{DynamicResource B.OnAccent}" VerticalAlignment="Center" />
+                            <Path Data="M0,0 L0,12 L10,6 Z" Fill="{DynamicResource B.OnAccent}" Margin="10,1,0,0" VerticalAlignment="Center" />
+                        </StackPanel>
+                    </Button>
+
+                    <Border Grid.Column="1" Width="1" Margin="0,12" HorizontalAlignment="Left" Background="#330F2A23" />
+                    <Button x:Name="MorePart" Grid.Column="1" Width="42" Style="{StaticResource PlayPart}" Click="OnMore" ToolTip="Другие варианты запуска">
+                        <Path Data="M0,0 L5,5 L10,0" Stroke="{DynamicResource B.OnAccent}" StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                              StrokeLineJoin="Round" Margin="0,0,4,0" />
+                    </Button>
+                </Grid>
+            </Border>
+            <!-- Блик пробегает по кнопке раз в несколько секунд -->
+            <Border CornerRadius="26" IsHitTestVisible="False">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0,0.3" EndPoint="1,0.7">
+                        <LinearGradientBrush.RelativeTransform><TranslateTransform x:Name="ShineMove" X="-1.2" /></LinearGradientBrush.RelativeTransform>
+                        <GradientStop Color="#00FFFFFF" Offset="0.35" />
+                        <GradientStop Color="#73FFFFFF" Offset="0.5" />
+                        <GradientStop Color="#00FFFFFF" Offset="0.65" />
+                    </LinearGradientBrush>
+                </Border.Background>
+            </Border>
+        </Grid>
+
+        <!-- ═══ Готовит игру ═══ -->
+        <Border x:Name="BusyState" CornerRadius="26" Background="#1F3A33" BorderBrush="{DynamicResource B.Accent}" BorderThickness="1.5"
+                Visibility="Collapsed" Opacity="0">
+            <Grid>
+                <Border x:Name="ProgressFill" HorizontalAlignment="Left" Width="0" CornerRadius="26" Background="{DynamicResource B.Accent}" Opacity="0.28" />
+                <StackPanel Orientation="Horizontal" Margin="18,0,20,0" VerticalAlignment="Center">
+                    <Grid Width="20" Height="20">
+                        <Ellipse Stroke="#3C5A52" StrokeThickness="3" />
+                        <Path Data="M10,1.5 A8.5,8.5 0 0 1 18.5,10" Stroke="{DynamicResource B.Accent}" StrokeThickness="3" StrokeStartLineCap="Round"
+                              StrokeEndLineCap="Round" RenderTransformOrigin="0.5,0.5">
+                            <Path.RenderTransform><RotateTransform x:Name="Spinner" /></Path.RenderTransform>
+                        </Path>
+                    </Grid>
+                    <TextBlock x:Name="StepText" Text="{Binding LaunchStep}" FontSize="14" Foreground="#E8EEEC" Margin="12,0,0,0" VerticalAlignment="Center" />
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ═══ Игра идёт ═══ -->
+        <Border x:Name="RunState" CornerRadius="26" Background="#E61A2421" BorderBrush="#3C5A52" BorderThickness="1.5"
+                Visibility="Collapsed" Opacity="0" ToolTip="Игра запущена">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <Grid Width="20" Height="20">
+                    <Ellipse x:Name="DotHalo" Fill="{DynamicResource B.Accent}" Opacity="0.25" RenderTransformOrigin="0.5,0.5">
+                        <Ellipse.RenderTransform><ScaleTransform x:Name="DotPulse" /></Ellipse.RenderTransform>
+                    </Ellipse>
+                    <Ellipse Width="10" Height="10" Fill="{DynamicResource B.Accent}" />
+                </Grid>
+                <TextBlock Text="Игра идёт" FontSize="15" Foreground="#E8EEEC" Margin="10,0,0,0" VerticalAlignment="Center" />
+            </StackPanel>
+        </Border>
+
+        <!-- Меню «другие варианты запуска» -->
+        <Popup x:Name="MoreMenu" PlacementTarget="{Binding ElementName=MorePart}" Placement="Top" VerticalOffset="-8" HorizontalOffset="-180"
+               StaysOpen="False" AllowsTransparency="True" PopupAnimation="Fade">
+            <Border Background="{DynamicResource B.Popup}" BorderBrush="{DynamicResource B.Border}" BorderThickness="1" CornerRadius="10" Padding="6" Width="230">
+                <StackPanel>
+                    <Button Style="{StaticResource Btn.Ghost}" HorizontalContentAlignment="Left" ctl:Btn.Icon="{StaticResource Icon.Package}"
+                            Content="Играть без модов" Click="OnPlayNoMods" ToolTip="Моды выключатся только на эту игру" />
+                    <Button Style="{StaticResource Btn.Ghost}" HorizontalContentAlignment="Left" ctl:Btn.Icon="{StaticResource Icon.FileCode}"
+                            Content="Играть без скриптов" Click="OnPlayNoScripts" ToolTip="Если игра вылетает — часто виноваты скриптовые моды" Margin="0,2,0,0" />
+                    <Border Height="1" Background="{DynamicResource B.Hover}" Margin="4,6" />
+                    <Button Style="{StaticResource Btn.Ghost}" HorizontalContentAlignment="Left" ctl:Btn.Icon="{StaticResource Icon.FolderOpen}"
+                            Content="Бэкапы сохранений" Click="OnOpenBackups" />
+                </StackPanel>
+            </Border>
+        </Popup>
+    </Grid>
+</UserControl>

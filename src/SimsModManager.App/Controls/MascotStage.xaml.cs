@@ -49,9 +49,9 @@ public partial class MascotStage : UserControl
         LayoutUpdated += (_, _) =>
         {
             // Шапка поменялась (другой путь, появились кнопки) — тихо пересаживаемся
-            if (_flying || !IsLoaded || _perch != 0) return;
-            var p = PerchPoint(0);
-            if (Math.Abs(p.X - Canvas.GetLeft(Buddy)) > 1) PlaceAt(0);
+            if (_flying || !IsLoaded || _perch is not (0 or 4)) return;
+            var p = PerchPoint(_perch);
+            if (Math.Abs(p.X - Canvas.GetLeft(Buddy)) > 1 || Math.Abs(p.Y - Canvas.GetTop(Buddy)) > 1) PlaceAt(_perch);
         };
         _infoTimer.Tick += (_, _) =>
         {
@@ -77,9 +77,9 @@ public partial class MascotStage : UserControl
     /// <summary>У каждой страницы — своё место, чтобы Коробок «ходил» за тобой по вкладкам.</summary>
     private static int PerchFor(AppPage page) => page switch
     {
-        AppPage.Library or AppPage.InstallResult => 0,
+        AppPage.Library or AppPage.InstallResult or AppPage.Health => 4, // на кнопке «Играть»
         AppPage.Settings => 2,
-        AppPage.Health or AppPage.NotFound => 1,
+        AppPage.NotFound => 1,
         _ => 3, // карточка мода, настройка одежды
     };
 
@@ -91,7 +91,8 @@ public partial class MascotStage : UserControl
     {
         var w = Math.Max(ActualWidth, 400);
         var h = Math.Max(ActualHeight, 300);
-        if (perch == 0) return new Point(HeaderGapX(w), HeaderLine - BuddyHeight + 1);
+        if (perch == 4 && PlayButtonTop() is { } onButton) return onButton;
+        if (perch is 0 or 4) return new Point(HeaderGapX(w), HeaderLine - BuddyHeight + 1);
         var x = perch switch
         {
             1 => w / 2 - BuddyWidth / 2,  // на строке состояния посередине
@@ -99,6 +100,14 @@ public partial class MascotStage : UserControl
             _ => Math.Max(300, w - 320),  // на строке состояния справа
         };
         return new Point(x, h - StatusBar - BuddyHeight + 1);
+    }
+
+    /// <summary>Место на верхнем краю кнопки «Играть» (ближе к правому краю), если она видна.</summary>
+    private Point? PlayButtonTop()
+    {
+        if (Window.GetWindow(this)?.FindName("PlayButton") is not FrameworkElement button || !button.IsVisible || button.Opacity < 0.5) return null;
+        var topLeft = button.TranslatePoint(new Point(0, 0), this);
+        return new Point(topLeft.X + button.ActualWidth - BuddyWidth - 22, topLeft.Y - BuddyHeight + 4);
     }
 
     /// <summary>Середина пустого места в шапке между текстом слева и кнопками справа.</summary>
@@ -217,7 +226,7 @@ public partial class MascotStage : UserControl
             _pokes.Clear();
             Buddy.Dizzy();
             // Отбегает на любое другое место
-            var others = Enumerable.Range(0, 4).Where(p => p != _perch).ToList();
+            var others = Enumerable.Range(0, 5).Where(p => p != _perch).ToList();
             var target = others[_random.Next(others.Count)];
             var later = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1.0) };
             later.Tick += (_, _) =>

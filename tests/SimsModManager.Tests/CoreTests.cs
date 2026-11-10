@@ -209,3 +209,56 @@ public class GameOptionsTests
         Assert.Equal("[options]\r\nmodsdisabled = 0\r\nscriptmodsenabled = 1\r\nother = 5\r\n", File.ReadAllText(paths.OptionsIni));
     }
 }
+
+public class LaunchAndBackupTests
+{
+    [Fact]
+    public void ParsesSteamLibraries()
+    {
+        const string vdf = """
+            "libraryfolders"
+            {
+                "0" { "path"		"C:\\Program Files (x86)\\Steam" }
+                "1" { "path"		"D:\\SteamLibrary" }
+            }
+            """;
+        Assert.Equal([@"C:\Program Files (x86)\Steam", @"D:\SteamLibrary"], GameLauncher.SteamLibraryFolders(vdf).ToArray());
+    }
+
+    [Fact]
+    public void DetectsSteamInstall()
+    {
+        Assert.True(GameLauncher.From(@"D:\SteamLibrary\steamapps\common\The Sims 4\Game\Bin\TS4_x64.exe").IsSteam);
+        Assert.False(GameLauncher.From(@"C:\Program Files\EA Games\The Sims 4\Game\Bin\TS4_x64.exe").IsSteam);
+    }
+
+    [Fact]
+    public void BackupKeepsLatestAndSkipsUnchanged()
+    {
+        using var t = new TestFolder();
+        var paths = new SimsPaths(t.Sims);
+        var backups = Path.Combine(t.Root, "backups");
+
+        Assert.Null(SaveBackup.Create(paths, backups)); // сохранений нет
+
+        Directory.CreateDirectory(paths.Saves);
+        var save = Path.Combine(paths.Saves, "Slot_00000001.save");
+        File.WriteAllText(save, "family");
+
+        var first = SaveBackup.Create(paths, backups, keep: 2, now: new DateTime(2026, 1, 1, 10, 0, 0));
+        Assert.NotNull(first);
+        Assert.Equal(first, SaveBackup.Create(paths, backups, keep: 2, now: new DateTime(2026, 1, 1, 10, 5, 0))); // ничего не менялось
+
+        for (var i = 1; i <= 3; i++)
+        {
+            File.WriteAllText(save, "family " + i);
+            File.SetLastWriteTimeUtc(save, DateTime.UtcNow.AddMinutes(i));
+            SaveBackup.Create(paths, backups, keep: 2, now: new DateTime(2026, 1, 1, 11, i, 0));
+        }
+        var list = SaveBackup.List(backups);
+        Assert.Equal(2, list.Count);
+        Assert.EndsWith("saves-2026-01-01_11-03-00.zip", list[0]);
+        using var zip = System.IO.Compression.ZipFile.OpenRead(list[0]);
+        Assert.Contains(zip.Entries, e => e.FullName == "Slot_00000001.save");
+    }
+}
