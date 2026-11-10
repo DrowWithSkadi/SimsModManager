@@ -53,25 +53,66 @@ public partial class SideBar : UserControl
 
     public double LabelOpacity { get => (double)GetValue(LabelOpacityProperty); set => SetValue(LabelOpacityProperty, value); }
 
+    private const double MiniSize = 48;
+    private const double FullPlayWidth = 202;
+    private const double FullPlayHeight = 44;
+
+    /// <summary>
+    /// Раскрытие: панель плавно раздвигается, подписи проявляются ближе к концу,
+    /// квадрат ▶ растягивается вместе с панелью и в конце превращается в полную кнопку «Играть».
+    /// Сворачивание — в обратном порядке.
+    /// </summary>
     private void SetExpanded(bool expand)
     {
         if (_expanded == expand) return;
         _expanded = expand;
 
-        var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
-        var slide = TimeSpan.FromSeconds(expand ? 0.24 : 0.18);
-        Panel.BeginAnimation(WidthProperty, new DoubleAnimation(expand ? ExpandedWidth : CollapsedWidth, slide) { EasingFunction = ease });
+        var duration = TimeSpan.FromSeconds(expand ? 0.38 : 0.3);
+        IEasingFunction ease = expand
+            ? new PowerEase { Power = 4, EasingMode = EasingMode.EaseOut }
+            : new CubicEase { EasingMode = EasingMode.EaseInOut };
+        DoubleAnimation Anim(double to, TimeSpan time, double delay = 0, IEasingFunction? e = null) =>
+            new(to, time) { BeginTime = TimeSpan.FromSeconds(delay), EasingFunction = e };
 
-        // Подписи появляются чуть позже, когда панель уже выехала, и исчезают сразу
-        BeginAnimation(LabelOpacityProperty, new DoubleAnimation(expand ? 1 : 0, TimeSpan.FromSeconds(expand ? 0.2 : 0.08))
-            { BeginTime = TimeSpan.FromSeconds(expand ? 0.08 : 0) });
+        Panel.BeginAnimation(WidthProperty, Anim(expand ? ExpandedWidth : CollapsedWidth, duration, 0, ease));
 
-        // Квадрат ▶ ↔ полная кнопка «Играть»
-        MiniPlayButton.BeginAnimation(OpacityProperty, new DoubleAnimation(expand ? 0 : 1, TimeSpan.FromSeconds(0.15)));
-        MiniPlayButton.IsHitTestVisible = !expand;
-        FullPlay.BeginAnimation(OpacityProperty, new DoubleAnimation(expand ? 1 : 0, TimeSpan.FromSeconds(expand ? 0.25 : 0.1))
-            { BeginTime = TimeSpan.FromSeconds(expand ? 0.06 : 0) });
-        FullPlay.IsHitTestVisible = expand;
+        // Подписи: при раскрытии — когда панель почти выехала, при сворачивании — сразу
+        BeginAnimation(LabelOpacityProperty, expand
+            ? Anim(1, TimeSpan.FromSeconds(0.22), 0.14)
+            : Anim(0, TimeSpan.FromSeconds(0.1)));
+
+        var triangle = MiniPlayButton.Template.FindName("Triangle", MiniPlayButton) as UIElement;
+        var sparkle = MiniPlayButton.Template.FindName("Sparkle", MiniPlayButton) as UIElement;
+
+        if (expand)
+        {
+            // Квадрат растягивается вместе с панелью, значки на нём гаснут
+            MiniPlayButton.BeginAnimation(OpacityProperty, null);
+            MiniPlayButton.Opacity = 1;
+            MiniPlayButton.BeginAnimation(WidthProperty, Anim(FullPlayWidth, duration, 0, ease));
+            MiniPlayButton.BeginAnimation(HeightProperty, Anim(FullPlayHeight, duration, 0, ease));
+            triangle?.BeginAnimation(OpacityProperty, Anim(0, TimeSpan.FromSeconds(0.12)));
+            sparkle?.BeginAnimation(OpacityProperty, Anim(0, TimeSpan.FromSeconds(0.12)));
+            MiniPlayButton.IsHitTestVisible = false;
+
+            // В конце поверх проявляется полная кнопка, а растянутый квадрат под ней исчезает
+            var appear = duration.TotalSeconds * 0.7;
+            FullPlay.BeginAnimation(OpacityProperty, Anim(1, TimeSpan.FromSeconds(0.18), appear));
+            MiniPlayButton.BeginAnimation(OpacityProperty, Anim(0, TimeSpan.FromSeconds(0.1), appear + 0.18));
+            FullPlay.IsHitTestVisible = true;
+        }
+        else
+        {
+            // Полная кнопка тает, под ней — растянутый квадрат, который сжимается обратно
+            FullPlay.BeginAnimation(OpacityProperty, Anim(0, TimeSpan.FromSeconds(0.1)));
+            FullPlay.IsHitTestVisible = false;
+            MiniPlayButton.BeginAnimation(OpacityProperty, Anim(1, TimeSpan.FromSeconds(0.06)));
+            MiniPlayButton.BeginAnimation(WidthProperty, Anim(MiniSize, duration, 0.04, ease));
+            MiniPlayButton.BeginAnimation(HeightProperty, Anim(MiniSize, duration, 0.04, ease));
+            triangle?.BeginAnimation(OpacityProperty, Anim(1, TimeSpan.FromSeconds(0.15), duration.TotalSeconds * 0.6));
+            sparkle?.BeginAnimation(OpacityProperty, Anim(0.55, TimeSpan.FromSeconds(0.15), duration.TotalSeconds * 0.6));
+            MiniPlayButton.IsHitTestVisible = true;
+        }
     }
 
     /// <summary>Блик по квадратной кнопке раз в несколько секунд.</summary>

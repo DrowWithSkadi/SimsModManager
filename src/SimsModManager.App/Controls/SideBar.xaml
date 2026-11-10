@@ -19,8 +19,6 @@
                     <ControlTemplate TargetType="Button">
                         <Grid Background="Transparent">
                             <Border x:Name="Bg" CornerRadius="12" Background="Transparent" />
-                            <Border x:Name="Bar" Width="3" HorizontalAlignment="Left" Margin="0,12" CornerRadius="1.5"
-                                    Background="#77E1C7" Opacity="0" />
                             <ctl:IconView x:Name="Icon" Data="{TemplateBinding ctl:Btn.Icon}" Width="20" Height="20" Margin="14,0,0,0"
                                           HorizontalAlignment="Left" VerticalAlignment="Center" Foreground="{TemplateBinding Foreground}" />
                             <ContentPresenter Margin="48,0,0,0" VerticalAlignment="Center" />
@@ -31,9 +29,8 @@
                                 <Setter Property="Foreground" Value="#F1F4F3" />
                             </Trigger>
                             <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="True">
-                                <!-- Выбранная вкладка: светлая «плашка», мятная иконка и полоска -->
+                                <!-- Выбранная вкладка: светлая плашка и мятная иконка -->
                                 <Setter TargetName="Bg" Property="Background" Value="#2E3533" />
-                                <Setter TargetName="Bar" Property="Opacity" Value="1" />
                                 <Setter TargetName="Icon" Property="Foreground" Value="#77E1C7" />
                                 <Setter Property="Foreground" Value="#FFFFFF" />
                             </DataTrigger>
@@ -48,7 +45,8 @@
             <Setter Property="FontWeight" Value="SemiBold" />
             <Setter Property="Foreground" Value="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
             <Setter Property="Opacity" Value="{Binding LabelOpacity, ElementName=Self}" />
-            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+            <Setter Property="TextTrimming" Value="None" />
+            <Setter Property="TextWrapping" Value="NoWrap" />
         </Style>
 
         <!-- Квадратная кнопка ▶ в свёрнутой панели -->
@@ -128,7 +126,7 @@
             <DropShadowEffect BlurRadius="20" ShadowDepth="4" Direction="270" Opacity="0.35" Color="Black" />
         </Border.Effect>
         <Grid ClipToBounds="True">
-            <Grid Width="220" HorizontalAlignment="Left">
+            <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="72" />
                     <RowDefinition Height="Auto" />
@@ -181,10 +179,10 @@
 
                 <!-- Играть: квадрат в свёрнутой панели, полная кнопка в раскрытой -->
                 <Grid Grid.Row="4" Height="64" Margin="0,0,0,12" Visibility="{Binding HasGame, Converter={StaticResource BoolToVisibility}}">
-                    <Button x:Name="MiniPlayButton" Style="{StaticResource MiniPlay}" Width="48" Height="48" Margin="8,0,0,0"
+                    <Button x:Name="MiniPlayButton" Style="{StaticResource MiniPlay}" Width="48" Height="48" Margin="7,0,0,0"
                             HorizontalAlignment="Left" VerticalAlignment="Center" Command="{Binding LaunchGameCommand}"
                             ToolTip="Играть" />
-                    <ctl:PlayButton x:Name="FullPlay" Width="196" Margin="12,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center"
+                    <ctl:PlayButton x:Name="FullPlay" Width="202" Margin="7,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center"
                                     Opacity="0" IsHitTestVisible="False"
                                     IsLaunching="{Binding IsLaunching}" IsRunning="{Binding IsGameRunning}" Progress="{Binding LaunchProgress}" />
                 </Grid>
