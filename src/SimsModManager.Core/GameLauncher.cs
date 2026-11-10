@@ -23,6 +23,17 @@ public static partial class GameLauncher
         return null;
     }
 
+    /// <summary>Папка установки игры (где лежат EP01, GP02… и Game\Bin).</summary>
+    public static string InstallRoot(GameInstall game)
+    {
+        var bin = Path.GetDirectoryName(game.Exe) ?? "";
+        var gameDir = Path.GetDirectoryName(bin);
+        return string.Equals(Path.GetFileName(bin), "Bin", StringComparison.OrdinalIgnoreCase)
+               && string.Equals(Path.GetFileName(gameDir), "Game", StringComparison.OrdinalIgnoreCase)
+            ? Path.GetDirectoryName(gameDir) ?? bin
+            : bin;
+    }
+
     public static GameInstall From(string exe) => new(exe, exe.Contains("steamapps", StringComparison.OrdinalIgnoreCase));
 
     /// <summary>Исполняемый файл игры внутри папки установки (или самой папки Bin).</summary>

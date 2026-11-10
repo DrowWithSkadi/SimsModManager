@@ -16,6 +16,8 @@ public sealed record ModContent
     /// <summary>Название первой вещи из файла (например, «yfBody_Dress»), если есть.</summary>
     public string? FirstPartName { get; init; }
     public bool Unreadable { get; init; }
+    /// <summary>Коды дополнений, к которым относятся вещи мода (EP05…). Пусто — подходит для базовой игры.</summary>
+    public string[] RequiredPacks { get; init; } = [];
 }
 
 /// <summary>Картинка-миниатюра из .package: JPEG/PNG и, возможно, отдельная маска прозрачности.</summary>
@@ -51,6 +53,7 @@ public static class ModAnalyzer
         ModThumbnail? thumb = null;
         string? firstName = null;
         var unreadable = false;
+        var packs = new SortedSet<string>(StringComparer.Ordinal);
 
         foreach (var file in packages)
         {
@@ -71,6 +74,7 @@ public static class ModAnalyzer
                         var part = CasPart.Parse(pkg.Read(entry));
                         firstName ??= part.Name;
                         categories[part.Category] = categories.GetValueOrDefault(part.Category) + 1;
+                        if (part.PackId > 0 && GamePacks.FromId(part.PackId) is { } pack) packs.Add(pack.Code);
                     }
                     catch (Exception ex) when (ex is InvalidDataException or EndOfStreamException) { }
                 }
@@ -98,6 +102,7 @@ public static class ModAnalyzer
             HasThumbnail = thumb is not null,
             FirstPartName = firstName,
             Unreadable = unreadable && casCount == 0 && objectCount == 0,
+            RequiredPacks = [.. packs],
         }, thumb);
     }
 

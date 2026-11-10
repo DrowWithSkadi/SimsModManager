@@ -53,7 +53,7 @@ public sealed class ContentCache
         {
             var info = new FileInfo(f);
             if (!info.Exists) continue;
-            sb.Append("v2|").Append(info.Name).Append('|').Append(info.Length).Append('|').Append(info.LastWriteTimeUtc.Ticks).Append(';');
+            sb.Append("v3|").Append(info.Name).Append('|').Append(info.Length).Append('|').Append(info.LastWriteTimeUtc.Ticks).Append(';');
         }
         return Convert.ToHexString(SHA1.HashData(Encoding.UTF8.GetBytes(sb.ToString())));
     }

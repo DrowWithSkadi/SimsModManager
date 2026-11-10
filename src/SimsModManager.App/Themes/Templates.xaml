@@ -93,6 +93,30 @@
                     Visibility="{Binding ShowOldWarning, Converter={StaticResource BoolToVisibility}}">
                 <ctl:IconView Data="{StaticResource Icon.TriangleAlert}" Foreground="{DynamicResource B.Warning}" Width="14" Height="14" />
             </Border>
+            <!-- «Нужно: Времена года» — жёлтая, если такого дополнения у пользователя нет -->
+            <Border Margin="0,0,4,0" ToolTip="{Binding RequiredPacksTooltip}" ToolTipService.InitialShowDelay="200"
+                    Visibility="{Binding HasRequiredPacks, Converter={StaticResource BoolToVisibility}}">
+                <Border.Style>
+                    <Style TargetType="Border" BasedOn="{StaticResource Tag}">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding MissingPack}" Value="True">
+                                <Setter Property="Background" Value="{DynamicResource B.WarningSubtle}" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <TextBlock Text="{Binding RequiredPacksLabel}">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock" BasedOn="{StaticResource TagText}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding MissingPack}" Value="True">
+                                    <Setter Property="Foreground" Value="{DynamicResource B.Warning}" />
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </Border>
             <Border Style="{StaticResource Tag}" Visibility="{Binding ShowCategory, Converter={StaticResource BoolToVisibility}}">
                 <TextBlock Style="{StaticResource TagText}" Text="{Binding CategoryLabel}" />
             </Border>

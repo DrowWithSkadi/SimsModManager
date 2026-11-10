@@ -68,6 +68,48 @@ public sealed partial class ModItemViewModel : ObservableObject
 
     public bool ShowCategory => Category != ModCategory.Unknown;
 
+    // ---------- Дополнения ----------
+
+    /// <summary>Коды дополнений, к которым относятся вещи мода (EP05…).</summary>
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasRequiredPacks), nameof(RequiredPacksLabel), nameof(RequiredPacksTooltip), nameof(MissingPack))]
+    private string[] _requiredPacks = [];
+
+    public bool HasRequiredPacks => RequiredPacks.Length > 0;
+
+    public string RequiredPacksLabel => RequiredPacks.Length switch
+    {
+        0 => "",
+        1 => "Нужно: " + GamePacks.NameOf(RequiredPacks[0]),
+        _ => "Нужно: " + GamePacks.NameOf(RequiredPacks[0]) + " +" + (RequiredPacks.Length - 1),
+    };
+
+    /// <summary>Нужного дополнения нет (или оно установлено не полностью) — вещи могут быть невидимыми.</summary>
+    public bool MissingPack => RequiredPacks.Any(c => _owner.PackStateOf(c) is PackState.Missing or PackState.Partial);
+
+    public string RequiredPacksTooltip
+    {
+        get
+        {
+            if (RequiredPacks.Length == 0) return "";
+            var lines = RequiredPacks.Select(c => _owner.PackStateOf(c) switch
+            {
+                PackState.Installed => $"✓ {GamePacks.NameOf(c)} ({c})",
+                PackState.Partial => $"! {GamePacks.NameOf(c)} ({c}) — установлено не полностью",
+                PackState.Missing => $"✗ {GamePacks.NameOf(c)} ({c}) — у вас нет",
+                _ => $"• {GamePacks.NameOf(c)} ({c})",
+            });
+            var text = "Вещи из этого мода сделаны для дополнения:\n" + string.Join("\n", lines);
+            return MissingPack ? text + "\n\nБез него вещи могут быть невидимыми или «квадратами»." : text;
+        }
+    }
+
+    public void RefreshPacks()
+    {
+        OnPropertyChanged(nameof(MissingPack));
+        OnPropertyChanged(nameof(RequiredPacksTooltip));
+    }
+
     /// <summary>Отдельная зелёная метка «Скрипт», если в моде есть скрипты.</summary>
     public bool ShowScriptBadge => HasScripts;
 

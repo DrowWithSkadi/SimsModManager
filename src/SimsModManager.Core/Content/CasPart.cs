@@ -63,6 +63,8 @@ public sealed class CasPart
     public uint BodySubType { get; private init; }
     public AgeGender AgeGender { get; private init; }
     public uint Species { get; private init; } = 1;
+    /// <summary>Номер дополнения, к которому относится вещь (0 — базовая игра). См. <see cref="GamePacks"/>.</summary>
+    public int PackId { get; private init; }
 
     // Позиции полей в байтах — понадобятся, чтобы менять настройки вещи.
     public int FlagsOffset { get; private init; }
@@ -124,6 +126,8 @@ public sealed class CasPart
         var ageGenderOffset = (int)ms.Position;
         var ageGender = (AgeGender)r.ReadUInt32();
         var species = version >= 32 ? r.ReadUInt32() : 1u;
+        var packId = 0;
+        if (version >= 34 && ms.Position + 2 <= ms.Length) packId = r.ReadInt16();
 
         return new CasPart
         {
@@ -136,6 +140,7 @@ public sealed class CasPart
             BodySubType = bodySubType,
             AgeGender = ageGender,
             Species = species,
+            PackId = packId,
             FlagsOffset = flagsOffset,
             TagsOffset = tagsOffset,
             TagsEndOffset = tagsEnd,

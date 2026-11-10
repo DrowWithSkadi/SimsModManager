@@ -60,6 +60,7 @@ public sealed partial class MainViewModel : ObservableObject
         InitGameFolder();
         HookMascot();
         HookPlay();
+        ScanPacks();
     }
 
     public ObservableCollection<ModItemViewModel> Mods { get; } = [];
@@ -307,6 +308,7 @@ public sealed partial class MainViewModel : ObservableObject
                 {
                     vm.Category = old.Category;
                     vm.Thumbnail = old.Thumbnail;
+                    vm.RequiredPacks = old.RequiredPacks;
                 }
                 added.Add(vm);
             }
@@ -385,6 +387,7 @@ public sealed partial class MainViewModel : ObservableObject
                 dispatcher.InvokeAsync(() =>
                 {
                     vm.Category = content.Category;
+                    vm.RequiredPacks = content.RequiredPacks ?? [];
                     if (image is not null) vm.Thumbnail = image;
                     UpdateSummary();
                 }, DispatcherPriority.Background);
