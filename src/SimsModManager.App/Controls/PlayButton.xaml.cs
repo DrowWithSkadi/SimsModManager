@@ -29,9 +29,15 @@ public partial class PlayButton : UserControl
         IdleState.PreviewMouseLeftButtonUp += (_, _) => Release();
         IdleState.MouseLeave += (_, _) => Release();
         SizeChanged += (_, _) => UpdateProgress(animate: false);
+        MoreMenu.Closed += (_, _) => MenuClosed?.Invoke();
     }
 
     private MainViewModel? Vm => DataContext as MainViewModel;
+
+    /// <summary>Открыто меню «⌄» (боковая панель не сворачивается, пока оно открыто).</summary>
+    public bool IsMenuOpen => MoreMenu.IsOpen;
+
+    public event Action? MenuClosed;
 
     // ---------- Свойства ----------
 

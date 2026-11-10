@@ -77,9 +77,9 @@ public partial class MascotStage : UserControl
     /// <summary>У каждой страницы — своё место, чтобы Коробок «ходил» за тобой по вкладкам.</summary>
     private static int PerchFor(AppPage page) => page switch
     {
-        AppPage.Library or AppPage.InstallResult or AppPage.Health => 4, // на кнопке «Играть»
+        AppPage.Library or AppPage.InstallResult => 0, // в шапке
         AppPage.Settings => 2,
-        AppPage.NotFound => 1,
+        AppPage.Health or AppPage.NotFound => 1,
         _ => 3, // карточка мода, настройка одежды
     };
 
@@ -245,7 +245,7 @@ public partial class MascotStage : UserControl
             _pokes.Clear();
             Buddy.Dizzy();
             // Отбегает на любое другое место
-            var others = Enumerable.Range(0, 5).Where(p => p != _perch).ToList();
+            var others = Enumerable.Range(0, 4).Where(p => p != _perch).ToList();
             var target = others[_random.Next(others.Count)];
             var later = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1.0) };
             later.Tick += (_, _) =>

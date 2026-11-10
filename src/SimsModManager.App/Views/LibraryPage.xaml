@@ -287,19 +287,10 @@
             <!-- Список -->
             <Border Grid.Row="1" Background="{DynamicResource B.Surface}" CornerRadius="6" ClipToBounds="True" Margin="0,0,0,12"
                     b:Anim.Show="{Binding ShowList}" b:Anim.Offset="0">
-                <!-- Под кнопкой «Играть» оставлен запас; строки плавно растворяются к нему, а не обрываются линией.
-                     Маска пересчитывается под высоту в OnListAreaSizeChanged. -->
-                <Grid x:Name="ListArea" SizeChanged="OnListAreaSizeChanged">
-                    <Grid.OpacityMask>
-                        <LinearGradientBrush x:Name="ListFade" StartPoint="0,0" EndPoint="0,1">
-                            <GradientStop Color="Black" Offset="0" />
-                            <GradientStop x:Name="FadeStart" Color="Black" Offset="0.85" />
-                            <GradientStop x:Name="FadeEnd" Color="#00000000" Offset="1" />
-                        </LinearGradientBrush>
-                    </Grid.OpacityMask>
+                <Grid>
                     <ListBox x:Name="ModList" ItemsSource="{Binding ModsView}" ItemTemplate="{StaticResource ModRow}"
                              ItemContainerStyle="{StaticResource ModRowContainer}" SelectionMode="Extended"
-                             Background="Transparent" BorderThickness="0" Padding="0,0,0,64"
+                             Background="Transparent" BorderThickness="0" Padding="0"
                              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                              VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling"
                              VirtualizingPanel.ScrollUnit="Pixel" SelectionChanged="OnSelectionChanged"
@@ -309,7 +300,7 @@
                     <!-- Отступ сверху (у панели — прокручивается вместе с плитками) — запас для плиток, которые приподнимаются при наведении -->
                     <ListBox x:Name="ModGrid" ItemsSource="{Binding ModsView}" ItemTemplate="{StaticResource ModTile}"
                              ItemContainerStyle="{StaticResource ModTileContainer}" SelectionMode="Extended"
-                             Background="{DynamicResource B.Background}" BorderThickness="0" Padding="0,0,0,64"
+                             Background="{DynamicResource B.Background}" BorderThickness="0" Padding="0,0,0,8"
                              ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="OnSelectionChanged"
                              PreviewMouseLeftButtonUp="OnItemClick" KeyDown="OnListKeyDown"
                              Visibility="{Binding IsGridView, Converter={StaticResource BoolToVisibility}}">

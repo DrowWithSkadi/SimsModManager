@@ -31,20 +31,6 @@ public partial class LibraryPage : UserControl
         Search.SelectAll();
     }
 
-    /// <summary>
-    /// Нижние 64 px списка — запас под кнопку «Играть». Строки растворяются над ним (за 48 px),
-    /// поэтому список не обрывается ровной линией.
-    /// </summary>
-    private void OnListAreaSizeChanged(object sender, SizeChangedEventArgs e)
-    {
-        var height = e.NewSize.Height;
-        if (height <= 0) return;
-        const double reserve = 64;
-        const double fade = 48;
-        FadeStart.Offset = Math.Clamp((height - reserve - fade) / height, 0, 1);
-        FadeEnd.Offset = Math.Clamp((height - reserve + 6) / height, 0, 1);
-    }
-
     private void OnSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         // Синхронизируем выбор с моделью и для строк, которые сейчас не видны на экране.

@@ -12,7 +12,7 @@ public partial class MainWindow : Window
         InitializeComponent();
         SourceInitialized += (_, _) => ApplyWindowsStyle();
         StateChanged += (_, _) => OnStateChanged();
-        SizeChanged += (_, _) => ViewModel.IsCompact = ActualWidth < 1000;
+        SizeChanged += (_, _) => ViewModel.IsCompact = ActualWidth < 1064; // 64 px занимает боковая панель
         PreviewKeyDown += OnPreviewKeyDown;
     }
 
