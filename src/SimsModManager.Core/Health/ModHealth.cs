@@ -47,10 +47,18 @@ public sealed record HealthIssue(
     /// <summary>Сколько совпадений / отчётов — для заголовков.</summary>
     public int Count { get; init; }
 
+    /// <summary>
+    /// Что именно отличает эту проблему от следующей такой же (например, время последнего отчёта об ошибке).
+    /// Если задано — входит в ключ: скрытая проблема не вернётся, а новая такая же — покажется.
+    /// </summary>
+    public string? Fingerprint { get; init; }
+
     /// <summary>Постоянный ключ, чтобы можно было «не показывать снова».</summary>
-    public string Key => Kind + ":" + (FilePath is not null
-        ? Path.GetFileName(FilePath).ToLowerInvariant()
-        : string.Join("|", Mods.Select(m => m.Name.ToLowerInvariant()).Order()));
+    public string Key => Kind + ":" + (Fingerprint is not null
+        ? Fingerprint
+        : FilePath is not null
+            ? Path.GetFileName(FilePath).ToLowerInvariant()
+            : string.Join("|", Mods.Select(m => m.Name.ToLowerInvariant()).Order()));
 }
 
 public sealed record HealthReport(IReadOnlyList<HealthIssue> Issues, int CheckedMods, IReadOnlyList<string> ErrorReports)
@@ -565,6 +573,8 @@ public sealed class ModHealthChecker(SimsPaths paths)
             {
                 Count = unknown,
                 Details = unknownError,
+                // Скрыли — эти отчёты больше не напомнят; появится более новый — предупреждение вернётся
+                Fingerprint = "last-" + unknownLast.ToString("yyyyMMddHHmmss"),
             };
         }
 

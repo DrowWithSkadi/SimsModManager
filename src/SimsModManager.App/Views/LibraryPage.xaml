@@ -235,7 +235,9 @@
                                TextTrimming="CharacterEllipsis" />
                     <StackPanel Grid.Column="2" Orientation="Horizontal">
                         <Button Style="{StaticResource Btn.Primary}" Content="Посмотреть" Command="{Binding OpenHealthCommand}" />
-                        <Button Style="{StaticResource Btn.IconGhost}" ctl:Btn.Icon="{StaticResource Icon.X}" Margin="4,0,0,0" ToolTip="Скрыть"
+                        <Button Style="{StaticResource Btn.Secondary}" Content="Не напоминать" Margin="8,0,0,0" Command="{Binding DismissHealthIssuesCommand}"
+                                ToolTip="Об этих проблемах больше не напомню, о новых — напомню" />
+                        <Button Style="{StaticResource Btn.IconGhost}" ctl:Btn.Icon="{StaticResource Icon.X}" Margin="4,0,0,0" ToolTip="Скрыть до перезапуска"
                                 Command="{Binding HideHealthBannerCommand}" />
                     </StackPanel>
                 </Grid>
