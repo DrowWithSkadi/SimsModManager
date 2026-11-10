@@ -229,6 +229,48 @@
                         </StackPanel>
                     </Border>
 
+                    <!-- Дополнения игры -->
+                    <Border Style="{StaticResource Card}" b:Anim.Appear="True" Margin="0,0,0,16">
+                        <StackPanel>
+                            <TextBlock Text="Дополнения игры" Style="{StaticResource T.Section}" />
+                            <TextBlock Text="{Binding PacksSummary}" Style="{StaticResource T.Muted}" TextWrapping="Wrap" Margin="0,4,0,10" />
+                            <ItemsControl ItemsSource="{Binding PackRows}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Margin="0,0,6,6" ToolTip="{Binding Tooltip}">
+                                            <Border.Style>
+                                                <Style TargetType="Border" BasedOn="{StaticResource Tag}">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding IsPartial}" Value="True">
+                                                            <Setter Property="Background" Value="{DynamicResource B.WarningSubtle}" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Border.Style>
+                                            <TextBlock Text="{Binding Name}">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock" BasedOn="{StaticResource TagText}">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsPartial}" Value="True">
+                                                                <Setter Property="Foreground" Value="{DynamicResource B.Warning}" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <TextBlock Text="Жёлтые — установлены не полностью: есть только обновления, без основных файлов. Вещи из них будут невидимыми или «квадратами»."
+                                       Style="{StaticResource T.Muted}" TextWrapping="Wrap" Margin="0,4,0,0" Foreground="{DynamicResource B.Warning}"
+                                       Visibility="{Binding HasPartialPacks, Converter={StaticResource BoolToVisibility}}" />
+                        </StackPanel>
+                    </Border>
+
                     <Border Style="{StaticResource Card}" b:Anim.Appear="True">
                         <StackPanel>
                             <TextBlock Text="О программе" Style="{StaticResource T.Section}" />

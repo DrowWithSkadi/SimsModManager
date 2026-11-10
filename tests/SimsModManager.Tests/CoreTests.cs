@@ -262,3 +262,38 @@ public class LaunchAndBackupTests
         Assert.Contains(zip.Entries, e => e.FullName == "Slot_00000001.save");
     }
 }
+
+public class GamePackTests
+{
+    [Fact]
+    public void KnowsSeasons()
+    {
+        Assert.Equal("EP05", GamePacks.FromId(26)!.Code);
+        Assert.Equal("Времена года", GamePacks.NameOf("EP05"));
+        Assert.Equal(GamePacks.All.Count, GamePacks.All.Select(p => p.Id).Distinct().Count());
+    }
+
+    [Fact]
+    public void ScanDetectsFullAndPartialPacks()
+    {
+        using var t = new TestFolder();
+        var root = Path.Combine(t.Root, "The Sims 4");
+        Directory.CreateDirectory(Path.Combine(root, "EP05"));
+        File.WriteAllText(Path.Combine(root, "EP05", "ClientFullBuild0.package"), "x");
+        Directory.CreateDirectory(Path.Combine(root, "GP01"));
+        File.WriteAllText(Path.Combine(root, "GP01", "ClientDeltaBuild0.package"), "x");
+        Directory.CreateDirectory(Path.Combine(root, "Data"));
+
+        var packs = GamePacks.Scan(root);
+        Assert.Equal(PackState.Installed, packs["EP05"]);
+        Assert.Equal(PackState.Partial, packs["GP01"]);
+        Assert.False(packs.ContainsKey("DATA"));
+    }
+
+    [Fact]
+    public void InstallRootFromExe()
+    {
+        var game = GameLauncher.From(Path.Combine("C:", "Games", "The Sims 4", "Game", "Bin", "TS4_x64.exe"));
+        Assert.Equal(Path.Combine("C:", "Games", "The Sims 4"), GameLauncher.InstallRoot(game));
+    }
+}

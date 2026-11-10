@@ -190,6 +190,7 @@ public sealed partial class MainViewModel
         if (dialog.ShowDialog() != true) return null;
         _settings.GameExe = dialog.FileName;
         SaveSettings();
+        ScanPacks();
         return GameLauncher.From(dialog.FileName);
     }
 
