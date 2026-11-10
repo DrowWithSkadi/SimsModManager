@@ -246,3 +246,15 @@ public class BisectTests
         Assert.Null(ModBisect.Load(paths));
     }
 }
+
+public class HealthKeyTests
+{
+    [Fact]
+    public void FingerprintMakesNewErrorsShowAgain()
+    {
+        HealthIssue Unknown(string fp) => new(HealthIssueKind.UnknownErrors, HealthSeverity.Warning, "t", "e", "a", []) { Fingerprint = fp };
+
+        Assert.Equal(Unknown("last-20261108123600").Key, Unknown("last-20261108123600").Key);
+        Assert.NotEqual(Unknown("last-20261108123600").Key, Unknown("last-20261110090000").Key);
+    }
+}

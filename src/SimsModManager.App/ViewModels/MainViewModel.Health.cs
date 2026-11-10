@@ -299,6 +299,34 @@ public sealed partial class MainViewModel
     [RelayCommand]
     private void HideHealthBanner() => HealthBannerHidden = true;
 
+    /// <summary>
+    /// «Не напоминать»: текущие проблемы больше не показываются (и после перезапуска),
+    /// а новые — покажутся. Вернуть можно на странице «Состояние» → «Показать скрытые предупреждения».
+    /// </summary>
+    [RelayCommand]
+    private void DismissHealthIssues()
+    {
+        var dismissed = HealthIssues.Where(i => i.Issue.Severity != HealthSeverity.Info).ToList();
+        if (dismissed.Count == 0) return;
+        var added = new List<string>();
+        foreach (var issue in dismissed)
+        {
+            if (_settings.IgnoredIssues.Contains(issue.Issue.Key)) continue;
+            _settings.IgnoredIssues.Add(issue.Issue.Key);
+            added.Add(issue.Issue.Key);
+        }
+        SaveSettings();
+        foreach (var issue in dismissed) HealthIssues.Remove(issue);
+        UpdateHealthCount();
+        ShowToast(dismissed.Count == 1 ? "Больше не напомню об этом" : "Больше не напомню об этих проблемах", Icons.Check, undo: () =>
+        {
+            foreach (var key in added) _settings.IgnoredIssues.Remove(key);
+            SaveSettings();
+            foreach (var issue in dismissed) HealthIssues.Add(issue);
+            UpdateHealthCount();
+        });
+    }
+
     // ---------- Игра обновилась ----------
 
     [ObservableProperty]

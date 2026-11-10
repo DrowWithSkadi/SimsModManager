@@ -60,7 +60,7 @@ public sealed partial class MainViewModel
 
         if (HasHealthBanner)
             return new("health", NoticeKind.Error, "Кажется, с модами беда!", HealthBannerText,
-                "Посмотреть", OpenHealthCommand, "Скрыть", HideHealthBannerCommand);
+                "Посмотреть", OpenHealthCommand, "Не напоминать", DismissHealthIssuesCommand);
 
         if (HasOptionsWarning)
             return new("options", NoticeKind.Warning, OptionsWarning + "!",
