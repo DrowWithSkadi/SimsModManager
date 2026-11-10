@@ -258,3 +258,24 @@ public class HealthKeyTests
         Assert.NotEqual(Unknown("last-20261108123600").Key, Unknown("last-20261110090000").Key);
     }
 }
+
+public class ErrorMentionTests
+{
+    private static ModItem Mod(string name, params string[] files) =>
+        new(name, @"C:\Mods\" + name, true, true, files.Select(f => @"C:\Mods\" + name + @"\" + f).ToList(), 1, DateTime.MinValue, []);
+
+    [Fact]
+    public void FindsModByFileNameInReport()
+    {
+        var mods = new[] { Mod("Hair Pack", "simple_hair.package"), Mod("Better Build", "betterbuild_core.ts4script") };
+        var found = ModHealthChecker.FindByMention("Exception in betterbuild_core.ts4script while loading tuning", mods);
+        Assert.Equal("Better Build", Assert.Single(found).Name);
+    }
+
+    [Fact]
+    public void IgnoresShortOrCommonNames()
+    {
+        var mods = new[] { Mod("hair", "a.package"), Mod("Clothes", "b.package") };
+        Assert.Empty(ModHealthChecker.FindByMention("error while drawing hair and clothes", mods));
+    }
+}

@@ -32,12 +32,15 @@
                     </Grid>
                     <TextBlock Text="{Binding Detail}" FontSize="12" Foreground="#4A5654" TextWrapping="Wrap" Margin="0,4,8,0" LineHeight="17"
                                Visibility="{Binding Detail, Converter={StaticResource NullToVisibility}}" />
-                    <WrapPanel Margin="0,10,0,0" Visibility="{Binding ActionText, Converter={StaticResource NullToVisibility}}">
+                    <WrapPanel Margin="0,10,0,-6" Visibility="{Binding ActionText, Converter={StaticResource NullToVisibility}}">
                         <Button Style="{StaticResource Btn.Primary}" Content="{Binding ActionText}" Command="{Binding Action}" Height="28" FontSize="12"
-                                Margin="0,0,6,0" Click="OnBubbleAction" />
-                        <Button Style="{StaticResource Btn.Secondary}" Content="{Binding SecondaryText}" Command="{Binding Secondary}" Height="28" FontSize="12"
+                                Margin="0,0,6,6" Click="OnBubbleAction" />
+                        <Button Style="{StaticResource Btn.Secondary}" Content="{Binding SecondaryText}" Command="{Binding Secondary}" Height="28" FontSize="12" Margin="0,0,6,6"
                                 Background="#EEF2F1" BorderBrush="#D5DCDA" Foreground="#1A1F1E"
                                 Visibility="{Binding SecondaryText, Converter={StaticResource NullToVisibility}}" Click="OnBubbleAction" />
+                        <Button Style="{StaticResource Btn.Secondary}" Content="{Binding TertiaryText}" Command="{Binding Tertiary}" Height="28" FontSize="12"
+                                Background="#EEF2F1" BorderBrush="#D5DCDA" Foreground="#1A1F1E" Margin="0,0,0,6"
+                                Visibility="{Binding TertiaryText, Converter={StaticResource NullToVisibility}}" Click="OnBubbleAction" />
                     </WrapPanel>
                 </StackPanel>
             </Border>

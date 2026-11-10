@@ -117,6 +117,7 @@ public sealed partial class MainViewModel
     private void UpdateHealthCount()
     {
         HealthProblemCount = HealthIssues.Count(i => i.Issue.Severity != HealthSeverity.Info);
+        OnPropertyChanged(nameof(CanFixAll));
         OnPropertyChanged(nameof(ShowHealthAllGood));
         UpdateModFlags();
     }
@@ -135,27 +136,51 @@ public sealed partial class MainViewModel
             mod.HealthFlag = reasons.TryGetValue(mod, out var list) ? string.Join(Environment.NewLine + Environment.NewLine, list) : null;
     }
 
-    /// <summary>После установки: если новый мод с чем-то конфликтует — сразу говорим и предлагаем решение.</summary>
+    /// <summary>
+    /// После установки: проверяем новые моды. Что можно исправить само — показываем планом и исправляем
+    /// после одного «Исправить»; конфликты, где нужен выбор, — объясняем; про недостающие дополнения — предупреждаем.
+    /// </summary>
     private async Task WarnAboutNewModsAsync(ICollection<string> newModNames)
     {
         var issues = HealthIssues
             .Where(i => i.Issue.Severity != HealthSeverity.Info && i.Mods.Any(r => newModNames.Contains(r.Name)))
             .ToList();
-        if (issues.Count == 0) return;
+        var needPacks = Mods.Where(m => newModNames.Contains(m.Name) && m.MissingPack).ToList();
+        if (issues.Count == 0 && needPacks.Count == 0) return;
 
-        var first = issues[0];
-        var newMods = issues.SelectMany(i => i.Mods).Select(r => r.Mod).Where(m => newModNames.Contains(m.Name)).Distinct().ToList();
+        var packNote = needPacks.Count == 0 ? null
+            : string.Join(Environment.NewLine, needPacks.Take(3).Select(m =>
+                  $"«{m.Name}» сделан для дополнения «{GamePacks.NameOf(m.RequiredPacks[0])}», которого у вас нет — вещи могут быть невидимыми."));
+
+        // 1. Есть что исправить автоматически — план + одно подтверждение
+        var plan = BuildRepairPlan(issues, includeOutdated: false);
+        if (!plan.IsEmpty)
+        {
+            if (packNote is not null) ShowToast(packNote, Icons.Alert, seconds: 8);
+            await RepairAsync(issues, includeOutdated: false,
+                title: issues.Count == 1 ? $"С новым модом проблема: {issues[0].Title.TrimEnd('.')}" : "С новыми модами есть проблемы — вот что я исправлю");
+            return;
+        }
+
+        // 2. Автоматически не исправить (нужен выбор) или только недостающее дополнение
+        var first = issues.FirstOrDefault();
+        var newMods = issues.SelectMany(i => i.Mods).Select(r => r.Mod).Concat(needPacks)
+            .Where(m => newModNames.Contains(m.Name)).Distinct().ToList();
         var single = newMods.Count == 1 ? newMods[0] : null;
 
         var answer = await ShowDialogAsync(new DialogViewModel
         {
-            Title = issues.Count == 1 ? first.Title : $"С новыми модами {Text.Plural(issues.Count, "проблема", "проблемы", "проблем")}",
-            Icon = (System.Windows.Media.Geometry)System.Windows.Application.Current.FindResource("Icon.Flag"),
-            IconIsDanger = true,
-            Message = issues.Count == 1 ? first.Explanation : string.Join(Environment.NewLine, issues.Take(4).Select(i => "• " + i.Title)),
-            Message2 = issues.Count == 1 ? first.Advice : "Проблемные моды отмечены в списке красным флажком — наведите на него, чтобы увидеть причину.",
-            PrimaryText = single is not null && single.IsEnabled ? $"Выключить «{single.Name}»" : "Посмотреть",
-            ExtraText = single is not null ? "Подробнее" : null,
+            Title = first is null ? "Новому моду нужно дополнение"
+                : issues.Count == 1 ? first.Title : $"С новыми модами {Text.Plural(issues.Count, "проблема", "проблемы", "проблем")}",
+            Icon = (System.Windows.Media.Geometry)System.Windows.Application.Current.FindResource(first is null ? "Icon.Layers" : "Icon.Flag"),
+            IconIsDanger = first is not null,
+            Message = first is null ? packNote
+                : issues.Count == 1 ? first.Explanation : string.Join(Environment.NewLine, issues.Take(4).Select(i => "• " + i.Title)),
+            Message2 = first is null ? "Купите или установите дополнение — или выключите мод, чтобы в игре не было пустых вещей."
+                : (issues.Count == 1 ? first.Advice : "Проблемные моды отмечены в списке красным флажком — наведите на него, чтобы увидеть причину.")
+                  + (packNote is null ? "" : Environment.NewLine + packNote),
+            PrimaryText = single is { IsEnabled: true } ? $"Выключить «{single.Name}»" : "Посмотреть",
+            ExtraText = single is not null && first is not null ? "Подробнее" : null,
             SecondaryText = "Оставить как есть",
         });
 
@@ -433,13 +458,71 @@ public sealed partial class MainViewModel
     public string BisectHint => Bisect is null ? "" : Bisect.IsFinished
         ? $"Похоже, проблему вызывает «{Bisect.Culprit}». Остальные моды можно вернуть как было."
         : $"Сейчас выключено {Text.Plural(Bisect.Suspects.Count - Bisect.TestingNow.Count, "подозрительный мод", "подозрительных мода", "подозрительных модов")}. " +
-          "Запустите игру, проверьте, осталась ли проблема, закройте игру и ответьте ниже.";
+          "Нажмите «Играть и проверить», повторите то, что ломалось, и закройте игру — я сам посмотрю её отчёты об ошибках и сделаю следующий шаг. " +
+          "Если проблема не пишется в отчёты (например, что-то выглядит не так), ответьте кнопками.";
 
     /// <summary>Если поиск прервали (закрыли программу), продолжаем с того же места.</summary>
     private void LoadBisect()
     {
         if (_library is null) return;
         Bisect = ModBisect.Load(_library.Paths);
+        // Игру запускали для проверки, а менеджер в это время закрыли — разбираемся сейчас
+        if (Bisect is { IsFinished: false, LaunchedAt: not null } && !GameOptions.IsGameRunning())
+            System.Windows.Application.Current.Dispatcher.InvokeAsync(() => _ = AutoAnswerBisectAsync(),
+                System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+    }
+
+    private void MarkBisectLaunch()
+    {
+        if (_library is null || Bisect is not { IsFinished: false }) return;
+        Bisect.LaunchedAt = DateTime.Now;
+        try { Bisect.Save(_library.Paths); }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
+    }
+
+    private bool _autoAnswering;
+
+    /// <summary>
+    /// Игра закрылась после запуска для проверки: если она записала новые ошибки — проблема осталась,
+    /// и следующий шаг делается сам. Если ошибок нет — коротко спрашиваем (проблема могла быть не «в отчётах»).
+    /// </summary>
+    private async Task AutoAnswerBisectAsync()
+    {
+        if (_autoAnswering || _library is null || Bisect is not { IsFinished: false, LaunchedAt: { } launchedAt }) return;
+        _autoAnswering = true;
+        try
+        {
+            await Task.Delay(2500); // игра дописывает отчёты при выходе
+            var fresh = new ModHealthChecker(_library.Paths).ErrorReportsSince(launchedAt);
+            Bisect.LaunchedAt = null;
+            try { Bisect.Save(_library.Paths); }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
+
+            if (fresh.Count > 0)
+            {
+                ShowToast($"Игра записала {Text.Plural(fresh.Count, "ошибку", "ошибки", "ошибок")} — значит, виновник среди включённых модов. Делаю следующий шаг.", Icons.Info, seconds: 6);
+                await BisectAnswer("yes");
+            }
+            else
+            {
+                var answer = await ShowDialogAsync(new DialogViewModel
+                {
+                    Title = "Игра закрылась без ошибок",
+                    Icon = (System.Windows.Media.Geometry)System.Windows.Application.Current.FindResource("Icon.ScanSearch"),
+                    Message = "В этот раз игра не записала ни одной ошибки. Проблема, которую мы ищем, была?",
+                    PrimaryText = "Нет, всё работало",
+                    ExtraText = "Да, была",
+                    SecondaryText = "Не успел проверить",
+                });
+                if (answer == DialogResult.Primary) await BisectAnswer("no");
+                else if (answer == DialogResult.Extra) await BisectAnswer("yes");
+            }
+            if (Bisect is { IsFinished: true }) Page = AppPage.Health;
+        }
+        finally
+        {
+            _autoAnswering = false;
+        }
     }
 
     [RelayCommand]
@@ -452,23 +535,30 @@ public sealed partial class MainViewModel
             ShowToast("Для поиска нужно хотя бы два включённых мода", Icons.Info);
             return;
         }
-        var scripts = enabled.Where(m => m.HasScripts).ToList();
+        // Ошибки в отчётах игры почти всегда из-за скриптов и модов, меняющих поведение (настройки игры),
+        // а не из-за одежды, причёсок и мебели. Начинаем с них — так нужно в разы меньше запусков.
+        var likely = enabled.Where(m => m.HasScripts || m.Category is Core.Content.ModCategory.Scripts
+            or Core.Content.ModCategory.Other or Core.Content.ModCategory.Unknown).ToList();
+        var useLikely = likely.Count >= 2 && likely.Count < enabled.Count;
+        int Runs(int n) => (int)Math.Ceiling(Math.Log2(Math.Max(2, n)));
 
         var answer = await ShowDialogAsync(new DialogViewModel
         {
             Title = "Найти мод, который мешает игре",
             Icon = (System.Windows.Media.Geometry)System.Windows.Application.Current.FindResource("Icon.ScanSearch"),
-            Message = "Менеджер выключит половину модов. Вы запускаете игру, смотрите, осталась ли проблема, закрываете игру и отвечаете. " +
-                      $"Круг каждый раз сужается вдвое — для {Text.Plural(enabled.Count, "мода", "модов", "модов")} хватит примерно " +
-                      $"{Text.Plural((int)Math.Ceiling(Math.Log2(enabled.Count)), "запуска", "запусков", "запусков")}.",
-            Message2 = "В конце все моды вернутся как были. Если проблема в скриптах (ошибки, сломанные меню), быстрее искать только среди них.",
-            PrimaryText = "Искать среди всех",
-            ExtraText = scripts.Count >= 2 ? $"Только скрипты ({scripts.Count})" : null,
+            Message = "Я выключу половину модов. Нажмите «Играть и проверить», повторите то, что ломалось, и закройте игру — " +
+                      "я сам посмотрю отчёты об ошибках и сделаю следующий шаг. Круг каждый раз сужается вдвое.",
+            Message2 = useLikely
+                ? $"Обычно виноваты скрипты и моды, меняющие игру ({likely.Count} шт.) — их проверка займёт около {Text.Plural(Runs(likely.Count), "запуска", "запусков", "запусков")}. " +
+                  $"Если проблема с одеждой или мебелью — ищите среди всех ({Text.Plural(Runs(enabled.Count), "запуск", "запуска", "запусков")}). В конце все моды вернутся как были."
+                : $"Понадобится около {Text.Plural(Runs(enabled.Count), "запуска", "запусков", "запусков")}. В конце все моды вернутся как были.",
+            PrimaryText = useLikely ? $"Самые вероятные ({likely.Count})" : "Начать",
+            ExtraText = useLikely ? $"Среди всех ({enabled.Count})" : null,
             SecondaryText = "Отмена",
         });
         if (answer == DialogResult.Cancel || !await EnsureGameClosedAsync("начать поиск")) return;
 
-        var suspects = answer == DialogResult.Extra ? scripts : enabled;
+        var suspects = useLikely && answer == DialogResult.Primary ? likely : enabled;
         Bisect = ModBisect.Start(enabled.Select(m => m.Name), suspects.Select(m => m.Name));
         await ApplyBisectAsync();
         Page = AppPage.Health;

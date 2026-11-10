@@ -41,6 +41,7 @@ public sealed partial class MainViewModel
                 break;
             case nameof(IsGameRunning) when !IsGameRunning:
                 RestoreModSettingsIfGameClosed();
+                if (Bisect is { IsFinished: false, LaunchedAt: not null }) _ = AutoAnswerBisectAsync();
                 break;
         }
     }
@@ -97,6 +98,7 @@ public sealed partial class MainViewModel
             if (game is null) return;
 
             if (mode is "nomods" or "noscripts") TemporarilyDisable(paths, mode);
+            MarkBisectLaunch();
 
             try
             {
