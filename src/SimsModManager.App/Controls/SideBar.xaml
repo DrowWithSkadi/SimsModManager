@@ -165,6 +165,10 @@
                             </Border>
                         </Grid>
                     </Button>
+                    <Button Style="{StaticResource SideItem}" ctl:Btn.Icon="{StaticResource Icon.Layers}" Command="{Binding OpenPacksCommand}"
+                            Tag="{Binding IsPacksPage}" Visibility="{Binding HasGame, Converter={StaticResource BoolToVisibility}}" ToolTip="Дополнения">
+                        <TextBlock Style="{StaticResource SideLabel}" Text="Дополнения" />
+                    </Button>
                     <Button Style="{StaticResource SideItem}" ctl:Btn.Icon="{StaticResource Icon.FolderOpen}" Command="{Binding OpenModsFolderCommand}"
                             Visibility="{Binding HasGame, Converter={StaticResource BoolToVisibility}}" ToolTip="Открыть папку Mods в проводнике">
                         <TextBlock Style="{StaticResource SideLabel}" Text="Папка Mods" />

@@ -79,6 +79,7 @@
                 <views:CardPage b:Anim.Show="{Binding IsCardPage}" DataContext="{Binding}" />
                 <views:EditorPage b:Anim.Show="{Binding IsEditorPage}" />
                 <views:HealthPage b:Anim.Show="{Binding IsHealthPage}" />
+                <views:PacksPage b:Anim.Show="{Binding IsPacksPage}" />
 
 
                 <!-- Панель выбора нескольких модов -->
