@@ -62,7 +62,7 @@ public partial class SideBar : UserControl
         var slide = TimeSpan.FromSeconds(expand ? 0.24 : 0.18);
         Panel.BeginAnimation(WidthProperty, new DoubleAnimation(expand ? ExpandedWidth : CollapsedWidth, slide) { EasingFunction = ease });
         SolidBg.BeginAnimation(OpacityProperty, new DoubleAnimation(expand ? 1 : 0, slide));
-        PanelShadow.BeginAnimation(DropShadowEffect.OpacityProperty, new DoubleAnimation(expand ? 0.45 : 0, slide));
+        PanelShadow.BeginAnimation(System.Windows.Media.Effects.DropShadowEffect.OpacityProperty, new DoubleAnimation(expand ? 0.45 : 0, slide));
 
         // Подписи появляются чуть позже, когда панель уже выехала, и исчезают сразу
         BeginAnimation(LabelOpacityProperty, new DoubleAnimation(expand ? 1 : 0, TimeSpan.FromSeconds(expand ? 0.2 : 0.08))
