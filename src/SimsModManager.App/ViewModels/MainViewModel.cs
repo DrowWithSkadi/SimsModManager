@@ -17,7 +17,7 @@ namespace SimsModManager.App.ViewModels;
 
 public enum StateFilter { All, Enabled, Disabled }
 public enum TypeFilter { All, Clothing, Hair, Makeup, Objects, Scripts, Other, Tray }
-public enum AppPage { Library, InstallResult, Settings, NotFound, Card, Editor, Health }
+public enum AppPage { Library, InstallResult, Settings, NotFound, Card, Editor, Health, Packs }
 
 /// <summary>
 /// Главная модель окна. Разбита на несколько файлов:
@@ -70,7 +70,7 @@ public sealed partial class MainViewModel : ObservableObject
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsLibraryPage), nameof(IsInstallResultPage), nameof(IsSettingsPage), nameof(IsNotFoundPage),
-        nameof(ShowLibraryChrome), nameof(IsCardPage), nameof(IsEditorPage), nameof(IsHealthPage), nameof(SideLibrarySelected))]
+        nameof(ShowLibraryChrome), nameof(IsCardPage), nameof(IsEditorPage), nameof(IsHealthPage), nameof(SideLibrarySelected), nameof(IsPacksPage))]
     private AppPage _page = AppPage.Library;
 
     public bool IsLibraryPage => Page == AppPage.Library;
@@ -88,6 +88,11 @@ public sealed partial class MainViewModel : ObservableObject
 
     [RelayCommand]
     private void GoLibrary() => Page = _library is null ? AppPage.NotFound : AppPage.Library;
+
+    public bool IsPacksPage => Page == AppPage.Packs;
+
+    [RelayCommand]
+    private void OpenPacks() => Page = AppPage.Packs;
 
     [RelayCommand]
     private void OpenSettings()
