@@ -19,6 +19,9 @@ public sealed class ModBisect
     public List<string> TestingNow { get; set; } = [];
 
     public int Step { get; set; }
+
+    /// <summary>Когда игру запустили для текущей проверки — после её закрытия менеджер сам посмотрит отчёты об ошибках.</summary>
+    public DateTime? LaunchedAt { get; set; }
     public DateTime StartedAt { get; set; } = DateTime.Now;
 
     public bool IsFinished => Suspects.Count <= 1;

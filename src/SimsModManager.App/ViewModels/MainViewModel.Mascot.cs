@@ -15,7 +15,9 @@ public sealed record MascotNotice(
     string? ActionText = null,
     ICommand? Action = null,
     string? SecondaryText = null,
-    ICommand? Secondary = null)
+    ICommand? Secondary = null,
+    string? TertiaryText = null,
+    ICommand? Tertiary = null)
 {
     public bool IsAlert => Kind != NoticeKind.Info;
 }
@@ -50,7 +52,8 @@ public sealed partial class MainViewModel
     {
         var next = BuildMascotNotice();
         // Не пересоздаём облачко, если смысл не поменялся
-        if (next?.Key == MascotNotice?.Key && next?.Detail == MascotNotice?.Detail && next?.Title == MascotNotice?.Title) return;
+        if (next?.Key == MascotNotice?.Key && next?.Detail == MascotNotice?.Detail && next?.Title == MascotNotice?.Title
+            && next?.ActionText == MascotNotice?.ActionText) return;
         MascotNotice = next;
     }
 
@@ -59,8 +62,11 @@ public sealed partial class MainViewModel
         if (!HasGame) return null;
 
         if (HasHealthBanner)
-            return new("health", NoticeKind.Error, "Кажется, с модами беда!", HealthBannerText,
-                "Посмотреть", OpenHealthCommand, "Не напоминать", DismissHealthIssuesCommand);
+            return CanFixAll
+                ? new("health", NoticeKind.Error, "Кажется, с модами беда!", HealthBannerText + ". Могу исправить сам.",
+                    "Исправить всё", FixAllCommand, "Посмотреть", OpenHealthCommand, "Не напоминать", DismissHealthIssuesCommand)
+                : new("health", NoticeKind.Error, "Кажется, с модами беда!", HealthBannerText,
+                    "Посмотреть", OpenHealthCommand, "Не напоминать", DismissHealthIssuesCommand);
 
         if (HasOptionsWarning)
             return new("options", NoticeKind.Warning, OptionsWarning + "!",

@@ -448,20 +448,62 @@ public sealed class ModHealthChecker(SimsPaths paths)
 
     // ---------- Отчёты об ошибках игры ----------
 
-    /// <summary>Файлы, которые игра пишет при ошибках скриптов: lastException*.txt, lastUIException*.txt.</summary>
+    /// <summary>
+    /// Отчёты об ошибках: игра пишет lastException*.txt, lastUIException*.txt и lastCrash*.txt в свою папку,
+    /// а MC Command Center и похожие моды — mc_lastexception*.html в папку Mods.
+    /// </summary>
     public IReadOnlyList<string> ErrorReportFiles()
     {
-        if (!Directory.Exists(paths.Root)) return [];
-        try
+        var files = new List<string>();
+        void Add(string folder, string pattern)
         {
-            return Directory.EnumerateFiles(paths.Root, "last*Exception*.txt", SearchOption.TopDirectoryOnly)
-                .OrderByDescending(File.GetLastWriteTime)
-                .ToList();
+            try
+            {
+                if (Directory.Exists(folder)) files.AddRange(Directory.EnumerateFiles(folder, pattern, SearchOption.TopDirectoryOnly));
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        Add(paths.Root, "last*Exception*.txt");
+        Add(paths.Root, "lastCrash*.txt");
+        Add(paths.Mods, "*lastexception*.html");
+        Add(paths.Mods, "*lastexception*.txt");
+        return files.Distinct(StringComparer.OrdinalIgnoreCase).OrderByDescending(File.GetLastWriteTime).ToList();
+    }
+
+    /// <summary>Отчёты, которые появились после указанного момента (например, после запуска игры).</summary>
+    public IReadOnlyList<string> ErrorReportsSince(DateTime since) =>
+        ErrorReportFiles().Where(f =>
         {
-            return [];
+            try { return File.GetLastWriteTime(f) >= since; }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { return false; }
+        }).ToList();
+
+    /// <summary>
+    /// Запасной способ найти виновника, если в трассировке нет путей к модам:
+    /// в тексте отчёта упомянуты имена файлов мода («xxx.ts4script», «yyy.package») или его название.
+    /// Возвращает моды, только если упоминание однозначное (не больше двух модов).
+    /// </summary>
+    internal static IReadOnlyList<ModItem> FindByMention(string text, IEnumerable<ModItem> mods)
+    {
+        var lower = text.ToLowerInvariant();
+        var found = new List<ModItem>();
+        foreach (var mod in mods)
+        {
+            var hit = mod.Files.Any(f =>
+            {
+                var name = Path.GetFileName(f).ToLowerInvariant();
+                return name.Length >= 10 && (ModFiles.IsScript(f) || ModFiles.IsPackage(f)) && lower.Contains(name);
+            });
+            if (!hit)
+            {
+                // Название мода — только длинное и «необычное», чтобы не путать с обычными словами
+                var title = mod.Name.ToLowerInvariant();
+                hit = title.Length >= 8 && title.Any(char.IsLetter) && (title.Contains('_') || title.Contains('-') || title.Any(char.IsDigit) || title.Length >= 12)
+                      && lower.Contains(title);
+            }
+            if (hit) found.Add(mod);
         }
+        return found.Count is >= 1 and <= 2 ? found : [];
     }
 
     private static readonly Regex TracePath = new(@"File ""([^""]+)""", RegexOptions.Compiled);
@@ -534,6 +576,11 @@ public sealed class ModHealthChecker(SimsPaths paths)
                 // Отчёт старше мода — мод уже обновили, этот отчёт к нему не относится.
                 if (culprit is not null && time >= culprit.ModifiedAt) found.Add(culprit);
             }
+
+            // В трассировке путей нет — ищем упоминания файлов и названий модов в тексте отчёта
+            if (found.Count == 0)
+                foreach (var mod in FindByMention(text, mods))
+                    if (time >= mod.ModifiedAt) found.Add(mod);
 
             if (found.Count == 0)
             {

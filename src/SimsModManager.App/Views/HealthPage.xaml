@@ -65,8 +65,11 @@
                 <Button Style="{StaticResource Btn.Secondary}" ctl:Btn.Icon="{StaticResource Icon.Trash2}" Content="Очистить отчёты об ошибках" Margin="8,0,0,0"
                         Command="{Binding ClearErrorReportsCommand}" Visibility="{Binding HasErrorReports, Converter={StaticResource BoolToVisibility}}"
                         ToolTip="Удалить файлы lastException*.txt. Сделайте это после исправления, чтобы новые ошибки было видно отдельно." />
-                <Button Style="{StaticResource Btn.Primary}" ctl:Btn.Icon="{StaticResource Icon.RefreshCw}" Content="Обновить" Margin="8,0,0,0"
+                <Button Style="{StaticResource Btn.Secondary}" ctl:Btn.Icon="{StaticResource Icon.RefreshCw}" Content="Обновить" Margin="8,0,0,0"
                         Command="{Binding RunHealthCheckCommand}" IsEnabled="{Binding IsCheckingHealth, Converter={StaticResource InverseBool}}" />
+                <Button Style="{StaticResource Btn.Primary}" ctl:Btn.Icon="{StaticResource Icon.WandSparkles}" Content="Исправить всё" Margin="8,0,0,0"
+                        Command="{Binding FixAllCommand}" Visibility="{Binding CanFixAll, Converter={StaticResource BoolToVisibility}}"
+                        ToolTip="Покажу, что сделаю, и после подтверждения исправлю: уберу лишние копии, выключу сломанные моды, переложу файлы. Ничего не удаляю — вернуть можно одной кнопкой." />
             </StackPanel>
         </Grid>
 
@@ -92,8 +95,11 @@
                         <TextBlock Text="{Binding BisectHint}" Style="{StaticResource T.Secondary}" TextWrapping="Wrap" Margin="0,10,0,0" MaxWidth="720"
                                    HorizontalAlignment="Left" />
                         <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
-                            <Button Style="{StaticResource Btn.Primary}" Content="Проблема осталась" Command="{Binding BisectAnswerCommand}" CommandParameter="yes" />
-                            <Button Style="{StaticResource Btn.Primary}" Content="Проблемы нет" Margin="8,0,0,0" Command="{Binding BisectAnswerCommand}" CommandParameter="no" />
+                            <Button Style="{StaticResource Btn.Primary}" ctl:Btn.Icon="{StaticResource Icon.Gamepad2}" Content="Играть и проверить"
+                                    Command="{Binding LaunchGameCommand}"
+                                    ToolTip="Запущу игру с этой половиной модов. Когда закроете игру — сам посмотрю её отчёты об ошибках и сделаю следующий шаг." />
+                            <Button Style="{StaticResource Btn.Secondary}" Content="Проблема осталась" Margin="8,0,0,0" Command="{Binding BisectAnswerCommand}" CommandParameter="yes" />
+                            <Button Style="{StaticResource Btn.Secondary}" Content="Проблемы нет" Margin="8,0,0,0" Command="{Binding BisectAnswerCommand}" CommandParameter="no" />
                             <Button Style="{StaticResource Btn.Ghost}" Content="Остановить и вернуть всё" Margin="16,0,0,0"
                                     Command="{Binding FinishBisectCommand}" CommandParameter="keep" />
                         </StackPanel>
