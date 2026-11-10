@@ -35,7 +35,7 @@
                 <RowDefinition Height="26" />
             </Grid.RowDefinitions>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="64" />
+                <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="*" />
             </Grid.ColumnDefinitions>
 
@@ -141,8 +141,8 @@
                            VerticalAlignment="Center" Margin="0,0,24,0" Visibility="{Binding HasGame, Converter={StaticResource InverseBoolToVisibility}}" />
             </Grid>
 
-            <!-- ═══ Боковая панель (выезжает поверх страницы при наведении) ═══ -->
-            <ctl:SideBar Grid.Row="1" Grid.RowSpan="3" Grid.ColumnSpan="2" HorizontalAlignment="Left" />
+            <!-- ═══ Боковая панель: отдельная капсула с отступами от краёв; раскрываясь, сдвигает страницу ═══ -->
+            <ctl:SideBar Grid.Row="1" Grid.RowSpan="3" Margin="12,4,0,12" HorizontalAlignment="Left" />
 
             <!-- ═══ Перетаскивание файлов ═══ -->
             <Grid Grid.Row="1" Grid.RowSpan="3" Grid.ColumnSpan="2" Background="{DynamicResource B.DropOverlay}" IsHitTestVisible="False"

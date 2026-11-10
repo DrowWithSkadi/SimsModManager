@@ -6,11 +6,11 @@ using System.Windows.Threading;
 
 namespace SimsModManager.App.Controls;
 
-/// <summary>Боковая панель: свёрнута до иконок, при наведении выезжает поверх страницы.</summary>
+/// <summary>Боковая панель: свёрнута до иконок, при наведении раздвигается и сдвигает страницу.</summary>
 public partial class SideBar : UserControl
 {
     public const double CollapsedWidth = 64;
-    private const double ExpandedWidth = 236;
+    private const double ExpandedWidth = 220;
 
     private readonly DispatcherTimer _openTimer = new() { Interval = TimeSpan.FromMilliseconds(120) };
     private readonly DispatcherTimer _closeTimer = new() { Interval = TimeSpan.FromMilliseconds(220) };
@@ -61,8 +61,6 @@ public partial class SideBar : UserControl
         var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
         var slide = TimeSpan.FromSeconds(expand ? 0.24 : 0.18);
         Panel.BeginAnimation(WidthProperty, new DoubleAnimation(expand ? ExpandedWidth : CollapsedWidth, slide) { EasingFunction = ease });
-        SolidBg.BeginAnimation(OpacityProperty, new DoubleAnimation(expand ? 1 : 0, slide));
-        PanelShadow.BeginAnimation(System.Windows.Media.Effects.DropShadowEffect.OpacityProperty, new DoubleAnimation(expand ? 0.45 : 0, slide));
 
         // Подписи появляются чуть позже, когда панель уже выехала, и исчезают сразу
         BeginAnimation(LabelOpacityProperty, new DoubleAnimation(expand ? 1 : 0, TimeSpan.FromSeconds(expand ? 0.2 : 0.08))
