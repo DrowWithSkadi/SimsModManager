@@ -69,7 +69,7 @@ public sealed partial class MainViewModel : ObservableObject
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsLibraryPage), nameof(IsInstallResultPage), nameof(IsSettingsPage), nameof(IsNotFoundPage),
-        nameof(ShowLibraryChrome), nameof(IsCardPage), nameof(IsEditorPage), nameof(IsHealthPage))]
+        nameof(ShowLibraryChrome), nameof(IsCardPage), nameof(IsEditorPage), nameof(IsHealthPage), nameof(SideLibrarySelected))]
     private AppPage _page = AppPage.Library;
 
     public bool IsLibraryPage => Page == AppPage.Library;
@@ -81,6 +81,9 @@ public sealed partial class MainViewModel : ObservableObject
 
     /// <summary>Поиск, фильтры и зона установки видны в библиотеке и на итоге установки.</summary>
     public bool ShowLibraryChrome => Page is AppPage.Library or AppPage.InstallResult;
+
+    /// <summary>Вкладка «Моды» в боковой панели подсвечена и в библиотеке, и в карточке мода/настройке одежды.</summary>
+    public bool SideLibrarySelected => Page is AppPage.Library or AppPage.InstallResult or AppPage.Card or AppPage.Editor;
 
     [RelayCommand]
     private void GoLibrary() => Page = _library is null ? AppPage.NotFound : AppPage.Library;
