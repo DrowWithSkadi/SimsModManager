@@ -18,7 +18,7 @@ public partial class MascotStage : UserControl
     private const double BuddyWidth = 62;
     private const double BuddyHeight = 32;
     private const double HeaderLine = 72;   // нижняя линия шапки
-    private const double StatusBar = 26;    // высота строки состояния
+    private const double StatusBar = 40;    // от низа окна до верхнего края строки состояния (28 + отступ 12)
 
     private static readonly Brush WarningBrush = new SolidColorBrush(Color.FromRgb(0xE8, 0xA8, 0x38));
     private static readonly Brush ErrorBrush = new SolidColorBrush(Color.FromRgb(0xE0, 0x56, 0x4F));
