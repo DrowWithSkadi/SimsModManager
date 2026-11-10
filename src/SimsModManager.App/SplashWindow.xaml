@@ -270,7 +270,7 @@
                 </Path>
             </Canvas>
 
-            <TextBlock x:Name="Title" Text="Sims Mod Manager" FontFamily="{StaticResource Font.Ui}" FontSize="17" FontWeight="SemiBold" Foreground="#E8EEEC"
+            <TextBlock x:Name="Title" Text="Sims Mod Manager" FontFamily="pack://application:,,,/Fonts/#Inter, Segoe UI" FontSize="17" FontWeight="SemiBold" Foreground="#E8EEEC"
                        HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,30" Opacity="0">
                 <TextBlock.RenderTransform><TranslateTransform x:Name="TitleMove" /></TextBlock.RenderTransform>
             </TextBlock>

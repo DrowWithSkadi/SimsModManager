@@ -1,9 +1,9 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <!-- Палитра «Стекло · размытие Windows 11». Все цвета программы берутся отсюда через DynamicResource, поэтому тема меняется на лету.
-         Дымчатое тёмное стекло: само окно затемнено (~70%), чтобы текст читался даже на белых обоях,
+         Дымчатое тёмное стекло: само окно затемнено (~55%), чтобы текст читался даже на белых обоях,
          а каждый вложенный слой (содержимое → карточки → поля и кнопки) ещё темнее предыдущего. -->
-    <SolidColorBrush x:Key="B.Window" Color="#B8141414" />
+    <SolidColorBrush x:Key="B.Window" Color="#8C141414" />
     <SolidColorBrush x:Key="B.TitleBar" Color="#00000000" />
     <SolidColorBrush x:Key="B.StatusBar" Color="#2E000000" />
     <SolidColorBrush x:Key="B.Background" Color="#2E000000" />

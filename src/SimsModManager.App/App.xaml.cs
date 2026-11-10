@@ -19,7 +19,10 @@ public partial class App : Application
         app.Run();
     }
 
-    protected override void OnStartup(StartupEventArgs e)
+    private Dispatcher? _splashDispatcher;
+    private SplashWindow? _splash;
+
+    protected override async void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
         if (!Core.AppSettings.Load().ShowSplash)
@@ -28,23 +31,49 @@ public partial class App : Application
             return;
         }
 
-        // Сначала заставка; главное окно создаём, когда заставка уже на экране.
+        // Заставка крутится в отдельном потоке со своим диспетчером: пока главный поток
+        // собирает окно программы (это занимает около секунды), анимация не подтормаживает.
+        var splashDone = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         try
         {
-            var splash = new SplashWindow();
-            splash.Finished += () =>
+            var thread = new Thread(() =>
             {
-                ShowMain();
-                splash.FadeOutAndClose();
-            };
-            splash.Show();
+                try
+                {
+                    _splashDispatcher = Dispatcher.CurrentDispatcher;
+                    _splashDispatcher.UnhandledException += (_, args) =>
+                    {
+                        // Любая ошибка в заставке — просто закрываем её и открываем программу
+                        args.Handled = true;
+                        splashDone.TrySetResult();
+                        Dispatcher.CurrentDispatcher.BeginInvokeShutdown(DispatcherPriority.Background);
+                    };
+                    _splash = new SplashWindow();
+                    _splash.Finished += () => splashDone.TrySetResult();
+                    _splash.Closed += (_, _) => Dispatcher.CurrentDispatcher.BeginInvokeShutdown(DispatcherPriority.Background);
+                    _splash.Show();
+                    Dispatcher.Run();
+                }
+                catch (Exception)
+                {
+                    splashDone.TrySetResult(); // заставка не важнее программы
+                }
+            });
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.IsBackground = true;
+            thread.Start();
         }
         catch (Exception)
         {
-            ShowMain(); // заставка не важнее программы
+            ShowMain();
             return;
         }
-        Dispatcher.InvokeAsync(EnsureMain, DispatcherPriority.ApplicationIdle);
+
+        EnsureMain(); // тяжёлая часть — параллельно с анимацией
+        await Task.WhenAny(splashDone.Task, Task.Delay(TimeSpan.FromSeconds(6)));
+        ShowMain();
+        try { _splashDispatcher?.BeginInvoke(() => _splash?.FadeOutAndClose()); }
+        catch (Exception) { }
     }
 
     private MainWindow? _main;
