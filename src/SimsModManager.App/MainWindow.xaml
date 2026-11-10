@@ -102,6 +102,11 @@
                 <views:EditorPage b:Anim.Show="{Binding IsEditorPage}" />
                 <views:HealthPage b:Anim.Show="{Binding IsHealthPage}" />
 
+                <!-- Кнопка «Играть» — плавает в правом нижнем углу, на ней сидит Коробок -->
+                <ctl:PlayButton x:Name="PlayButton" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,36,22"
+                                IsLaunching="{Binding IsLaunching}" IsRunning="{Binding IsGameRunning}" Progress="{Binding LaunchProgress}"
+                                b:Anim.Show="{Binding ShowPlayButton}" b:Anim.Offset="16" />
+
                 <!-- Панель выбора нескольких модов -->
                 <Border VerticalAlignment="Bottom" Background="{DynamicResource B.SelectionBar}" BorderBrush="{DynamicResource B.Accent}" BorderThickness="0,1,0,0"
                         Padding="24,10" b:Anim.Show="{Binding IsMultiSelect}" b:Anim.Offset="16">

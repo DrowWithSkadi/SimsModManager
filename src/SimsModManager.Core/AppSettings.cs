@@ -20,6 +20,16 @@ public sealed class AppSettings
     /// <summary>Показывать Коробка — помощника в шапке.</summary>
     public bool ShowMascot { get; set; } = true;
 
+    /// <summary>Путь к TS4_x64.exe, если пользователь указал его вручную.</summary>
+    public string? GameExe { get; set; }
+
+    /// <summary>
+    /// «Играть без модов/скриптов» временно меняет Options.ini. Здесь — как было до этого,
+    /// чтобы вернуть, когда игра закроется (даже если менеджер перезапускали).
+    /// </summary>
+    public bool? RestoreModsEnabled { get; set; }
+    public bool? RestoreScriptsEnabled { get; set; }
+
     /// <summary>Версия игры, после которой пользователь подтвердил, что моды работают.</summary>
     public string? AcknowledgedGameVersion { get; set; }
 

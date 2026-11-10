@@ -7,7 +7,7 @@
          Сам слой прозрачен для мыши — нажимаются только Коробок и облачко. -->
     <Canvas x:Name="Stage" ClipToBounds="False">
         <ctl:Mascot x:Name="Buddy"
-                    IsExcited="{Binding IsDragOver}" IsBusy="{Binding IsInstalling}" IsWorried="{Binding MascotWorried}" />
+                    IsExcited="{Binding IsDragOver}" IsBusy="{Binding MascotBusy}" IsWorried="{Binding MascotWorried}" />
 
         <!-- «!» над головой: есть что сказать, облачко закрыто -->
         <Border x:Name="Alert" Width="18" Height="18" CornerRadius="9" Visibility="Collapsed" IsHitTestVisible="False"

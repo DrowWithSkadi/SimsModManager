@@ -17,6 +17,7 @@ public sealed class SimsPaths(string simsFolder)
     /// <summary>Список установленных менеджером участков и семей (какие файлы Tray к чему относятся).</summary>
     public string TrayManifest => Path.Combine(Root, ".modmanager-tray.json");
     public string OptionsIni => Path.Combine(Root, "Options.ini");
+    public string Saves => Path.Combine(Root, "saves");
     public string ThumbnailCache => Path.Combine(Root, "localthumbcache.package");
 
     public void EnsureCreated()
