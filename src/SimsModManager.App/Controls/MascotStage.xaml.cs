@@ -49,7 +49,7 @@ public partial class MascotStage : UserControl
         LayoutUpdated += (_, _) =>
         {
             // Шапка поменялась (другой путь, появились кнопки) — тихо пересаживаемся
-            if (_flying || !IsLoaded || _perch is not (0 or 4)) return;
+            if (_flying || !IsLoaded || _perch is not (0 or 4) || _pendingLeap?.IsEnabled == true) return;
             var p = PerchPoint(_perch);
             if (Math.Abs(p.X - Canvas.GetLeft(Buddy)) > 1 || Math.Abs(p.Y - Canvas.GetTop(Buddy)) > 1) PlaceAt(_perch);
         };
@@ -105,7 +105,7 @@ public partial class MascotStage : UserControl
     /// <summary>Место на верхнем краю кнопки «Играть» (ближе к правому краю), если она видна.</summary>
     private Point? PlayButtonTop()
     {
-        if (Window.GetWindow(this)?.FindName("PlayButton") is not FrameworkElement button || !button.IsVisible || button.Opacity < 0.5) return null;
+        if (Window.GetWindow(this)?.FindName("PlayButton") is not FrameworkElement button || !button.IsVisible || button.Opacity < 0.9) return null;
         var topLeft = button.TranslatePoint(new Point(0, 0), this);
         return new Point(topLeft.X + button.ActualWidth - BuddyWidth - 22, topLeft.Y - BuddyHeight + 4);
     }
@@ -135,11 +135,30 @@ public partial class MascotStage : UserControl
         PlaceExtras();
     }
 
+    private DispatcherTimer? _pendingLeap;
+
     private void OnPageChanged()
     {
         if (!IsLoaded) return;
         var target = PerchFor(Page);
-        if (target != _perch) LeapTo(target);
+        _pendingLeap?.Stop();
+        if (target == _perch) return;
+        if (target != 4)
+        {
+            LeapTo(target);
+            return;
+        }
+        // Кнопка «Играть» только начинает появляться — прыгаем, когда она на месте (до 0.6 с)
+        var started = DateTime.Now;
+        _pendingLeap = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(50) };
+        _pendingLeap.Tick += (_, _) =>
+        {
+            var ready = PlayButtonTop() is not null;
+            if (!ready && DateTime.Now - started < TimeSpan.FromMilliseconds(600)) return;
+            _pendingLeap!.Stop();
+            if (PerchFor(Page) == 4) LeapTo(4);
+        };
+        _pendingLeap.Start();
     }
 
     /// <summary>
