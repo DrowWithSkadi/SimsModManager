@@ -4,37 +4,38 @@
              xmlns:ctl="clr-namespace:SimsModManager.App.Controls"
              xmlns:b="clr-namespace:SimsModManager.App.Behaviors"
              x:Name="Self">
-    <!-- Боковая панель. Свёрнута — 64 px, только иконки и квадратная кнопка ▶.
-         Наводишь мышку — выезжает поверх страницы (236 px): видны названия и полная кнопка «Играть».
-         Логика раскрытия — в SideBar.xaml.cs. -->
+    <!-- Боковая панель — тёмная скруглённая «капсула» с отступами от краёв окна (во всех темах тёмная и непрозрачная).
+         Свёрнута — 64 px: иконки и квадратная кнопка ▶. Наводишь мышку — раздвигается до 220 px и сдвигает страницу:
+         видны названия вкладок и полная кнопка «Играть». Логика раскрытия — в SideBar.xaml.cs. -->
     <UserControl.Resources>
         <Style x:Key="SideItem" TargetType="Button">
             <Setter Property="Height" Value="44" />
             <Setter Property="Margin" Value="8,2" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Focusable" Value="False" />
-            <Setter Property="Foreground" Value="{DynamicResource B.TextSecondary}" />
+            <Setter Property="Foreground" Value="#A3ADAA" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Grid Background="Transparent">
-                            <Border x:Name="Bg" CornerRadius="10" Background="Transparent" />
+                            <Border x:Name="Bg" CornerRadius="12" Background="Transparent" />
                             <Border x:Name="Bar" Width="3" HorizontalAlignment="Left" Margin="0,12" CornerRadius="1.5"
-                                    Background="{DynamicResource B.Accent}" Opacity="0" />
+                                    Background="#77E1C7" Opacity="0" />
                             <ctl:IconView x:Name="Icon" Data="{TemplateBinding ctl:Btn.Icon}" Width="20" Height="20" Margin="14,0,0,0"
                                           HorizontalAlignment="Left" VerticalAlignment="Center" Foreground="{TemplateBinding Foreground}" />
                             <ContentPresenter Margin="48,0,0,0" VerticalAlignment="Center" />
                         </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Bg" Property="Background" Value="{DynamicResource B.Hover}" />
-                                <Setter Property="Foreground" Value="{DynamicResource B.Text}" />
+                                <Setter TargetName="Bg" Property="Background" Value="#17FFFFFF" />
+                                <Setter Property="Foreground" Value="#F1F4F3" />
                             </Trigger>
                             <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="True">
-                                <Setter TargetName="Bg" Property="Background" Value="{DynamicResource B.AccentSubtle}" />
+                                <!-- Выбранная вкладка: светлая «плашка», мятная иконка и полоска -->
+                                <Setter TargetName="Bg" Property="Background" Value="#2E3533" />
                                 <Setter TargetName="Bar" Property="Opacity" Value="1" />
-                                <Setter TargetName="Icon" Property="Foreground" Value="{DynamicResource B.Accent}" />
-                                <Setter Property="Foreground" Value="{DynamicResource B.Text}" />
+                                <Setter TargetName="Icon" Property="Foreground" Value="#77E1C7" />
+                                <Setter Property="Foreground" Value="#FFFFFF" />
                             </DataTrigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -121,17 +122,13 @@
         </Style>
     </UserControl.Resources>
 
-    <!-- Внешняя ширина — 64 (колонка окна); сама панель шире и выезжает поверх страницы -->
-    <Border x:Name="Panel" Width="64" HorizontalAlignment="Left" ClipToBounds="True"
-            Background="{DynamicResource B.StatusBar}" BorderBrush="{DynamicResource B.Hover}" BorderThickness="0,0,1,0">
+    <Border x:Name="Panel" Width="64" HorizontalAlignment="Left" CornerRadius="24" Background="#121514"
+            BorderBrush="#1FFFFFFF" BorderThickness="1">
         <Border.Effect>
-            <DropShadowEffect x:Name="PanelShadow" BlurRadius="24" ShadowDepth="0" Opacity="0" Color="Black" />
+            <DropShadowEffect BlurRadius="20" ShadowDepth="4" Direction="270" Opacity="0.35" Color="Black" />
         </Border.Effect>
-        <Grid>
-            <!-- Непрозрачный фон, когда панель раскрыта поверх страницы -->
-            <Border x:Name="SolidBg" Background="{DynamicResource B.Popup}" Opacity="0" />
-
-            <Grid Width="236" HorizontalAlignment="Left">
+        <Grid ClipToBounds="True">
+            <Grid Width="220" HorizontalAlignment="Left">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="72" />
                     <RowDefinition Height="Auto" />
@@ -141,17 +138,17 @@
                 </Grid.RowDefinitions>
 
                 <!-- Логотип -->
-                <Border BorderBrush="{DynamicResource B.Hover}" BorderThickness="0,0,0,1">
-                    <StackPanel Orientation="Horizontal" Margin="10,0,0,0" VerticalAlignment="Center">
+                <Border>
+                    <StackPanel Orientation="Horizontal" Margin="9,0,0,0" VerticalAlignment="Center">
                         <Image Source="pack://application:,,,/Assets/logo-mark.png" Width="44" Height="44"
                                RenderOptions.BitmapScalingMode="HighQuality" />
-                        <TextBlock Text="Sims Mod" FontSize="16" FontWeight="Bold" Foreground="{DynamicResource B.Text}" Margin="12,0,0,0"
+                        <TextBlock Text="Sims Mod" FontSize="16" FontWeight="Bold" Foreground="#F1F4F3" Margin="12,0,0,0"
                                    VerticalAlignment="Center" Opacity="{Binding LabelOpacity, ElementName=Self}" />
                     </StackPanel>
                 </Border>
 
                 <!-- Вкладки -->
-                <StackPanel Grid.Row="1" Margin="0,12,0,0">
+                <StackPanel Grid.Row="1" Margin="0,4,0,0">
                     <Button Style="{StaticResource SideItem}" ctl:Btn.Icon="{StaticResource Icon.Package}" Command="{Binding GoLibraryCommand}"
                             Tag="{Binding SideLibrarySelected}" ToolTip="Моды">
                         <TextBlock Style="{StaticResource SideLabel}" Text="Моды" />
@@ -187,7 +184,7 @@
                     <Button x:Name="MiniPlayButton" Style="{StaticResource MiniPlay}" Width="48" Height="48" Margin="8,0,0,0"
                             HorizontalAlignment="Left" VerticalAlignment="Center" Command="{Binding LaunchGameCommand}"
                             ToolTip="Играть" />
-                    <ctl:PlayButton x:Name="FullPlay" Width="212" Margin="12,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center"
+                    <ctl:PlayButton x:Name="FullPlay" Width="196" Margin="12,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center"
                                     Opacity="0" IsHitTestVisible="False"
                                     IsLaunching="{Binding IsLaunching}" IsRunning="{Binding IsGameRunning}" Progress="{Binding LaunchProgress}" />
                 </Grid>
