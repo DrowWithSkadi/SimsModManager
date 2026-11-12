@@ -72,6 +72,28 @@ internal static class Native
     [return: MarshalAs(UnmanagedType.Bool)]
     public static extern bool SetWindowDisplayAffinity(IntPtr hwnd, uint affinity);
 
+    [DllImport("user32.dll")]
+    public static extern uint GetDpiForWindow(IntPtr hwnd);
+
+    [DllImport("user32.dll", EntryPoint = "GetWindowLongPtrW")]
+    public static extern IntPtr GetWindowLongPtr(IntPtr hwnd, int index);
+
+    [DllImport("user32.dll", EntryPoint = "SetWindowLongPtrW")]
+    public static extern IntPtr SetWindowLongPtr(IntPtr hwnd, int index, IntPtr value);
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct MARGINS { public int Left, Right, Top, Bottom; }
+
+    [DllImport("dwmapi.dll")]
+    public static extern int DwmExtendFrameIntoClientArea(IntPtr hwnd, ref MARGINS margins);
+
+    public const int GWL_STYLE = -16;
+    public const long WS_SYSMENU = 0x00080000;
+    public const uint SWP_FRAMECHANGED = 0x20, SWP_NOMOVE = 0x2, SWP_NOZORDER = 0x4;
+    public const int DWMWA_USE_IMMERSIVE_DARK_MODE = 20;
+    public const int DWMWA_BORDER_COLOR = 34;
+    public const int DWMWA_SYSTEMBACKDROP_TYPE = 38;
+
     [DllImport("dwmapi.dll")]
     public static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
 }
