@@ -32,6 +32,8 @@ jobs:
           python-version: '3.7'
 
       - name: Мод-помощник
+        env:
+          PYTHONIOENCODING: utf-8
         run: python helper/build.py src/SimsModManager.App/Assets/Helper
 
       - name: Тесты
