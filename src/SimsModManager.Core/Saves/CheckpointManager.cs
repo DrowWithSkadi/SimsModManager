@@ -12,8 +12,10 @@ public enum RollbackStep
     WaitingForMenu,
     /// <summary>Кладём точку на место сохранения.</summary>
     Restoring,
-    /// <summary>Подмена на лету: игра загружает участок из точки.</summary>
-    Loading,
+    /// <summary>Закрываем игру — подменить открытое сохранение нельзя.</summary>
+    ClosingGame,
+    /// <summary>Запускаем игру снова.</summary>
+    Launching,
     Done,
 }
 
@@ -66,72 +68,66 @@ public sealed class CheckpointManager(SimsPaths paths, CheckpointStore store, He
         return checkpoint;
     }
 
-    /// <summary>Сколько ждать, пока игра загрузит участок после подмены на лету.</summary>
-    public static readonly TimeSpan HotSwapTimeout = TimeSpan.FromMinutes(5);
+    /// <summary>Запуск игры (задаёт программа: Steam, EA app или exe). true — запуск начат.</summary>
+    public Func<bool>? LaunchGame { get; set; }
 
-    /// <summary>Подмена на лету возможна: игра открыта и помощник умеет это делать.</summary>
-    public bool CanHotSwap
-    {
-        get
-        {
-            var status = bridge.ReadStatus();
-            return status.State == HelperState.Live && status.Version >= 2;
-        }
-    }
+    /// <summary>Закрыть игру. По умолчанию — завершить её процесс (вызывается только после сохранения).</summary>
+    public Func<TimeSpan, Task<bool>> CloseGame { get; set; } = CloseGameProcessAsync;
 
     /// <summary>
-    /// Откат без выхода из игры (эксперимент). Текущая игра сохраняется точкой «Перед откатом»,
-    /// файл сохранения возвращается к точке, а помощник подставляет данные точки в память игры
-    /// и запускает перезагрузку участка — игрок видит обычный экран загрузки.
+    /// Откат из игры одной кнопкой: текущая игра сохраняется точкой «Перед откатом», игра закрывается,
+    /// файл сохранения возвращается к точке и игра запускается снова. В главном меню остаётся нажать
+    /// «Продолжить» — точка будет самым свежим сохранением.
     /// </summary>
-    public async Task HotSwapAsync(Checkpoint checkpoint, IProgress<RollbackStep>? progress = null, CancellationToken cancellation = default)
+    public async Task RestartRollbackAsync(Checkpoint checkpoint, IProgress<RollbackStep>? progress = null, CancellationToken cancellation = default)
     {
-        if (!CanHotSwap) throw new CheckpointException("Подмена на лету работает, только когда сохранение открыто в игре");
+        var status = bridge.ReadStatus();
+        if (status.State != HelperState.Live)
+            throw new CheckpointException("Помощник не отвечает — нельзя безопасно сохранить игру перед откатом");
 
         progress?.Report(RollbackStep.SavingCurrent);
         await MakeAsync("", CheckpointKind.BeforeRollback, cancellation);
 
+        // Игра уже сохранена и копия у нас — закрывать безопасно
+        progress?.Report(RollbackStep.ClosingGame);
+        if (!await CloseGame(TimeSpan.FromSeconds(20)))
+            throw new CheckpointException("Не получилось закрыть игру. Закрой её сама — и нажми «Откатить» ещё раз");
+
         progress?.Report(RollbackStep.Restoring);
-        var files = new List<string>();
-        await Task.Run(() =>
-        {
-            foreach (var old in Directory.Exists(bridge.Folder) ? Directory.GetFiles(bridge.Folder, "swap-*.bin") : [])
-                File.Delete(old);
-            Directory.CreateDirectory(bridge.Folder);
-            var save = store.ReadData(checkpoint);
-            var candidates = CheckpointStore.ExtractGameDataCandidates(save);
-            for (var i = 0; i < candidates.Count; i++)
-            {
-                var file = Path.Combine(bridge.Folder, $"swap-{i}-{candidates[i].Type:X8}.bin");
-                File.WriteAllBytes(file, candidates[i].Data);
-                files.Add(file);
-            }
-            // Файл на диске тоже возвращаем: если игра вылетит, «Продолжить» откроет уже точку
-            store.Restore(checkpoint, paths.Saves);
-        }, cancellation);
+        await Task.Run(() => store.Restore(checkpoint, paths.Saves), cancellation);
 
-        var response = await bridge.SendAsync("hotswap", TimeSpan.FromSeconds(15),
-            new Dictionary<string, object?> { ["paths"] = files }, cancellation);
-        if (!response.Ok) throw new CheckpointException($"Игра не приняла точку: {response.Error}");
+        progress?.Report(RollbackStep.Launching);
+        if (LaunchGame is null || !LaunchGame())
+            throw new CheckpointException("Сохранение возвращено к точке, но игру не удалось запустить — запусти её сама и нажми «Продолжить»");
+        progress?.Report(RollbackStep.Done);
+    }
 
-        progress?.Report(RollbackStep.Loading);
-        var deadline = DateTime.UtcNow + HotSwapTimeout;
-        var sawLoading = false;
-        while (DateTime.UtcNow < deadline)
+    private static async Task<bool> CloseGameProcessAsync(TimeSpan timeout)
+    {
+        var processes = GameOptions.GameProcessNames.SelectMany(System.Diagnostics.Process.GetProcessesByName).ToList();
+        try
         {
-            var status = bridge.ReadStatus();
-            if (status.Swap == "failed")
-                throw new CheckpointException($"Игра не смогла подставить точку: {status.SwapError}");
-            if (status.State != HelperState.Live) sawLoading = true;
-            if (status.Swap == "applied" && status.State == HelperState.Live && sawLoading)
+            foreach (var p in processes)
             {
-                progress?.Report(RollbackStep.Done);
-                return;
+                try { p.Kill(); }
+                catch (Exception ex) when (ex is InvalidOperationException or System.ComponentModel.Win32Exception) { }
             }
-            await Task.Delay(500, cancellation);
+            var deadline = DateTime.UtcNow + timeout;
+            while (DateTime.UtcNow < deadline)
+            {
+                if (processes.All(p => { try { return p.HasExited; } catch (InvalidOperationException) { return true; } }))
+                {
+                    await Task.Delay(1000); // даём системе отпустить файлы игры
+                    return true;
+                }
+                await Task.Delay(200);
+            }
+            return false;
         }
-        await bridge.SendAsync("hotswap_cancel", TimeSpan.FromSeconds(3));
-        throw new CheckpointException("Игра так и не начала загрузку. Файл сохранения уже возвращён к точке — выйди в главное меню и нажми «Продолжить»");
+        finally
+        {
+            foreach (var p in processes) p.Dispose();
+        }
     }
 
     /// <summary>

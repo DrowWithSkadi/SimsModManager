@@ -290,7 +290,7 @@
 
                                         <!-- Подтверждение отката -->
                                         <StackPanel Margin="0,10,0,0" Visibility="{Binding ConfirmRollback, Converter={StaticResource Vis}}">
-                                            <TextBlock Text="Текущая игра сохранится отдельной точкой — к ней можно будет вернуться." Foreground="{StaticResource Muted}" FontSize="12" TextWrapping="Wrap" Margin="0,0,0,8" />
+                                            <TextBlock Text="Игра сохранится отдельной точкой и перезапустится. В меню останется нажать «Продолжить»." Foreground="{StaticResource Muted}" FontSize="12" TextWrapping="Wrap" Margin="0,0,0,8" />
                                             <UniformGrid Columns="2">
                                                 <Button Style="{StaticResource Flat}" Content="Отмена" Margin="0,0,4,0"
                                                         Command="{Binding DataContext.CancelCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}" />

@@ -47,6 +47,13 @@ public sealed partial class MainViewModel
                 _checkpointsRoot = paths.Root;
             }
             _checkpoints.Retention = _settings.CheckpointRetention;
+            _checkpoints.LaunchGame = () =>
+            {
+                var game = GameLauncher.Find(_settings.GameExe);
+                if (game is null) return false;
+                GameLauncher.Launch(game);
+                return true;
+            };
             return _checkpoints;
         }
     }
