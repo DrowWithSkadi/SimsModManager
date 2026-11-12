@@ -302,7 +302,7 @@
                              Visibility="{Binding IsGridView, Converter={StaticResource InverseBoolToVisibility}}" />
 
                     <!-- Отступ сверху (у панели — прокручивается вместе с плитками) — запас для плиток, которые приподнимаются при наведении -->
-                    <ListBox x:Name="ModGrid" ItemsSource="{Binding ModsView}" ItemTemplate="{StaticResource ModTile}"
+                    <ListBox x:Name="ModGrid" SizeChanged="OnGridSizeChanged" ItemsSource="{Binding ModsView}" ItemTemplate="{StaticResource ModTile}"
                              ItemContainerStyle="{StaticResource ModTileContainer}" SelectionMode="Extended"
                              Background="{DynamicResource B.Background}" BorderThickness="0" Padding="0,0,0,8"
                              ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="OnSelectionChanged"
@@ -310,7 +310,8 @@
                              Visibility="{Binding IsGridView, Converter={StaticResource BoolToVisibility}}">
                         <ListBox.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <WrapPanel Margin="0,12,0,0" />
+                                <!-- Плитки растягиваются на всю ширину: колонок столько, сколько влезает, без пустоты справа -->
+                                <WrapPanel Margin="12,12,0,0" ItemWidth="{Binding TileItemWidth, RelativeSource={RelativeSource AncestorType=UserControl}}" />
                             </ItemsPanelTemplate>
                         </ListBox.ItemsPanel>
                     </ListBox>

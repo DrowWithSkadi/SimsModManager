@@ -246,16 +246,18 @@
 
     <!-- ═══════════ Плитка мода (вид «плитки») ═══════════ -->
     <DataTemplate x:Key="ModTile" DataType="{x:Type vm:ModItemViewModel}">
-        <Grid b:Anim.Appear="{Binding IsNew}" Width="176">
+        <!-- Ширина плитки подстраивается под окно (LibraryPage.TileItemWidth), картинка сохраняет пропорции -->
+        <Grid b:Anim.Appear="{Binding IsNew}">
             <Grid.RowDefinitions>
-                <RowDefinition Height="132" />
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <!-- Вспышка после установки (на всю плитку, за содержимым) -->
             <Border x:Name="Flash" Grid.RowSpan="3" Margin="-10" CornerRadius="8" Background="{DynamicResource B.AccentSubtle}"
                     BorderBrush="{DynamicResource B.Accent}" BorderThickness="1" Opacity="0" IsHitTestVisible="False" />
-            <ContentPresenter x:Name="Preview" Content="{Binding}" ContentTemplate="{StaticResource ModPreview}" />
+            <ContentPresenter x:Name="Preview" Content="{Binding}" ContentTemplate="{StaticResource ModPreview}"
+                              Height="{Binding TileImageHeight, RelativeSource={RelativeSource AncestorType=UserControl}}" />
                 <!-- Галочка «установлен» — выпрыгивает с пружинкой и исчезает -->
                 <Border x:Name="NewBadge" Width="26" Height="26" CornerRadius="13" Background="{DynamicResource B.Accent}"
                         HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,8,8" Opacity="0"
