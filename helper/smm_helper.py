@@ -21,7 +21,7 @@ import sims4.commands
 from clock import ClockSpeedMode, GameSpeedChangeSource
 from sims4.commands import CommandType
 
-VERSION = 3
+VERSION = 4
 PAUSE_REASON = 'SimsModManager'
 POLL_SECONDS = 0.25
 
@@ -49,6 +49,7 @@ _state = {
     'swap_error': None,
 }
 _pending_swap = None
+_fresh_services = False  # при подмене не даём игре оставить старых симов в памяти
 _lock = threading.Lock()
 _alarm = None
 _owner = None
@@ -217,7 +218,9 @@ def _hotswap(paths):
     zone_id = target.zone_id
     world_id = next((z.world_id for z in proto.zones if z.zone_id == zone_id), 0)
 
+    global _fresh_services
     _pending_swap = proto
+    _fresh_services = True
     with _lock:
         _state['swap'] = 'pending'
         _state['swap_error'] = None
@@ -229,17 +232,19 @@ def _hotswap(paths):
 
 
 def _cancel_swap():
-    global _pending_swap
+    global _pending_swap, _fresh_services
     _pending_swap = None
+    _fresh_services = False
     with _lock:
         _state['swap'] = None
 
 
 def _apply_pending_swap(persistence):
-    global _pending_swap
+    global _pending_swap, _fresh_services
     if _pending_swap is None:
         return
     proto, _pending_swap = _pending_swap, None
+    _fresh_services = False
     try:
         persistence._save_game_data_proto.CopyFrom(proto)
         with _lock:
@@ -395,6 +400,22 @@ def _install():
         PersistenceService.build_caches = build_caches
     except Exception as e:
         _log('Не удалось подключиться к загрузке сохранения: %s' % e)
+    try:
+        # При обычном переезде игра оставляет симов, семьи и отношения в памяти и не перечитывает их.
+        # Для подмены нужна полная загрузка, как из главного меню, — поэтому на время подмены
+        # не даём игре включить этот режим.
+        import game_services
+        original_disable = game_services.disable_shutdown
+
+        def disable_shutdown(*args, **kwargs):
+            if _fresh_services:
+                _log('Подмена: игра загрузит симов и семьи заново из точки')
+                return None
+            return original_disable(*args, **kwargs)
+
+        game_services.disable_shutdown = disable_shutdown
+    except Exception as e:
+        _log('Не удалось подключиться к переезду: %s' % e)
     try:
         _wrap(services, 'on_enter_main_menu', _on_main_menu)
     except Exception as e:
