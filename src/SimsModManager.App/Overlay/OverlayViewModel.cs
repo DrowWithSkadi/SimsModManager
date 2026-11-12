@@ -234,6 +234,7 @@ public sealed partial class OverlayViewModel : ObservableObject
             RollbackStep.SavingCurrent => "Сохраняю текущую игру, чтобы к ней можно было вернуться…",
             RollbackStep.WaitingForMenu => "Теперь выйди в главное меню: Esc → «Выйти» → «Выйти в главное меню». Сохранять не нужно — копия уже сделана.",
             RollbackStep.Restoring => "Возвращаю сохранение…",
+            RollbackStep.WaitingForConfirm => "Подтверди откат в окне игры.",
             RollbackStep.ClosingGame => "Закрываю игру — открытое сохранение подменить нельзя…",
             RollbackStep.Launching => "Запускаю игру. В главном меню нажми «Продолжить» — откроется точка.",
             _ => null,
@@ -246,7 +247,19 @@ public sealed partial class OverlayViewModel : ObservableObject
                 _pausedByUs = false;
                 await manager.Bridge.SendAsync("resume", TimeSpan.FromSeconds(2));
             }
-            if (manager.Bridge.ReadStatus().State == HelperState.Live)
+            if (manager.CanRollbackViaMenu)
+            {
+                // Без перезапуска: подтверждение — в окне самой игры, поэтому панель убираем
+                var menuProgress = new Progress<RollbackStep>(step =>
+                {
+                    ((IProgress<RollbackStep>)progress).Report(step);
+                    if (step == RollbackStep.WaitingForConfirm) _close();
+                });
+                await manager.MenuRollbackAsync(item.Checkpoint, menuProgress);
+                RefreshList();
+                Say($"Готово! Нажми «Продолжить» — откроется «{item.Name}». Прежняя игра сохранена точкой «Перед откатом».");
+            }
+            else if (manager.Bridge.ReadStatus().State == HelperState.Live)
             {
                 // Игра открыта: сохраняем, закрываем, подменяем, запускаем снова
                 await manager.RestartRollbackAsync(item.Checkpoint, progress);
@@ -259,6 +272,11 @@ public sealed partial class OverlayViewModel : ObservableObject
                 RefreshList();
                 Say($"Готово! Нажми «Продолжить» в главном меню — откроется «{item.Name}». Прежняя игра сохранена точкой «Перед откатом».");
             }
+        }
+        catch (RollbackCancelledException ex)
+        {
+            RefreshList();
+            Say(ex.Message);
         }
         catch (Exception ex) when (ex is CheckpointException or InvalidSaveException or IOException or UnauthorizedAccessException)
         {

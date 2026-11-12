@@ -21,7 +21,7 @@ import sims4.commands
 from clock import ClockSpeedMode, GameSpeedChangeSource
 from sims4.commands import CommandType
 
-VERSION = 5
+VERSION = 6
 PAUSE_REASON = 'SimsModManager'
 POLL_SECONDS = 0.25
 
@@ -45,6 +45,7 @@ _state = {
     'slot_id': None,
     'slot_name': None,
     'paused_by_us': False,
+    'dialog': None,        # окно «Вернуться к точке?»: shown / accepted / cancelled
 }
 _lock = threading.Lock()
 _alarm = None
@@ -161,6 +162,44 @@ def _save(on_done):
     persistence.save_using(save_gen)
 
 
+# ---------- выход в главное меню через окно игры ----------
+#
+# Скрипты не могут сами выйти в главное меню, но у окон игры есть кнопки с «действием интерфейса».
+# Одно из них — TRANSITION_TO_MAIN_MENU_NO_SAVE: игра выходит в меню без сохранения (мы уже
+# сохранили её и сделали копию). Кнопку нажимает игрок — это и есть подтверждение отката.
+
+def _show_menu_dialog(title, text, ok_text, cancel_text):
+    from sims4.localization import LocalizationHelperTuning
+    from ui.ui_dialog import UiDialogOkCancel, UiDialogResponse, ButtonType
+
+    def raw(value):
+        return lambda *_, **__: LocalizationHelperTuning.get_raw_text(value)
+
+    class _ToMainMenuDialog(UiDialogOkCancel):
+        @property
+        def responses(self):
+            return (
+                UiDialogResponse(dialog_response_id=ButtonType.DIALOG_RESPONSE_OK, text=self.text_ok,
+                                 ui_request=UiDialogResponse.UiDialogUiRequest.TRANSITION_TO_MAIN_MENU_NO_SAVE),
+                UiDialogResponse(dialog_response_id=ButtonType.DIALOG_RESPONSE_CANCEL, text=self.text_cancel,
+                                 ui_request=UiDialogResponse.UiDialogUiRequest.NO_REQUEST),
+            )
+
+    owner = services.active_sim_info()
+    dialog = _ToMainMenuDialog.TunableFactory().default(owner, title=raw(title), text=raw(text),
+                                                         text_ok=raw(ok_text), text_cancel=raw(cancel_text))
+
+    def on_response(d):
+        with _lock:
+            _state['dialog'] = 'accepted' if d.accepted else 'cancelled'
+        _write_status()
+
+    with _lock:
+        _state['dialog'] = 'shown'
+    _write_status()
+    dialog.show_dialog(on_response=on_response)
+
+
 def _run_cheat(line):
     client = _client()
     sims4.commands.execute(line, client.id if client is not None else None)
@@ -188,6 +227,10 @@ def _handle(command):
         _respond(command_id, True)
     elif name == 'save':
         _save(lambda ok, details: _respond(command_id, ok, details if ok else None, None if ok else str(details)))
+    elif name == 'menu_dialog':
+        _show_menu_dialog(command.get('title', ''), command.get('text', ''),
+                          command.get('ok', 'OK'), command.get('cancel', 'Отмена'))
+        _respond(command_id, True)
     elif name == 'cheat':
         _run_cheat(command.get('line', ''))
         _respond(command_id, True)
@@ -256,6 +299,10 @@ def _on_main_menu():
     with _lock:
         _state['state'] = 'menu'
         _state['paused_by_us'] = False
+    try:
+        _write_status()
+    except Exception:
+        pass
 
 
 # ---------- подключение к игре ----------
