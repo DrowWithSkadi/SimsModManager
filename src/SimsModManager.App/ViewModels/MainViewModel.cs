@@ -53,7 +53,11 @@ public sealed partial class MainViewModel : ObservableObject
         ApplySort();
 
         _gameWatch = new DispatcherTimer { Interval = TimeSpan.FromSeconds(4) };
-        _gameWatch.Tick += (_, _) => IsGameRunning = GameOptions.IsGameRunning();
+        _gameWatch.Tick += (_, _) =>
+        {
+            IsGameRunning = GameOptions.IsGameRunning();
+            RefreshHelperStatus();
+        };
         _gameWatch.Start();
 
         InitSettingsPage();
@@ -61,6 +65,7 @@ public sealed partial class MainViewModel : ObservableObject
         HookMascot();
         HookPlay();
         ScanPacks();
+        InitOverlay();
     }
 
     public ObservableCollection<ModItemViewModel> Mods { get; } = [];
@@ -149,6 +154,7 @@ public sealed partial class MainViewModel : ObservableObject
         Page = AppPage.Library;
 
         LoadBisect();
+        if (_overlay is not null) EnsureHelperInstalled();
         try { _library.CleanupTrash(); }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
 

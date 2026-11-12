@@ -229,6 +229,91 @@
                         </StackPanel>
                     </Border>
 
+                    <!-- Оверлей и точки сохранения -->
+                    <Border Style="{StaticResource Card}" Margin="0,0,0,12" b:Anim.Appear="True">
+                        <StackPanel>
+                            <TextBlock Text="Оверлей в игре" Style="{StaticResource T.Section}" />
+                            <TextBlock Style="{StaticResource T.Muted}" TextWrapping="Wrap" Margin="0,4,0,12"
+                                       Text="Точки сохранения прямо в игре по нажатию клавиши. Нужен режим «На весь экран в окне» или «В окне»." />
+                            <Grid>
+                                <TextBlock Text="Включить оверлей" Style="{StaticResource T.Strong}" FontSize="12" VerticalAlignment="Center" />
+                                <CheckBox Style="{StaticResource Switch}" HorizontalAlignment="Right" IsChecked="{Binding OverlayEnabled}" />
+                            </Grid>
+                            <Border Height="1" Background="{DynamicResource B.Hover}" Margin="0,12" />
+                            <Grid IsEnabled="{Binding OverlayEnabled}">
+                                <TextBlock Text="Клавиша" Style="{StaticResource T.Strong}" FontSize="12" VerticalAlignment="Center" />
+                                <Button x:Name="HotkeyButton" HorizontalAlignment="Right" MinWidth="96" Command="{Binding RecordHotkeyCommand}"
+                                        PreviewKeyDown="OnHotkeyKeyDown" ToolTip="Нажми и затем нужную клавишу или сочетание">
+                                    <Button.Style>
+                                        <Style TargetType="Button" BasedOn="{StaticResource Btn.Secondary}">
+                                            <Setter Property="Content" Value="{Binding OverlayHotkey}" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding IsRecordingHotkey}" Value="True">
+                                                    <Setter Property="Content" Value="Нажми клавишу…" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Button.Style>
+                                </Button>
+                            </Grid>
+                            <TextBlock Text="{Binding OverlayProblem}" Foreground="{DynamicResource B.Error}" FontSize="12" TextWrapping="Wrap" Margin="0,8,0,0">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding OverlayProblem}" Value="{x:Null}">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                            <Border Height="1" Background="{DynamicResource B.Hover}" Margin="0,12" />
+                            <Grid IsEnabled="{Binding OverlayEnabled}">
+                                <TextBlock Text="Пауза в игре, пока открыт оверлей" Style="{StaticResource T.Strong}" FontSize="12" VerticalAlignment="Center" />
+                                <CheckBox Style="{StaticResource Switch}" HorizontalAlignment="Right" IsChecked="{Binding OverlayPausesGame}" />
+                            </Grid>
+                            <Border Height="1" Background="{DynamicResource B.Hover}" Margin="0,12" />
+                            <Grid IsEnabled="{Binding OverlayEnabled}">
+                                <StackPanel Margin="0,0,56,0">
+                                    <TextBlock Text="Скрывать на стриме и в записи" Style="{StaticResource T.Strong}" FontSize="12" />
+                                    <TextBlock Text="Ты видишь оверлей, а OBS, Discord и запись экрана — нет" Style="{StaticResource T.Muted}" TextWrapping="Wrap" Margin="0,2,0,0" />
+                                </StackPanel>
+                                <CheckBox Style="{StaticResource Switch}" HorizontalAlignment="Right" VerticalAlignment="Center" IsChecked="{Binding OverlayHideFromCapture}" />
+                            </Grid>
+                            <Border Height="1" Background="{DynamicResource B.Hover}" Margin="0,12" />
+                            <Grid>
+                                <TextBlock Text="Мод-помощник" Style="{StaticResource T.Strong}" FontSize="12" VerticalAlignment="Center" />
+                                <TextBlock Text="{Binding HelperStatusText}" Style="{StaticResource T.Muted}" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Style="{StaticResource Card}" Margin="0,0,0,12" b:Anim.Appear="True">
+                        <StackPanel>
+                            <TextBlock Text="Точки сохранения" Style="{StaticResource T.Section}" />
+                            <TextBlock Text="{Binding CheckpointStorageText}" Style="{StaticResource T.Muted}" Margin="0,4,0,12" />
+                            <TextBlock Text="Автоудаление — пустое поле значит «не удалять». Закреплённые точки не удаляются никогда."
+                                       Style="{StaticResource T.Muted}" TextWrapping="Wrap" Margin="0,0,0,10" />
+                            <Grid Margin="0,0,0,8">
+                                <TextBlock Text="Удалять старше, дней" Style="{StaticResource T.Strong}" FontSize="12" VerticalAlignment="Center" />
+                                <TextBox Style="{StaticResource Input}" Width="90" HorizontalAlignment="Right"
+                                         Text="{Binding CheckpointMaxAgeDays, UpdateSourceTrigger=PropertyChanged, Delay=400}" />
+                            </Grid>
+                            <Grid Margin="0,0,0,8">
+                                <TextBlock Text="Хранить не больше, штук" Style="{StaticResource T.Strong}" FontSize="12" VerticalAlignment="Center" />
+                                <TextBox Style="{StaticResource Input}" Width="90" HorizontalAlignment="Right"
+                                         Text="{Binding CheckpointMaxCount, UpdateSourceTrigger=PropertyChanged, Delay=400}" />
+                            </Grid>
+                            <Grid Margin="0,0,0,12">
+                                <TextBlock Text="Занимать не больше, МБ" Style="{StaticResource T.Strong}" FontSize="12" VerticalAlignment="Center" />
+                                <TextBox Style="{StaticResource Input}" Width="90" HorizontalAlignment="Right"
+                                         Text="{Binding CheckpointMaxTotalMegabytes, UpdateSourceTrigger=PropertyChanged, Delay=400}" />
+                            </Grid>
+                            <Button Style="{StaticResource Btn.Secondary}" Content="Открыть папку с точками" HorizontalAlignment="Left"
+                                    Command="{Binding OpenCheckpointsFolderCommand}" />
+                        </StackPanel>
+                    </Border>
+
                     <!-- Дополнения игры -->
                     <Border Style="{StaticResource Card}" b:Anim.Appear="True" Margin="0,0,0,16">
                         <StackPanel>

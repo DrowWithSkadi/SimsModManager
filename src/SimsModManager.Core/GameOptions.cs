@@ -104,7 +104,7 @@ public static partial class GameOptions
         return true;
     }
 
-    private static readonly string[] GameProcessNames = ["TS4_x64", "TS4_DX9_x64", "TS4"];
+    public static readonly string[] GameProcessNames = ["TS4_x64", "TS4_DX9_x64", "TS4"];
 
     public static bool IsGameRunning()
     {
