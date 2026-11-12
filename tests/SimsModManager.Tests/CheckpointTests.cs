@@ -132,23 +132,6 @@ public class CheckpointTests
     }
 
     [Fact]
-    public void ExtractsGameDataCandidates()
-    {
-        var big = new byte[5000];
-        new Random(1).NextBytes(big);
-        using var stream = new MemoryStream();
-        SimsModManager.Core.Dbpf.DbpfWriter.Write(stream,
-        [
-            new(new SimsModManager.Core.Dbpf.ResourceKey(0x3C1AF1F2, 0, 1), new byte[100]),
-            new(new SimsModManager.Core.Dbpf.ResourceKey(0x0000000D, 0, 2), big),
-        ]);
-        var candidates = CheckpointStore.ExtractGameDataCandidates(stream.ToArray());
-        Assert.Equal(0x0000000Du, candidates[0].Type);
-        Assert.Equal(big, candidates[0].Data);
-        Assert.Equal(2, candidates.Count);
-    }
-
-    [Fact]
     public void SlotFileNameIsHex()
     {
         Assert.Equal("Slot_0000001a.save", SaveSlots.FileName(26));

@@ -21,7 +21,7 @@ import sims4.commands
 from clock import ClockSpeedMode, GameSpeedChangeSource
 from sims4.commands import CommandType
 
-VERSION = 4
+VERSION = 5
 PAUSE_REASON = 'SimsModManager'
 POLL_SECONDS = 0.25
 
@@ -45,11 +45,7 @@ _state = {
     'slot_id': None,
     'slot_name': None,
     'paused_by_us': False,
-    'swap': None,          # подмена на лету: None / pending / applied / failed
-    'swap_error': None,
 }
-_pending_swap = None
-_fresh_services = False  # при подмене не даём игре оставить старых симов в памяти
 _lock = threading.Lock()
 _alarm = None
 _owner = None
@@ -165,98 +161,6 @@ def _save(on_done):
     persistence.save_using(save_gen)
 
 
-# ---------- подмена сохранения на лету (эксперимент) ----------
-#
-# Игра держит всё сохранение в памяти (persistence_service._save_game_data_proto) и при каждой
-# загрузке участка заново строит мир из этих данных. Мы подкладываем туда данные точки прямо
-# перед загрузкой участка и запускаем «переезд» — игра загружает участок уже из точки.
-
-def _read_save_data(paths):
-    """Пробует ресурсы сохранения по очереди и берёт тот, что читается как данные игры с семьями и участками."""
-    from protocolbuffers import FileSerialization_pb2 as serialization
-    notes = []
-    for path in paths:
-        try:
-            with open(path, 'rb') as f:
-                data = f.read()
-            proto = serialization.SaveGameData()
-            proto.ParseFromString(data)
-            if len(proto.sims) == 0 or len(proto.zones) == 0:
-                notes.append('%s: нет симов или участков' % os.path.basename(path))
-                continue
-            _log('Подмена: данные игры найдены в %s (%d байт, симов %d, участков %d)' % (
-                os.path.basename(path), len(data), len(proto.sims), len(proto.zones)))
-            return proto, len(data)
-        except Exception as e:
-            notes.append('%s: %s' % (os.path.basename(path), e))
-    _log('Подмена: ни один ресурс не подошёл:\n  ' + '\n  '.join(notes))
-    raise Exception('Не нашёл данные игры в точке (подробности в helper.log)')
-
-
-def _hotswap(paths):
-    global _pending_swap
-    import distributor.ops
-
-    if isinstance(paths, str):
-        paths = [paths]
-    proto, size = _read_save_data(paths)
-
-    persistence = services.get_persistence_service()
-    current = persistence._save_game_data_proto
-    try:
-        if current.guid and proto.guid and current.guid != proto.guid:
-            raise Exception('Точка сделана в другом сохранении')
-    except AttributeError:
-        pass
-
-    household_id = proto.save_slot.active_household_id
-    candidates = [s for s in proto.sims if s.household_id == household_id and s.zone_id]
-    if not candidates:
-        raise Exception('В точке нет активной семьи')
-    active = services.active_sim_info()
-    target = next((s for s in candidates if active is not None and s.sim_id == active.id), candidates[0])
-    zone_id = target.zone_id
-    world_id = next((z.world_id for z in proto.zones if z.zone_id == zone_id), 0)
-
-    global _fresh_services
-    _pending_swap = proto
-    _fresh_services = True
-    with _lock:
-        _state['swap'] = 'pending'
-        _state['swap_error'] = None
-    _log('Подмена: переезд на участок %s' % zone_id)
-
-    owner = active if active is not None else services.sim_info_manager().get(target.sim_id)
-    op = distributor.ops.TravelSwitchToZone((target.sim_id, household_id, zone_id, world_id))
-    distributor.ops.record(owner, op)
-
-
-def _cancel_swap():
-    global _pending_swap, _fresh_services
-    _pending_swap = None
-    _fresh_services = False
-    with _lock:
-        _state['swap'] = None
-
-
-def _apply_pending_swap(persistence):
-    global _pending_swap, _fresh_services
-    if _pending_swap is None:
-        return
-    proto, _pending_swap = _pending_swap, None
-    _fresh_services = False
-    try:
-        persistence._save_game_data_proto.CopyFrom(proto)
-        with _lock:
-            _state['swap'] = 'applied'
-        _log('Подмена: данные точки подставлены перед загрузкой участка')
-    except Exception as e:
-        with _lock:
-            _state['swap'] = 'failed'
-            _state['swap_error'] = str(e)
-        _log('Подмена не удалась: %s\n%s' % (e, traceback.format_exc()))
-
-
 def _run_cheat(line):
     client = _client()
     sims4.commands.execute(line, client.id if client is not None else None)
@@ -284,12 +188,6 @@ def _handle(command):
         _respond(command_id, True)
     elif name == 'save':
         _save(lambda ok, details: _respond(command_id, ok, details if ok else None, None if ok else str(details)))
-    elif name == 'hotswap':
-        _hotswap(command.get('paths') or command.get('path') or [])
-        _respond(command_id, True)
-    elif name == 'hotswap_cancel':
-        _cancel_swap()
-        _respond(command_id, True)
     elif name == 'cheat':
         _run_cheat(command.get('line', ''))
         _respond(command_id, True)
@@ -391,31 +289,11 @@ def _install():
             # Участок начинает загружаться — до конца загрузки команды не выполняются
             with _lock:
                 _state['state'] = 'loading'
-            try:
-                _apply_pending_swap(self)
-            except Exception as e:
-                _log('Ошибка подмены: %s' % e)
             return original_build(self, *args, **kwargs)
 
         PersistenceService.build_caches = build_caches
     except Exception as e:
         _log('Не удалось подключиться к загрузке сохранения: %s' % e)
-    try:
-        # При обычном переезде игра оставляет симов, семьи и отношения в памяти и не перечитывает их.
-        # Для подмены нужна полная загрузка, как из главного меню, — поэтому на время подмены
-        # не даём игре включить этот режим.
-        import game_services
-        original_disable = game_services.disable_shutdown
-
-        def disable_shutdown(*args, **kwargs):
-            if _fresh_services:
-                _log('Подмена: игра загрузит симов и семьи заново из точки')
-                return None
-            return original_disable(*args, **kwargs)
-
-        game_services.disable_shutdown = disable_shutdown
-    except Exception as e:
-        _log('Не удалось подключиться к переезду: %s' % e)
     try:
         _wrap(services, 'on_enter_main_menu', _on_main_menu)
     except Exception as e:
@@ -424,7 +302,7 @@ def _install():
         if BRIDGE is not None:
             os.makedirs(BRIDGE, exist_ok=True)
             for n in os.listdir(BRIDGE):
-                if n.startswith('cmd-') or n.startswith('res-'):
+                if n.startswith('cmd-') or n.startswith('res-') or n.startswith('swap'):
                     os.remove(os.path.join(BRIDGE, n))
         thread = threading.Thread(target=_heartbeat, name='SimsModManagerHeartbeat')
         thread.daemon = True

@@ -17,9 +17,6 @@ public enum HelperState
 
 public sealed record HelperStatus(HelperState State, long? SlotId, string? SlotName, int Version, DateTime UpdatedAt)
 {
-    /// <summary>Подмена на лету: null, "pending", "applied" или "failed".</summary>
-    public string? Swap { get; init; }
-    public string? SwapError { get; init; }
 
     public static readonly HelperStatus Offline = new(HelperState.Offline, null, null, 0, DateTime.MinValue);
 }
@@ -63,11 +60,7 @@ public sealed class HelperBridge(string bridgeFolder)
                 json["slot_id"] is JsonValue id ? id.GetValue<long>() : null,
                 (string?)json["slot_name"],
                 (int?)json["version"] ?? 0,
-                updated)
-            {
-                Swap = (string?)json["swap"],
-                SwapError = (string?)json["swap_error"],
-            };
+                updated);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException
                                        or InvalidOperationException or FormatException or NullReferenceException)

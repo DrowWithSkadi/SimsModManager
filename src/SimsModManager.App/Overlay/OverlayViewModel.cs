@@ -234,7 +234,8 @@ public sealed partial class OverlayViewModel : ObservableObject
             RollbackStep.SavingCurrent => "Сохраняю текущую игру, чтобы к ней можно было вернуться…",
             RollbackStep.WaitingForMenu => "Теперь выйди в главное меню: Esc → «Выйти» → «Выйти в главное меню». Сохранять не нужно — копия уже сделана.",
             RollbackStep.Restoring => "Возвращаю сохранение…",
-            RollbackStep.Loading => "Игра загружает точку…",
+            RollbackStep.ClosingGame => "Закрываю игру — открытое сохранение подменить нельзя…",
+            RollbackStep.Launching => "Запускаю игру. В главном меню нажми «Продолжить» — откроется точка.",
             _ => null,
         });
         try
@@ -245,17 +246,12 @@ public sealed partial class OverlayViewModel : ObservableObject
                 _pausedByUs = false;
                 await manager.Bridge.SendAsync("resume", TimeSpan.FromSeconds(2));
             }
-            if (manager.CanHotSwap)
+            if (manager.Bridge.ReadStatus().State == HelperState.Live)
             {
-                // Без выхода из игры: как только пошла загрузка участка, панель убирается с экрана
-                var hotProgress = new Progress<RollbackStep>(step =>
-                {
-                    ((IProgress<RollbackStep>)progress).Report(step);
-                    if (step == RollbackStep.Loading) _close();
-                });
-                await manager.HotSwapAsync(item.Checkpoint, hotProgress);
+                // Игра открыта: сохраняем, закрываем, подменяем, запускаем снова
+                await manager.RestartRollbackAsync(item.Checkpoint, progress);
                 RefreshList();
-                Say($"Готово — ты в точке «{item.Name}». Прежняя игра сохранена точкой «Перед откатом».");
+                Say($"Игра запускается. В главном меню нажми «Продолжить» — откроется «{item.Name}». Прежняя игра сохранена точкой «Перед откатом».");
             }
             else
             {
