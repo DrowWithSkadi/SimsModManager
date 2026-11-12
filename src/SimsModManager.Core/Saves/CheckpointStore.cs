@@ -179,15 +179,24 @@ public sealed class CheckpointStore(string folder)
     }
 
     /// <summary>
-    /// Сами данные игры из файла сохранения (protobuf SaveGameData) — то, что помощник подкладывает
-    /// игре при подмене на лету. В сохранении это самый большой ресурс пакета.
+    /// Ресурсы сохранения, среди которых есть сами данные игры (protobuf SaveGameData).
+    /// Какой из них нужный, точно проверяет помощник в игре — он пробует их по порядку.
+    /// Сначала ресурс с типом 0x0000000D, затем остальные по убыванию размера.
     /// </summary>
-    public static byte[] ExtractGameData(byte[] saveFile)
+    public static IReadOnlyList<(uint Type, byte[] Data)> ExtractGameDataCandidates(byte[] saveFile, int max = 6)
     {
         using var package = Dbpf.DbpfPackage.Open(new MemoryStream(saveFile, writable: false));
-        var entry = package.Entries.Where(e => !e.IsDeleted).MaxBy(e => e.MemorySize)
-            ?? throw new InvalidSaveException("В сохранении нет данных");
-        return package.Read(entry);
+        var result = new List<(uint, byte[])>();
+        foreach (var entry in package.Entries.Where(e => !e.IsDeleted)
+                     .OrderByDescending(e => e.Key.Type == 0x0000000D)
+                     .ThenByDescending(e => e.MemorySize)
+                     .Take(max))
+        {
+            try { result.Add((entry.Key.Type, package.Read(entry))); }
+            catch (InvalidDataException) { }
+        }
+        if (result.Count == 0) throw new InvalidSaveException("В сохранении нет данных");
+        return result;
     }
 
     public void Delete(Checkpoint checkpoint)
