@@ -43,6 +43,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Мод-помощник для игры: собирается в CI из папки helper/ (Python 3.7, как в игре) -->
+    <None Include="Assets\Helper\*.ts4script" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\SimsModManager.Core\SimsModManager.Core.csproj" />
   </ItemGroup>
 

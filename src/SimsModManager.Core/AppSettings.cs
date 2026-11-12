@@ -39,6 +39,27 @@ public sealed class AppSettings
     /// <summary>Когда заметили новую версию игры — скрипты старше этого момента могли сломаться.</summary>
     public DateTime? GameUpdateDetectedAt { get; set; }
 
+    /// <summary>Оверлей поверх игры: открывается клавишей, пока игра на переднем плане.</summary>
+    public bool OverlayEnabled { get; set; } = true;
+
+    /// <summary>Клавиша или сочетание для оверлея, например «F9» или «Ctrl+Shift+M».</summary>
+    public string OverlayHotkey { get; set; } = "F9";
+
+    /// <summary>Ставить игру на паузу, пока открыт оверлей.</summary>
+    public bool OverlayPausesGame { get; set; } = true;
+
+    /// <summary>Не показывать оверлей в записи экрана и на стриме.</summary>
+    public bool OverlayHideFromCapture { get; set; }
+
+    /// <summary>Автоудаление точек сохранения. null — правило выключено (по умолчанию ничего не удаляется).</summary>
+    public int? CheckpointMaxAgeDays { get; set; }
+    public int? CheckpointMaxCount { get; set; }
+    public long? CheckpointMaxTotalMegabytes { get; set; }
+
+    [System.Text.Json.Serialization.JsonIgnore]
+    public Saves.RetentionRules CheckpointRetention =>
+        new(CheckpointMaxAgeDays, CheckpointMaxCount is int c ? Math.Max(1, c) : null, CheckpointMaxTotalMegabytes);
+
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
 
     public static string DefaultPath => Path.Combine(

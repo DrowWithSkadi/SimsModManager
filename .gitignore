@@ -6,3 +6,6 @@ artifacts/
 *.user
 *.suo
 TestResults/
+src/SimsModManager.App/Assets/Helper/
+helper/out/
+__pycache__/

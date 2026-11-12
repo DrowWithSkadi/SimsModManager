@@ -26,6 +26,16 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
+      # Мод-помощник: игра работает на Python 3.7, поэтому компилируем именно им
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.7'
+
+      - name: Мод-помощник
+        env:
+          PYTHONIOENCODING: utf-8
+        run: python helper/build.py src/SimsModManager.App/Assets/Helper
+
       - name: Тесты
         run: dotnet test tests/SimsModManager.Tests/SimsModManager.Tests.csproj -c Release --logger "console;verbosity=normal"
 
