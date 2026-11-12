@@ -112,8 +112,7 @@ public sealed class OverlayHost
         _window = new OverlayWindow { DataContext = _viewModel };
         _window.CloseRequested += () => HideOverlay(returnFocus: true);
         var handle = new WindowInteropHelper(_window).EnsureHandle();
-        var round = Native.DWMWCP_ROUND;
-        Native.DwmSetWindowAttribute(handle, Native.DWMWA_WINDOW_CORNER_PREFERENCE, ref round, sizeof(int));
+        _window.ApplyGlass(handle);
         ApplyCaptureSetting();
 
         // Прогрев: один раз показываем окно за краем экрана без активации — дальше оно открывается мгновенно
@@ -261,7 +260,7 @@ public sealed class OverlayHost
         if (_gameWindow == IntPtr.Zero || !Native.IsWindow(_gameWindow) || Native.IsIconic(_gameWindow)) return;
 
         _window.Show();
-        CenterOnGame();
+        DockToGame();
         _window.Activate();
         Native.SetForegroundWindow(new WindowInteropHelper(_window).Handle);
         _window.PlayAppear();
@@ -277,21 +276,20 @@ public sealed class OverlayHost
             Native.SetForegroundWindow(_gameWindow);
     }
 
-    /// <summary>Ставит оверлей по центру окна игры — на том мониторе, где игра.</summary>
-    private void CenterOnGame()
+    /// <summary>
+    /// Панель прижимается к левому краю окна игры с небольшим отступом и тянется по высоте —
+    /// не закрывает середину экрана, где происходит игра.
+    /// </summary>
+    private void DockToGame()
     {
         var handle = new WindowInteropHelper(_window!).Handle;
-        if (!Native.GetWindowRect(_gameWindow, out var game) || !Native.GetWindowRect(handle, out var own)) return;
-        var x = game.Left + (game.Width - own.Width) / 2;
-        var y = game.Top + (game.Height - own.Height) / 2;
-        Native.SetWindowPos(handle, Native.HWND_TOPMOST, x, y, 0, 0, Native.SWP_NOSIZE);
-        // При переезде на монитор с другим масштабом размер окна меняется — выравниваем ещё раз
-        if (Native.GetWindowRect(handle, out var after) && (after.Width != own.Width || after.Height != own.Height))
-        {
-            x = game.Left + (game.Width - after.Width) / 2;
-            y = game.Top + (game.Height - after.Height) / 2;
-            Native.SetWindowPos(handle, Native.HWND_TOPMOST, x, y, 0, 0, Native.SWP_NOSIZE);
-        }
+        if (!Native.GetWindowRect(_gameWindow, out var game)) return;
+        var scale = Native.GetDpiForWindow(_gameWindow) / 96.0;
+        if (scale <= 0) scale = 1;
+        var margin = (int)Math.Round(16 * scale);
+        var width = (int)Math.Round(OverlayWindow.PanelWidth * scale);
+        var height = Math.Max((int)Math.Round(360 * scale), game.Height - margin * 2);
+        Native.SetWindowPos(handle, Native.HWND_TOPMOST, game.Left + margin, game.Top + margin, width, height, 0);
     }
 
     private void OnUnhandled(object sender, DispatcherUnhandledExceptionEventArgs e)

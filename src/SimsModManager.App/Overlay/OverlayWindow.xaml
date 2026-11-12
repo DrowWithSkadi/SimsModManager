@@ -3,11 +3,11 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:o="clr-namespace:SimsModManager.App.Overlay"
         Title="Sims Mod Manager"
-        Width="720" Height="520"
+        Width="400" Height="640"
         WindowStyle="None" ResizeMode="NoResize"
         ShowInTaskbar="False" Topmost="True"
         WindowStartupLocation="Manual"
-        Background="#161817"
+        Background="#B8121413"
         UseLayoutRounding="True"
         TextOptions.TextFormattingMode="Display"
         FontFamily="pack://application:,,,/Fonts/#Inter, Segoe UI"
@@ -17,9 +17,9 @@
          Окно непрозрачное: прозрачные окна WPF рисуются процессором и подтормаживают поверх игры. -->
     <Window.Resources>
         <SolidColorBrush x:Key="Muted" Color="#9A9E9C" />
-        <SolidColorBrush x:Key="Card" Color="#1F2221" />
-        <SolidColorBrush x:Key="CardHover" Color="#262A28" />
-        <SolidColorBrush x:Key="Line" Color="#2C302E" />
+        <SolidColorBrush x:Key="Card" Color="#14FFFFFF" />
+        <SolidColorBrush x:Key="CardHover" Color="#1FFFFFFF" />
+        <SolidColorBrush x:Key="Line" Color="#1AFFFFFF" />
         <SolidColorBrush x:Key="Accent" Color="#77E1C7" />
         <SolidColorBrush x:Key="AccentSubtle" Color="#243C35" />
         <SolidColorBrush x:Key="OnAccent" Color="#0F2A23" />
@@ -42,7 +42,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="b" Property="Background" Value="#2A2E2C" />
+                                <Setter TargetName="b" Property="Background" Value="#24FFFFFF" />
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter Property="Opacity" Value="0.45" />
@@ -89,12 +89,12 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="RadioButton">
-                        <Border x:Name="b" Background="Transparent" CornerRadius="8" Padding="14,6">
-                            <ContentPresenter />
+                        <Border x:Name="b" Background="Transparent" CornerRadius="8" Padding="10,6">
+                            <ContentPresenter HorizontalAlignment="Center" />
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="b" Property="Background" Value="#2A2E2C" />
+                                <Setter TargetName="b" Property="Background" Value="#24FFFFFF" />
                                 <Setter Property="Foreground" Value="#F3F3F1" />
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
@@ -118,236 +118,239 @@
         </Style>
     </Window.Resources>
 
-    <Border BorderBrush="#2E3230" BorderThickness="1">
-        <Grid x:Name="Root" Margin="20,16,20,18" RenderTransformOrigin="0.5,0.5">
-            <Grid.RenderTransform>
-                <TranslateTransform />
-            </Grid.RenderTransform>
+    <Grid x:Name="Root" Margin="18,16,18,16">
+        <Grid.RenderTransform>
+            <TranslateTransform />
+        </Grid.RenderTransform>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Шапка: логотип, название, закрыть -->
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Image Source="pack://application:,,,/Assets/logo-mark.png" Width="24" Height="24" VerticalAlignment="Center" />
+            <StackPanel Grid.Column="1" Margin="10,0,0,0" VerticalAlignment="Center">
+                <TextBlock Text="Sims Mod Manager" FontWeight="SemiBold" FontSize="14" />
+                <StackPanel Orientation="Horizontal" Margin="0,2,0,0">
+                    <Ellipse Width="6" Height="6" Margin="0,0,6,0" VerticalAlignment="Center">
+                        <Ellipse.Style>
+                            <Style TargetType="Ellipse">
+                                <Setter Property="Fill" Value="{StaticResource Danger}" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding StatusOk}" Value="True">
+                                        <Setter Property="Fill" Value="{StaticResource Accent}" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Ellipse.Style>
+                    </Ellipse>
+                    <TextBlock Text="{Binding StatusText}" FontSize="12" Foreground="{StaticResource Muted}" TextTrimming="CharacterEllipsis" MaxWidth="250" />
+                </StackPanel>
+            </StackPanel>
+            <Button Grid.Column="2" Style="{StaticResource Flat}" Padding="7" Command="{Binding CloseCommand}" ToolTip="Закрыть (Esc)">
+                <Path Style="{StaticResource Icon}" Data="M 18,6 L 6,18 M 6,6 L 18,18" />
+            </Button>
+        </Grid>
+
+        <!-- Вкладки -->
+        <Border Grid.Row="1" Background="{StaticResource Card}" CornerRadius="10" Padding="3" Margin="0,14,0,0">
+            <UniformGrid Columns="2">
+                <RadioButton Style="{StaticResource Tab}" GroupName="tabs" IsChecked="True" Command="{Binding ShowCheckpointsCommand}">
+                    <TextBlock Text="Точки сохранения" HorizontalAlignment="Center" />
+                </RadioButton>
+                <RadioButton Style="{StaticResource Tab}" GroupName="tabs" Command="{Binding ShowCommandsCommand}">
+                    <TextBlock Text="Команды" HorizontalAlignment="Center" />
+                </RadioButton>
+            </UniformGrid>
+        </Border>
+
+        <!-- Точки сохранения -->
+        <Grid Grid.Row="2" Margin="0,14,0,0" Visibility="{Binding IsCheckpointsTab, Converter={StaticResource Vis}}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
                 <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <!-- Шапка: логотип, вкладки, состояние игры, закрыть -->
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <Image Source="pack://application:,,,/Assets/logo-mark.png" Width="22" Height="22" Margin="0,0,10,0" />
-                    <RadioButton Style="{StaticResource Tab}" Content="Точки сохранения" GroupName="tabs"
-                                 IsChecked="True" Command="{Binding ShowCheckpointsCommand}" />
-                    <RadioButton Style="{StaticResource Tab}" Content="Команды" GroupName="tabs" Margin="4,0,0,0"
-                                 Command="{Binding ShowCommandsCommand}" />
-                </StackPanel>
-
-                <Border Grid.Column="2" CornerRadius="10" Padding="10,4" Margin="0,0,8,0" VerticalAlignment="Center">
-                    <Border.Style>
-                        <Style TargetType="Border">
-                            <Setter Property="Background" Value="{StaticResource DangerSubtle}" />
-                            <Setter Property="TextElement.Foreground" Value="{StaticResource Danger}" />
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding StatusOk}" Value="True">
-                                    <Setter Property="Background" Value="{StaticResource AccentSubtle}" />
-                                    <Setter Property="TextElement.Foreground" Value="{StaticResource Accent}" />
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </Border.Style>
-                    <StackPanel Orientation="Horizontal">
-                        <Ellipse Width="6" Height="6" Fill="{Binding (TextElement.Foreground), RelativeSource={RelativeSource AncestorType=Border}}" Margin="0,0,7,0" VerticalAlignment="Center" />
-                        <TextBlock Text="{Binding StatusText}" FontSize="12" />
-                    </StackPanel>
-                </Border>
-
-                <Button Grid.Column="3" Style="{StaticResource Flat}" Padding="7" Command="{Binding CloseCommand}" ToolTip="Закрыть (Esc)">
-                    <Path Style="{StaticResource Icon}" Data="M 18,6 L 6,18 M 6,6 L 18,18" />
-                </Button>
-            </Grid>
-
-            <!-- Точки сохранения -->
-            <Grid Grid.Row="1" Margin="0,16,0,0" Visibility="{Binding IsCheckpointsTab, Converter={StaticResource Vis}}">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto" />
-                    <RowDefinition Height="*" />
-                </Grid.RowDefinitions>
-
+            <Border Background="{StaticResource Card}" CornerRadius="10" BorderBrush="{StaticResource Line}" BorderThickness="1">
                 <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*" />
-                        <ColumnDefinition Width="Auto" />
-                    </Grid.ColumnDefinitions>
-                    <Border Background="{StaticResource Card}" CornerRadius="10" BorderBrush="{StaticResource Line}" BorderThickness="1">
-                        <Grid>
-                            <TextBox x:Name="NameBox" Text="{Binding NewName, UpdateSourceTrigger=PropertyChanged}"
-                                     Background="Transparent" BorderThickness="0" Foreground="#F3F3F1" CaretBrush="#F3F3F1"
-                                     Padding="12,9" VerticalContentAlignment="Center" MaxLength="80"
-                                     KeyDown="OnNameKeyDown" />
-                            <TextBlock Text="Название точки, например «Перед свадьбой»" Foreground="{StaticResource Muted}"
-                                       Margin="15,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False">
-                                <TextBlock.Style>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="Visibility" Value="Collapsed" />
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding Text, ElementName=NameBox}" Value="">
-                                                <Setter Property="Visibility" Value="Visible" />
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </TextBlock.Style>
-                            </TextBlock>
-                        </Grid>
-                    </Border>
-                    <Button Grid.Column="1" Style="{StaticResource Primary}" Margin="10,0,0,0" Command="{Binding MakeCheckpointCommand}">
-                        <StackPanel Orientation="Horizontal">
-                            <Path Style="{StaticResource Icon}" Width="14" Height="14" Data="M 5,12 L 19,12 M 12,5 L 12,19" Margin="0,0,7,0" />
-                            <TextBlock Text="Сделать точку" />
-                        </StackPanel>
-                    </Button>
+                    <TextBox x:Name="NameBox" Text="{Binding NewName, UpdateSourceTrigger=PropertyChanged}"
+                             Background="Transparent" BorderThickness="0" Foreground="#F3F3F1" CaretBrush="#F3F3F1"
+                             Padding="10,9" VerticalContentAlignment="Center" MaxLength="80"
+                             KeyDown="OnNameKeyDown" />
+                    <TextBlock Text="Название, например «Перед свадьбой»" Foreground="{StaticResource Muted}"
+                               Margin="13,0,0,0" VerticalAlignment="Center" IsHitTestVisible="False">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Text, ElementName=NameBox}" Value="">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
                 </Grid>
+            </Border>
+            <Button Grid.Row="1" Style="{StaticResource Primary}" Margin="0,8,0,0" HorizontalAlignment="Stretch" Command="{Binding MakeCheckpointCommand}">
+                <StackPanel Orientation="Horizontal">
+                    <Path Style="{StaticResource Icon}" Width="14" Height="14" Data="M 5,12 L 19,12 M 12,5 L 12,19" Margin="0,0,7,0" />
+                    <TextBlock Text="Сделать точку" />
+                </StackPanel>
+            </Button>
 
-                <Grid Grid.Row="1" Margin="0,14,0,0">
-                    <TextBlock Text="Точек пока нет. Сделай первую — к ней всегда можно будет вернуться."
-                               Foreground="{StaticResource Muted}" HorizontalAlignment="Center" VerticalAlignment="Center"
-                               TextWrapping="Wrap" TextAlignment="Center" MaxWidth="320"
-                               Visibility="{Binding IsEmpty, Converter={StaticResource Vis}}" />
+            <Grid Grid.Row="2" Margin="0,14,0,0">
+                <TextBlock Text="Точек пока нет. Сделай первую — к ней всегда можно будет вернуться."
+                           Foreground="{StaticResource Muted}" HorizontalAlignment="Center" VerticalAlignment="Center"
+                           TextWrapping="Wrap" TextAlignment="Center" MaxWidth="260"
+                           Visibility="{Binding IsEmpty, Converter={StaticResource Vis}}" />
 
-                    <ScrollViewer VerticalScrollBarVisibility="Auto" Focusable="False">
-                        <ItemsControl ItemsSource="{Binding Checkpoints}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate DataType="{x:Type o:CheckpointItem}">
-                                    <Border x:Name="card" Background="{StaticResource Card}" CornerRadius="12" Padding="14,10" Margin="0,0,0,8">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Focusable="False">
+                    <ItemsControl ItemsSource="{Binding Checkpoints}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type o:CheckpointItem}">
+                                <Border x:Name="card" Background="{StaticResource Card}" CornerRadius="12" Padding="12,10" Margin="0,0,0,8">
+                                    <StackPanel>
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*" />
                                                 <ColumnDefinition Width="Auto" />
                                             </Grid.ColumnDefinitions>
-                                            <StackPanel VerticalAlignment="Center">
+                                            <StackPanel>
                                                 <StackPanel Orientation="Horizontal">
-                                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="14" TextTrimming="CharacterEllipsis" MaxWidth="330" />
-                                                    <Border Background="#2A2E2C" CornerRadius="6" Padding="6,1" Margin="8,0,0,0" VerticalAlignment="Center"
+                                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="14" TextTrimming="CharacterEllipsis" MaxWidth="210" />
+                                                    <Border Background="#1FFFFFFF" CornerRadius="6" Padding="6,1" Margin="8,0,0,0" VerticalAlignment="Center"
                                                             Visibility="{Binding HasKindLabel, Converter={StaticResource Vis}}">
                                                         <TextBlock Text="{Binding KindLabel}" FontSize="11" Foreground="{StaticResource Muted}" />
                                                     </Border>
                                                 </StackPanel>
-                                                <TextBlock Text="{Binding Details}" Foreground="{StaticResource Muted}" FontSize="12" Margin="0,3,0,0" />
+                                                <TextBlock Text="{Binding Details}" Foreground="{StaticResource Muted}" FontSize="12" Margin="0,3,0,0" TextTrimming="CharacterEllipsis" />
                                             </StackPanel>
-
-                                            <!-- Обычные кнопки -->
-                                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                                                <StackPanel.Style>
-                                                    <Style TargetType="StackPanel">
+                                            <Button Grid.Column="1" Padding="6" VerticalAlignment="Top"
+                                                    Command="{Binding DataContext.TogglePinCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                    CommandParameter="{Binding}">
+                                                <Button.Style>
+                                                    <Style TargetType="Button" BasedOn="{StaticResource Flat}">
+                                                        <Setter Property="ToolTip" Value="Закрепить — никогда не удалять автоматически" />
+                                                        <Setter Property="Foreground" Value="{StaticResource Muted}" />
                                                         <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding ConfirmRollback}" Value="True">
-                                                                <Setter Property="Visibility" Value="Collapsed" />
-                                                            </DataTrigger>
-                                                            <DataTrigger Binding="{Binding ConfirmDelete}" Value="True">
-                                                                <Setter Property="Visibility" Value="Collapsed" />
+                                                            <DataTrigger Binding="{Binding IsPinned}" Value="True">
+                                                                <Setter Property="Foreground" Value="{StaticResource Accent}" />
+                                                                <Setter Property="ToolTip" Value="Закреплена — не удалится автоматически" />
                                                             </DataTrigger>
                                                         </Style.Triggers>
                                                     </Style>
-                                                </StackPanel.Style>
-                                                <Button Padding="8" Command="{Binding DataContext.TogglePinCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                                        CommandParameter="{Binding}">
-                                                    <Button.Style>
-                                                        <Style TargetType="Button" BasedOn="{StaticResource Flat}">
-                                                            <Setter Property="ToolTip" Value="Закрепить — никогда не удалять автоматически" />
-                                                            <Setter Property="Foreground" Value="{StaticResource Muted}" />
-                                                            <Style.Triggers>
-                                                                <DataTrigger Binding="{Binding IsPinned}" Value="True">
-                                                                    <Setter Property="Foreground" Value="{StaticResource Accent}" />
-                                                                    <Setter Property="ToolTip" Value="Закреплена — не удалится автоматически" />
-                                                                </DataTrigger>
-                                                            </Style.Triggers>
-                                                        </Style>
-                                                    </Button.Style>
-                                                    <Path Style="{StaticResource Icon}" Data="M 12,17 L 12,22 M 9,10.76 A 2,2 0 0,1 7.89,12.55 L 6.11,13.45 A 2,2 0 0,0 5,15.24 L 5,16 A 1,1 0 0,0 6,17 L 18,17 A 1,1 0 0,0 19,16 L 19,15.24 A 2,2 0 0,0 17.89,13.45 L 16.11,12.55 A 2,2 0 0,1 15,10.76 L 15,7 A 1,1 0 0,1 16,6 A 2,2 0 0,0 16,2 L 8,2 A 2,2 0 0,0 8,6 A 1,1 0 0,1 9,7 Z" />
-                                                </Button>
-                                                <Button Style="{StaticResource Flat}" Padding="8" Foreground="{StaticResource Muted}" ToolTip="Удалить"
-                                                        Command="{Binding DataContext.AskDeleteCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                                        CommandParameter="{Binding}">
-                                                    <Path Style="{StaticResource Icon}" Data="M 10,11 L 10,17 M 14,11 L 14,17 M 19,6 L 19,20 A 2,2 0 0,1 17,22 L 7,22 A 2,2 0 0,1 5,20 L 5,6 M 3,6 L 21,6 M 8,6 L 8,4 A 2,2 0 0,1 10,2 L 14,2 A 2,2 0 0,1 16,4 L 16,6" />
-                                                </Button>
-                                                <Button Style="{StaticResource Flat}" Background="{StaticResource AccentSubtle}" Foreground="{StaticResource Accent}" Margin="6,0,0,0"
-                                                        Command="{Binding DataContext.AskRollbackCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                                        CommandParameter="{Binding}">
-                                                    <StackPanel Orientation="Horizontal">
-                                                        <Path Style="{StaticResource Icon}" Width="14" Height="14" Margin="0,0,7,0" Data="M 3,12 A 9,9 0 1,0 12,3 A 9.75,9.75 0 0,0 5.26,5.74 L 3,8 M 3,3 L 3,8 L 8,8" />
-                                                        <TextBlock Text="Откатить" FontWeight="SemiBold" />
-                                                    </StackPanel>
-                                                </Button>
-                                            </StackPanel>
-
-                                            <!-- Подтверждение отката -->
-                                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center"
-                                                        Visibility="{Binding ConfirmRollback, Converter={StaticResource Vis}}">
-                                                <TextBlock Text="Текущая игра сохранится отдельно" Foreground="{StaticResource Muted}" FontSize="12" VerticalAlignment="Center" Margin="0,0,10,0" />
-                                                <Button Style="{StaticResource Flat}" Content="Отмена"
-                                                        Command="{Binding DataContext.CancelCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}" />
-                                                <Button Style="{StaticResource Primary}" Content="Откатить" Margin="6,0,0,0" Padding="14,7"
-                                                        Command="{Binding DataContext.RollbackCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}" />
-                                            </StackPanel>
-
-                                            <!-- Подтверждение удаления -->
-                                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center"
-                                                        Visibility="{Binding ConfirmDelete, Converter={StaticResource Vis}}">
-                                                <TextBlock Text="Удалить навсегда?" Foreground="{StaticResource Muted}" FontSize="12" VerticalAlignment="Center" Margin="0,0,10,0" />
-                                                <Button Style="{StaticResource Flat}" Content="Отмена"
-                                                        Command="{Binding DataContext.CancelCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}" />
-                                                <Button Style="{StaticResource DangerButton}" Content="Удалить" Margin="6,0,0,0" Padding="14,7"
-                                                        Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}" />
-                                            </StackPanel>
+                                                </Button.Style>
+                                                <Path Style="{StaticResource Icon}" Width="14" Height="14" Data="M 12,17 L 12,22 M 9,10.76 A 2,2 0 0,1 7.89,12.55 L 6.11,13.45 A 2,2 0 0,0 5,15.24 L 5,16 A 1,1 0 0,0 6,17 L 18,17 A 1,1 0 0,0 19,16 L 19,15.24 A 2,2 0 0,0 17.89,13.45 L 16.11,12.55 A 2,2 0 0,1 15,10.76 L 15,7 A 1,1 0 0,1 16,6 A 2,2 0 0,0 16,2 L 8,2 A 2,2 0 0,0 8,6 A 1,1 0 0,1 9,7 Z" />
+                                            </Button>
                                         </Grid>
-                                    </Border>
-                                    <DataTemplate.Triggers>
-                                        <Trigger SourceName="card" Property="IsMouseOver" Value="True">
-                                            <Setter TargetName="card" Property="Background" Value="{StaticResource CardHover}" />
-                                        </Trigger>
-                                    </DataTemplate.Triggers>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </ScrollViewer>
-                </Grid>
-            </Grid>
 
-            <!-- Команды — следующий шаг -->
-            <StackPanel Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Center"
-                        Visibility="{Binding IsCommandsTab, Converter={StaticResource Vis}}">
-                <TextBlock Text="Каталог команд скоро появится" FontSize="15" FontWeight="SemiBold" HorizontalAlignment="Center" />
-                <TextBlock Text="Деньги, навыки, отношения и другие читы — с поиском и описанием по-русски"
-                           Foreground="{StaticResource Muted}" Margin="0,6,0,0" HorizontalAlignment="Center" />
-            </StackPanel>
+                                        <!-- Обычные действия -->
+                                        <Grid Margin="0,10,0,0">
+                                            <Grid.Style>
+                                                <Style TargetType="Grid">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding ConfirmRollback}" Value="True">
+                                                            <Setter Property="Visibility" Value="Collapsed" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding ConfirmDelete}" Value="True">
+                                                            <Setter Property="Visibility" Value="Collapsed" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </Grid.Style>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <Button Style="{StaticResource Flat}" Background="{StaticResource AccentSubtle}" Foreground="{StaticResource Accent}"
+                                                    HorizontalAlignment="Stretch"
+                                                    Command="{Binding DataContext.AskRollbackCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                    CommandParameter="{Binding}">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <Path Style="{StaticResource Icon}" Width="14" Height="14" Margin="0,0,7,0" Data="M 3,12 A 9,9 0 1,0 12,3 A 9.75,9.75 0 0,0 5.26,5.74 L 3,8 M 3,3 L 3,8 L 8,8" />
+                                                    <TextBlock Text="Откатить" FontWeight="SemiBold" />
+                                                </StackPanel>
+                                            </Button>
+                                            <Button Grid.Column="1" Style="{StaticResource Flat}" Padding="8" Margin="6,0,0,0" Foreground="{StaticResource Muted}" ToolTip="Удалить"
+                                                    Command="{Binding DataContext.AskDeleteCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                    CommandParameter="{Binding}">
+                                                <Path Style="{StaticResource Icon}" Width="14" Height="14" Data="M 10,11 L 10,17 M 14,11 L 14,17 M 19,6 L 19,20 A 2,2 0 0,1 17,22 L 7,22 A 2,2 0 0,1 5,20 L 5,6 M 3,6 L 21,6 M 8,6 L 8,4 A 2,2 0 0,1 10,2 L 14,2 A 2,2 0 0,1 16,4 L 16,6" />
+                                            </Button>
+                                        </Grid>
 
-            <!-- Низ: что происходит сейчас и сообщения -->
-            <Grid Grid.Row="2" Margin="0,12,0,0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <StackPanel Orientation="Horizontal" Visibility="{Binding IsBusy, Converter={StaticResource Vis}}">
-                    <Ellipse x:Name="BusyDot" Width="8" Height="8" Fill="{StaticResource Accent}" Margin="0,0,10,0" VerticalAlignment="Center" />
-                    <TextBlock Text="{Binding BusyText}" TextWrapping="Wrap" MaxWidth="560" />
-                </StackPanel>
-                <TextBlock Text="{Binding Message}" TextWrapping="Wrap" MaxWidth="560"
-                           Visibility="{Binding IsBusy, Converter={StaticResource NotVis}}">
-                    <TextBlock.Style>
-                        <Style TargetType="TextBlock">
-                            <Setter Property="Foreground" Value="{StaticResource Accent}" />
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding MessageIsError}" Value="True">
-                                    <Setter Property="Foreground" Value="{StaticResource Danger}" />
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </TextBlock.Style>
-                </TextBlock>
-                <TextBlock Grid.Column="1" Text="{Binding StorageText}" Foreground="{StaticResource Muted}" FontSize="12" VerticalAlignment="Bottom" />
+                                        <!-- Подтверждение отката -->
+                                        <StackPanel Margin="0,10,0,0" Visibility="{Binding ConfirmRollback, Converter={StaticResource Vis}}">
+                                            <TextBlock Text="Текущая игра сохранится отдельной точкой — к ней можно будет вернуться." Foreground="{StaticResource Muted}" FontSize="12" TextWrapping="Wrap" Margin="0,0,0,8" />
+                                            <UniformGrid Columns="2">
+                                                <Button Style="{StaticResource Flat}" Content="Отмена" Margin="0,0,4,0"
+                                                        Command="{Binding DataContext.CancelCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}" />
+                                                <Button Style="{StaticResource Primary}" Content="Откатить" Margin="4,0,0,0" Padding="12,7"
+                                                        Command="{Binding DataContext.RollbackCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}" />
+                                            </UniformGrid>
+                                        </StackPanel>
+
+                                        <!-- Подтверждение удаления -->
+                                        <StackPanel Margin="0,10,0,0" Visibility="{Binding ConfirmDelete, Converter={StaticResource Vis}}">
+                                            <TextBlock Text="Удалить точку навсегда?" Foreground="{StaticResource Muted}" FontSize="12" Margin="0,0,0,8" />
+                                            <UniformGrid Columns="2">
+                                                <Button Style="{StaticResource Flat}" Content="Отмена" Margin="0,0,4,0"
+                                                        Command="{Binding DataContext.CancelCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}" />
+                                                <Button Style="{StaticResource DangerButton}" Content="Удалить" Margin="4,0,0,0" Padding="12,7"
+                                                        Command="{Binding DataContext.DeleteCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}" CommandParameter="{Binding}" />
+                                            </UniformGrid>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+                                <DataTemplate.Triggers>
+                                    <Trigger SourceName="card" Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="card" Property="Background" Value="{StaticResource CardHover}" />
+                                    </Trigger>
+                                </DataTemplate.Triggers>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
             </Grid>
         </Grid>
-    </Border>
+
+        <!-- Команды — следующий шаг -->
+        <StackPanel Grid.Row="2" VerticalAlignment="Center" HorizontalAlignment="Center"
+                    Visibility="{Binding IsCommandsTab, Converter={StaticResource Vis}}">
+            <TextBlock Text="Каталог команд скоро появится" FontSize="15" FontWeight="SemiBold" HorizontalAlignment="Center" />
+            <TextBlock Text="Деньги, навыки, отношения и другие читы — с поиском и описанием по-русски"
+                       Foreground="{StaticResource Muted}" Margin="0,6,0,0" TextWrapping="Wrap" TextAlignment="Center" MaxWidth="280" />
+        </StackPanel>
+
+        <!-- Низ: что происходит и сообщения -->
+        <StackPanel Grid.Row="3" Margin="0,10,0,0">
+            <StackPanel Orientation="Horizontal" Visibility="{Binding IsBusy, Converter={StaticResource Vis}}">
+                <Ellipse x:Name="BusyDot" Width="8" Height="8" Fill="{StaticResource Accent}" Margin="0,4,10,0" VerticalAlignment="Top" />
+                <TextBlock Text="{Binding BusyText}" TextWrapping="Wrap" MaxWidth="330" />
+            </StackPanel>
+            <TextBlock Text="{Binding Message}" TextWrapping="Wrap"
+                       Visibility="{Binding IsBusy, Converter={StaticResource NotVis}}">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Foreground" Value="{StaticResource Accent}" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding MessageIsError}" Value="True">
+                                <Setter Property="Foreground" Value="{StaticResource Danger}" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+            <TextBlock Text="{Binding StorageText}" Foreground="{StaticResource Muted}" FontSize="12" Margin="0,6,0,0" />
+        </StackPanel>
+    </Grid>
 </Window>
