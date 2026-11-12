@@ -17,6 +17,9 @@ public enum HelperState
 
 public sealed record HelperStatus(HelperState State, long? SlotId, string? SlotName, int Version, DateTime UpdatedAt)
 {
+    /// <summary>Окно «Вернуться к точке?» в игре: null, "shown", "accepted" или "cancelled".</summary>
+    public string? Dialog { get; init; }
+
 
     public static readonly HelperStatus Offline = new(HelperState.Offline, null, null, 0, DateTime.MinValue);
 }
@@ -60,7 +63,10 @@ public sealed class HelperBridge(string bridgeFolder)
                 json["slot_id"] is JsonValue id ? id.GetValue<long>() : null,
                 (string?)json["slot_name"],
                 (int?)json["version"] ?? 0,
-                updated);
+                updated)
+            {
+                Dialog = (string?)json["dialog"],
+            };
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException
                                        or InvalidOperationException or FormatException or NullReferenceException)

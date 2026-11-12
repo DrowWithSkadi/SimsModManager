@@ -2,7 +2,10 @@ using SimsModManager.Core.Helper;
 
 namespace SimsModManager.Core.Saves;
 
-public sealed class CheckpointException(string message) : Exception(message);
+public class CheckpointException(string message) : Exception(message);
+
+/// <summary>Игрок нажал «Остаться» в окне игры.</summary>
+public sealed class RollbackCancelledException() : CheckpointException("Откат отменён — игра продолжается");
 
 public enum RollbackStep
 {
@@ -10,6 +13,8 @@ public enum RollbackStep
     SavingCurrent,
     /// <summary>Ждём, пока игрок выйдет в главное меню (или закроет игру).</summary>
     WaitingForMenu,
+    /// <summary>В игре показано окно «Вернуться к точке?» — ждём ответа игрока.</summary>
+    WaitingForConfirm,
     /// <summary>Кладём точку на место сохранения.</summary>
     Restoring,
     /// <summary>Закрываем игру — подменить открытое сохранение нельзя.</summary>
@@ -66,6 +71,54 @@ public sealed class CheckpointManager(SimsPaths paths, CheckpointStore store, He
             skipIfUnchanged: kind != CheckpointKind.Manual), cancellation);
         await Task.Run(() => store.ApplyRetention(Retention), cancellation);
         return checkpoint;
+    }
+
+    /// <summary>Помощник умеет выводить игру в главное меню через окно игры (версия 6+).</summary>
+    public bool CanRollbackViaMenu
+    {
+        get
+        {
+            var status = bridge.ReadStatus();
+            return status.State == HelperState.Live && status.Version >= 6;
+        }
+    }
+
+    /// <summary>
+    /// Откат без перезапуска игры: текущая игра сохраняется точкой «Перед откатом», затем в самой игре
+    /// появляется окно «Вернуться к точке?». Кнопка в нём выводит игру в главное меню без сохранения —
+    /// в эту же секунду менеджер кладёт на место файл точки, и «Продолжить» откроет уже её.
+    /// </summary>
+    public async Task MenuRollbackAsync(Checkpoint checkpoint, IProgress<RollbackStep>? progress = null, CancellationToken cancellation = default)
+    {
+        if (!CanRollbackViaMenu)
+            throw new CheckpointException("Помощник не отвечает — нельзя безопасно сохранить игру перед откатом");
+
+        progress?.Report(RollbackStep.SavingCurrent);
+        await MakeAsync("", CheckpointKind.BeforeRollback, cancellation);
+
+        var response = await bridge.SendAsync("menu_dialog", TimeSpan.FromSeconds(10), new Dictionary<string, object?>
+        {
+            ["title"] = "Sims Mod Manager",
+            ["text"] = $"Вернуться к точке «{checkpoint.Name}»?\n\nТекущая игра уже сохранена отдельной точкой «Перед откатом» — к ней тоже можно вернуться.\n\nИгра выйдет в главное меню. Там нажми «Продолжить».",
+            ["ok"] = "Вернуться к точке",
+            ["cancel"] = "Остаться",
+        }, cancellation);
+        if (!response.Ok) throw new CheckpointException($"Игра не показала окно: {response.Error}");
+
+        progress?.Report(RollbackStep.WaitingForConfirm);
+        while (true)
+        {
+            var status = bridge.ReadStatus();
+            if (status.Dialog == "cancelled" && status.State == HelperState.Live)
+                throw new RollbackCancelledException();
+            // В меню (или игру закрыли) — сохранение больше не открыто, его можно подменить
+            if (status.State is HelperState.Menu or HelperState.Offline) break;
+            await Task.Delay(200, cancellation);
+        }
+
+        progress?.Report(RollbackStep.Restoring);
+        await Task.Run(() => store.Restore(checkpoint, paths.Saves), cancellation);
+        progress?.Report(RollbackStep.Done);
     }
 
     /// <summary>Запуск игры (задаёт программа: Steam, EA app или exe). true — запуск начат.</summary>
