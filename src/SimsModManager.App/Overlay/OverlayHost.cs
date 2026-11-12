@@ -132,7 +132,20 @@ public sealed class OverlayHost
         _foregroundHook = Native.SetWinEventHook(Native.EVENT_SYSTEM_FOREGROUND, Native.EVENT_SYSTEM_FOREGROUND,
             IntPtr.Zero, _hookProc, 0, 0, Native.WINEVENT_OUTOFCONTEXT);
         OnForeground(Native.GetForegroundWindow());
+
+        // Подстраховка: Windows иногда не присылает событие о смене окна (например, когда игра
+        // пересоздаёт окно при загрузке или переключении режима экрана). Раз в секунду сверяемся сами.
+        _foregroundCheck = new DispatcherTimer(DispatcherPriority.Background) { Interval = TimeSpan.FromSeconds(1) };
+        _foregroundCheck.Tick += (_, _) =>
+        {
+            var current = Native.GetForegroundWindow();
+            if (current != _lastForeground) OnForeground(current);
+        };
+        _foregroundCheck.Start();
     }
+
+    private DispatcherTimer? _foregroundCheck;
+    private IntPtr _lastForeground;
 
     private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
     {
@@ -151,6 +164,7 @@ public sealed class OverlayHost
     {
         try
         {
+            _lastForeground = hwnd;
             var overlay = _window is null ? IntPtr.Zero : new WindowInteropHelper(_window).Handle;
             if (hwnd == overlay && hwnd != IntPtr.Zero) return;
 
