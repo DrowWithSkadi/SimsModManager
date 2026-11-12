@@ -21,7 +21,7 @@ import sims4.commands
 from clock import ClockSpeedMode, GameSpeedChangeSource
 from sims4.commands import CommandType
 
-VERSION = 1
+VERSION = 2
 PAUSE_REASON = 'SimsModManager'
 POLL_SECONDS = 0.25
 
@@ -45,7 +45,10 @@ _state = {
     'slot_id': None,
     'slot_name': None,
     'paused_by_us': False,
+    'swap': None,          # подмена на лету: None / pending / applied / failed
+    'swap_error': None,
 }
+_pending_swap = None
 _lock = threading.Lock()
 _alarm = None
 _owner = None
@@ -161,6 +164,74 @@ def _save(on_done):
     persistence.save_using(save_gen)
 
 
+# ---------- подмена сохранения на лету (эксперимент) ----------
+#
+# Игра держит всё сохранение в памяти (persistence_service._save_game_data_proto) и при каждой
+# загрузке участка заново строит мир из этих данных. Мы подкладываем туда данные точки прямо
+# перед загрузкой участка и запускаем «переезд» — игра загружает участок уже из точки.
+
+def _hotswap(path):
+    global _pending_swap
+    from protocolbuffers import FileSerialization_pb2 as serialization
+    import distributor.ops
+
+    with open(path, 'rb') as f:
+        data = f.read()
+    proto = serialization.SaveGameData()
+    proto.ParseFromString(data)
+
+    persistence = services.get_persistence_service()
+    current = persistence._save_game_data_proto
+    try:
+        if current.guid and proto.guid and current.guid != proto.guid:
+            raise Exception('Точка сделана в другом сохранении')
+    except AttributeError:
+        pass
+
+    household_id = proto.save_slot.active_household_id
+    candidates = [s for s in proto.sims if s.household_id == household_id and s.zone_id]
+    if not candidates:
+        raise Exception('В точке нет активной семьи')
+    active = services.active_sim_info()
+    target = next((s for s in candidates if active is not None and s.sim_id == active.id), candidates[0])
+    zone_id = target.zone_id
+    world_id = next((z.world_id for z in proto.zones if z.zone_id == zone_id), 0)
+
+    _pending_swap = proto
+    with _lock:
+        _state['swap'] = 'pending'
+        _state['swap_error'] = None
+    _log('Подмена: точка прочитана (%d байт), переезд на участок %s' % (len(data), zone_id))
+
+    owner = active if active is not None else services.sim_info_manager().get(target.sim_id)
+    op = distributor.ops.TravelSwitchToZone((target.sim_id, household_id, zone_id, world_id))
+    distributor.ops.record(owner, op)
+
+
+def _cancel_swap():
+    global _pending_swap
+    _pending_swap = None
+    with _lock:
+        _state['swap'] = None
+
+
+def _apply_pending_swap(persistence):
+    global _pending_swap
+    if _pending_swap is None:
+        return
+    proto, _pending_swap = _pending_swap, None
+    try:
+        persistence._save_game_data_proto.CopyFrom(proto)
+        with _lock:
+            _state['swap'] = 'applied'
+        _log('Подмена: данные точки подставлены перед загрузкой участка')
+    except Exception as e:
+        with _lock:
+            _state['swap'] = 'failed'
+            _state['swap_error'] = str(e)
+        _log('Подмена не удалась: %s\n%s' % (e, traceback.format_exc()))
+
+
 def _run_cheat(line):
     client = _client()
     sims4.commands.execute(line, client.id if client is not None else None)
@@ -188,6 +259,12 @@ def _handle(command):
         _respond(command_id, True)
     elif name == 'save':
         _save(lambda ok, details: _respond(command_id, ok, details if ok else None, None if ok else str(details)))
+    elif name == 'hotswap':
+        _hotswap(command.get('path', ''))
+        _respond(command_id, True)
+    elif name == 'hotswap_cancel':
+        _cancel_swap()
+        _respond(command_id, True)
     elif name == 'cheat':
         _run_cheat(command.get('line', ''))
         _respond(command_id, True)
@@ -281,6 +358,23 @@ def _install():
         _wrap(zone.Zone, 'on_loading_screen_animation_finished', _on_zone_ready)
     except Exception as e:
         _log('Не удалось подключиться к загрузке участка: %s' % e)
+    try:
+        from services.persistence_service import PersistenceService
+        original_build = PersistenceService.build_caches
+
+        def build_caches(self, *args, **kwargs):
+            # Участок начинает загружаться — до конца загрузки команды не выполняются
+            with _lock:
+                _state['state'] = 'loading'
+            try:
+                _apply_pending_swap(self)
+            except Exception as e:
+                _log('Ошибка подмены: %s' % e)
+            return original_build(self, *args, **kwargs)
+
+        PersistenceService.build_caches = build_caches
+    except Exception as e:
+        _log('Не удалось подключиться к загрузке сохранения: %s' % e)
     try:
         _wrap(services, 'on_enter_main_menu', _on_main_menu)
     except Exception as e:
