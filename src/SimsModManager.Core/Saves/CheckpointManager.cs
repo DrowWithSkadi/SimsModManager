@@ -92,17 +92,26 @@ public sealed class CheckpointManager(SimsPaths paths, CheckpointStore store, He
         await MakeAsync("", CheckpointKind.BeforeRollback, cancellation);
 
         progress?.Report(RollbackStep.Restoring);
-        var dataFile = Path.Combine(bridge.Folder, "swap.bin");
+        var files = new List<string>();
         await Task.Run(() =>
         {
+            foreach (var old in Directory.Exists(bridge.Folder) ? Directory.GetFiles(bridge.Folder, "swap-*.bin") : [])
+                File.Delete(old);
+            Directory.CreateDirectory(bridge.Folder);
             var save = store.ReadData(checkpoint);
-            File.WriteAllBytes(dataFile, CheckpointStore.ExtractGameData(save));
+            var candidates = CheckpointStore.ExtractGameDataCandidates(save);
+            for (var i = 0; i < candidates.Count; i++)
+            {
+                var file = Path.Combine(bridge.Folder, $"swap-{i}-{candidates[i].Type:X8}.bin");
+                File.WriteAllBytes(file, candidates[i].Data);
+                files.Add(file);
+            }
             // Файл на диске тоже возвращаем: если игра вылетит, «Продолжить» откроет уже точку
             store.Restore(checkpoint, paths.Saves);
         }, cancellation);
 
         var response = await bridge.SendAsync("hotswap", TimeSpan.FromSeconds(15),
-            new Dictionary<string, object?> { ["path"] = dataFile }, cancellation);
+            new Dictionary<string, object?> { ["paths"] = files }, cancellation);
         if (!response.Ok) throw new CheckpointException($"Игра не приняла точку: {response.Error}");
 
         progress?.Report(RollbackStep.Loading);

@@ -21,7 +21,7 @@ import sims4.commands
 from clock import ClockSpeedMode, GameSpeedChangeSource
 from sims4.commands import CommandType
 
-VERSION = 2
+VERSION = 3
 PAUSE_REASON = 'SimsModManager'
 POLL_SECONDS = 0.25
 
@@ -170,15 +170,35 @@ def _save(on_done):
 # загрузке участка заново строит мир из этих данных. Мы подкладываем туда данные точки прямо
 # перед загрузкой участка и запускаем «переезд» — игра загружает участок уже из точки.
 
-def _hotswap(path):
-    global _pending_swap
+def _read_save_data(paths):
+    """Пробует ресурсы сохранения по очереди и берёт тот, что читается как данные игры с семьями и участками."""
     from protocolbuffers import FileSerialization_pb2 as serialization
+    notes = []
+    for path in paths:
+        try:
+            with open(path, 'rb') as f:
+                data = f.read()
+            proto = serialization.SaveGameData()
+            proto.ParseFromString(data)
+            if len(proto.sims) == 0 or len(proto.zones) == 0:
+                notes.append('%s: нет симов или участков' % os.path.basename(path))
+                continue
+            _log('Подмена: данные игры найдены в %s (%d байт, симов %d, участков %d)' % (
+                os.path.basename(path), len(data), len(proto.sims), len(proto.zones)))
+            return proto, len(data)
+        except Exception as e:
+            notes.append('%s: %s' % (os.path.basename(path), e))
+    _log('Подмена: ни один ресурс не подошёл:\n  ' + '\n  '.join(notes))
+    raise Exception('Не нашёл данные игры в точке (подробности в helper.log)')
+
+
+def _hotswap(paths):
+    global _pending_swap
     import distributor.ops
 
-    with open(path, 'rb') as f:
-        data = f.read()
-    proto = serialization.SaveGameData()
-    proto.ParseFromString(data)
+    if isinstance(paths, str):
+        paths = [paths]
+    proto, size = _read_save_data(paths)
 
     persistence = services.get_persistence_service()
     current = persistence._save_game_data_proto
@@ -201,7 +221,7 @@ def _hotswap(path):
     with _lock:
         _state['swap'] = 'pending'
         _state['swap_error'] = None
-    _log('Подмена: точка прочитана (%d байт), переезд на участок %s' % (len(data), zone_id))
+    _log('Подмена: переезд на участок %s' % zone_id)
 
     owner = active if active is not None else services.sim_info_manager().get(target.sim_id)
     op = distributor.ops.TravelSwitchToZone((target.sim_id, household_id, zone_id, world_id))
@@ -260,7 +280,7 @@ def _handle(command):
     elif name == 'save':
         _save(lambda ok, details: _respond(command_id, ok, details if ok else None, None if ok else str(details)))
     elif name == 'hotswap':
-        _hotswap(command.get('path', ''))
+        _hotswap(command.get('paths') or command.get('path') or [])
         _respond(command_id, True)
     elif name == 'hotswap_cancel':
         _cancel_swap()
