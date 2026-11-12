@@ -12,6 +12,8 @@ public enum RollbackStep
     WaitingForMenu,
     /// <summary>Кладём точку на место сохранения.</summary>
     Restoring,
+    /// <summary>Подмена на лету: игра загружает участок из точки.</summary>
+    Loading,
     Done,
 }
 
@@ -62,6 +64,65 @@ public sealed class CheckpointManager(SimsPaths paths, CheckpointStore store, He
             skipIfUnchanged: kind != CheckpointKind.Manual), cancellation);
         await Task.Run(() => store.ApplyRetention(Retention), cancellation);
         return checkpoint;
+    }
+
+    /// <summary>Сколько ждать, пока игра загрузит участок после подмены на лету.</summary>
+    public static readonly TimeSpan HotSwapTimeout = TimeSpan.FromMinutes(5);
+
+    /// <summary>Подмена на лету возможна: игра открыта и помощник умеет это делать.</summary>
+    public bool CanHotSwap
+    {
+        get
+        {
+            var status = bridge.ReadStatus();
+            return status.State == HelperState.Live && status.Version >= 2;
+        }
+    }
+
+    /// <summary>
+    /// Откат без выхода из игры (эксперимент). Текущая игра сохраняется точкой «Перед откатом»,
+    /// файл сохранения возвращается к точке, а помощник подставляет данные точки в память игры
+    /// и запускает перезагрузку участка — игрок видит обычный экран загрузки.
+    /// </summary>
+    public async Task HotSwapAsync(Checkpoint checkpoint, IProgress<RollbackStep>? progress = null, CancellationToken cancellation = default)
+    {
+        if (!CanHotSwap) throw new CheckpointException("Подмена на лету работает, только когда сохранение открыто в игре");
+
+        progress?.Report(RollbackStep.SavingCurrent);
+        await MakeAsync("", CheckpointKind.BeforeRollback, cancellation);
+
+        progress?.Report(RollbackStep.Restoring);
+        var dataFile = Path.Combine(bridge.Folder, "swap.bin");
+        await Task.Run(() =>
+        {
+            var save = store.ReadData(checkpoint);
+            File.WriteAllBytes(dataFile, CheckpointStore.ExtractGameData(save));
+            // Файл на диске тоже возвращаем: если игра вылетит, «Продолжить» откроет уже точку
+            store.Restore(checkpoint, paths.Saves);
+        }, cancellation);
+
+        var response = await bridge.SendAsync("hotswap", TimeSpan.FromSeconds(15),
+            new Dictionary<string, object?> { ["path"] = dataFile }, cancellation);
+        if (!response.Ok) throw new CheckpointException($"Игра не приняла точку: {response.Error}");
+
+        progress?.Report(RollbackStep.Loading);
+        var deadline = DateTime.UtcNow + HotSwapTimeout;
+        var sawLoading = false;
+        while (DateTime.UtcNow < deadline)
+        {
+            var status = bridge.ReadStatus();
+            if (status.Swap == "failed")
+                throw new CheckpointException($"Игра не смогла подставить точку: {status.SwapError}");
+            if (status.State != HelperState.Live) sawLoading = true;
+            if (status.Swap == "applied" && status.State == HelperState.Live && sawLoading)
+            {
+                progress?.Report(RollbackStep.Done);
+                return;
+            }
+            await Task.Delay(500, cancellation);
+        }
+        await bridge.SendAsync("hotswap_cancel", TimeSpan.FromSeconds(3));
+        throw new CheckpointException("Игра так и не начала загрузку. Файл сохранения уже возвращён к точке — выйди в главное меню и нажми «Продолжить»");
     }
 
     /// <summary>

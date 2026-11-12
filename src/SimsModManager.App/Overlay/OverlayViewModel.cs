@@ -234,6 +234,7 @@ public sealed partial class OverlayViewModel : ObservableObject
             RollbackStep.SavingCurrent => "Сохраняю текущую игру, чтобы к ней можно было вернуться…",
             RollbackStep.WaitingForMenu => "Теперь выйди в главное меню: Esc → «Выйти» → «Выйти в главное меню». Сохранять не нужно — копия уже сделана.",
             RollbackStep.Restoring => "Возвращаю сохранение…",
+            RollbackStep.Loading => "Игра загружает точку…",
             _ => null,
         });
         try
@@ -244,9 +245,24 @@ public sealed partial class OverlayViewModel : ObservableObject
                 _pausedByUs = false;
                 await manager.Bridge.SendAsync("resume", TimeSpan.FromSeconds(2));
             }
-            await manager.RollbackAsync(item.Checkpoint, progress);
-            RefreshList();
-            Say($"Готово! Нажми «Продолжить» в главном меню — откроется «{item.Name}». Прежняя игра сохранена точкой «Перед откатом».");
+            if (manager.CanHotSwap)
+            {
+                // Без выхода из игры: как только пошла загрузка участка, панель убирается с экрана
+                var hotProgress = new Progress<RollbackStep>(step =>
+                {
+                    ((IProgress<RollbackStep>)progress).Report(step);
+                    if (step == RollbackStep.Loading) _close();
+                });
+                await manager.HotSwapAsync(item.Checkpoint, hotProgress);
+                RefreshList();
+                Say($"Готово — ты в точке «{item.Name}». Прежняя игра сохранена точкой «Перед откатом».");
+            }
+            else
+            {
+                await manager.RollbackAsync(item.Checkpoint, progress);
+                RefreshList();
+                Say($"Готово! Нажми «Продолжить» в главном меню — откроется «{item.Name}». Прежняя игра сохранена точкой «Перед откатом».");
+            }
         }
         catch (Exception ex) when (ex is CheckpointException or InvalidSaveException or IOException or UnauthorizedAccessException)
         {
