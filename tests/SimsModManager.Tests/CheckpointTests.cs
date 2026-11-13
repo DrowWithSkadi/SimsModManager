@@ -323,9 +323,9 @@ public class CheckpointTests
         Assert.Equal(1, scene.SlotByte);
     }
 
-    /// <summary>Игра при выходе в меню пишет автосохранение, и «Продолжить» открывает его — там тоже должна быть точка.</summary>
+    /// <summary>Автосохранение игры не трогаем: копия точки в нём задваивала сохранение в списке «Загрузить игру».</summary>
     [Fact]
-    public async Task RollbackAlsoReplacesGameAutosave()
+    public async Task RollbackLeavesGameAutosaveAlone()
     {
         using var scene = new MenuScene();
         using var game = await scene.StartGameAsync();
@@ -333,7 +333,7 @@ public class CheckpointTests
         await scene.Manager.MenuRollbackAsync(scene.Old);
 
         Assert.Equal(1, scene.SlotByte);
-        Assert.Equal(1, File.ReadAllBytes(Path.Combine(scene.Paths.Saves, SaveSlots.AutosaveFile))[100]);
+        Assert.Equal(9, File.ReadAllBytes(Path.Combine(scene.Paths.Saves, SaveSlots.AutosaveFile))[100]);
     }
 
     [Fact]

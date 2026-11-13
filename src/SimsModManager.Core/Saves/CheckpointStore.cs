@@ -160,12 +160,6 @@ public sealed class CheckpointStore(string folder)
         var target = Path.Combine(savesFolder, checkpoint.SlotFile);
         Replace(target, bytes);
 
-        // Выходя в главное меню, игра сама пишет автосохранение — и «Продолжить» открывает именно его,
-        // то есть игру «после», а не точку. Поэтому кладём точку и на место автосохранения.
-        // Текущая игра при этом не теряется: перед откатом она сохранена точкой «Перед откатом».
-        var autosave = Path.Combine(savesFolder, SaveSlots.AutosaveFile);
-        if (File.Exists(autosave) && !string.Equals(checkpoint.SlotFile, SaveSlots.AutosaveFile, StringComparison.OrdinalIgnoreCase))
-            Replace(autosave, bytes);
         return target;
     }
 
@@ -255,7 +249,11 @@ public static class SaveSlots
 {
     public static string FileName(long slotId) => $"Slot_{slotId:x8}.save";
 
-    /// <summary>Автосохранение игры: один общий слот, который она перезаписывает сама (в том числе при выходе в меню).</summary>
+    /// <summary>
+    /// Автосохранение игры: один общий слот, который она перезаписывает сама. Его не трогаем:
+    /// «Продолжить» всё равно берёт игру из памяти, а не из файла, а копия точки в этом слоте
+    /// только задваивала сохранение в списке «Загрузить игру».
+    /// </summary>
     public const string AutosaveFile = "Slot_ffffffff.save";
 
     /// <summary>Самое недавно записанное сохранение (без резервных .verN).</summary>

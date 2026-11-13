@@ -87,7 +87,8 @@ public sealed class CheckpointManager(SimsPaths paths, CheckpointStore store, He
 
     /// <summary>
     /// Откат без перезапуска игры: текущая игра сохраняется точкой «Перед откатом», игра выходит
-    /// в главное меню без сохранения, и файл сохранения возвращается к точке. Остаётся нажать «Продолжить».
+    /// в главное меню без сохранения, и файл сохранения возвращается к точке. Остаётся открыть его через «Загрузить игру»:
+    /// «Продолжить» в той же сессии берёт игру из памяти, а не из файла, и вернула бы игру без отката.
     /// Помощник 7+ отправляет игру в меню сам; если игра не послушалась — показываем окно с кнопкой (как в версии 6).
     /// </summary>
     public async Task MenuRollbackAsync(Checkpoint checkpoint, IProgress<RollbackStep>? progress = null, CancellationToken cancellation = default)
@@ -162,7 +163,7 @@ public sealed class CheckpointManager(SimsPaths paths, CheckpointStore store, He
         var response = await bridge.SendAsync("menu_dialog", TimeSpan.FromSeconds(10), new Dictionary<string, object?>
         {
             ["title"] = "Sims Mod Manager",
-            ["text"] = L.F("Вернуться к точке «{0}»?\n\nТекущая игра уже сохранена отдельной точкой «Перед откатом» — к ней тоже можно вернуться.\n\nИгра выйдет в главное меню. Там нажми «Продолжить».", checkpoint.Name),
+            ["text"] = L.F("Вернуться к точке «{0}»?\n\nТекущая игра уже сохранена отдельной точкой «Перед откатом» — к ней тоже можно вернуться.\n\nИгра выйдет в главное меню. Там нажми «Загрузить игру» и выбери своё сохранение.", checkpoint.Name),
             ["ok"] = L.T("Вернуться к точке"),
             ["cancel"] = L.T("Остаться"),
         }, cancellation);
