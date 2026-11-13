@@ -107,7 +107,7 @@ public sealed partial class OverlayViewModel : ObservableObject
         }
     }
 
-    /// <summary>После отката панель показывает «нажми Продолжить»; как только игра начала грузиться — прячем её.</summary>
+    /// <summary>После отката панель показывает, как загрузить точку; как только игра начала грузиться — прячем её.</summary>
     private bool _closeAfterMenu;
     private bool _sawMenu;
 
@@ -273,8 +273,8 @@ public sealed partial class OverlayViewModel : ObservableObject
                 });
                 await manager.MenuRollbackAsync(item.Checkpoint, menuProgress);
                 RefreshList();
-                Say(L.F("Готово! Нажми «Продолжить» — откроется «{0}». Прежняя игра сохранена точкой «Перед откатом».", item.Name));
-                // Панель остаётся с подсказкой, а когда игрок нажмёт «Продолжить» — уберётся сама
+                Say(L.F("Готово! В главном меню нажми «Загрузить игру», затем «Играть» у своего сохранения и выбери семью — откроется «{0}». Кнопка «Продолжить» не подойдёт: она вернёт игру без отката. Прежняя игра сохранена точкой «Перед откатом».", item.Name));
+                // Панель остаётся с подсказкой, а когда игра начнёт грузиться — уберётся сама
                 _closeAfterMenu = true;
                 _sawMenu = false;
             }
@@ -289,7 +289,7 @@ public sealed partial class OverlayViewModel : ObservableObject
             {
                 await manager.RollbackAsync(item.Checkpoint, progress);
                 RefreshList();
-                Say(L.F("Готово! Нажми «Продолжить» в главном меню — откроется «{0}». Прежняя игра сохранена точкой «Перед откатом».", item.Name));
+                Say(L.F("Готово! В главном меню нажми «Загрузить игру», затем «Играть» у своего сохранения и выбери семью — откроется «{0}». Кнопка «Продолжить» не подойдёт: она вернёт игру без отката. Прежняя игра сохранена точкой «Перед откатом».", item.Name));
             }
         }
         catch (RollbackCancelledException ex)

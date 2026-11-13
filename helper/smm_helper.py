@@ -21,7 +21,7 @@ import sims4.commands
 from clock import ClockSpeedMode, GameSpeedChangeSource
 from sims4.commands import CommandType
 
-VERSION = 7
+VERSION = 8
 PAUSE_REASON = 'SimsModManager'
 POLL_SECONDS = 0.25
 
@@ -213,6 +213,53 @@ def _show_menu_dialog(title, text, ok_text, cancel_text):
         _state['dialog'] = 'shown'
     _write_status()
     dialog.show_dialog(on_response=on_response)
+
+
+# ---------- опыт: загрузка сохранения прямо из игры ----------
+#
+# «Продолжить» в главном меню берёт игру из памяти, а «Загрузить игру» читает файл с диска — его
+# интерфейс вызывает у игры службу LoadSaveSlot. Кнопка окна умеет вызвать службу игры по имени
+# (UiSendMessageArgs.CALL_GAME_SERVICE). Проверяем из консоли (smm.loadtest), примет ли игра такой вызов
+# не из главного меню, а прямо из участка.
+
+def _show_load_dialog(slot_id):
+    from protocolbuffers import Dialog_pb2
+    from sims4.localization import LocalizationHelperTuning
+    from ui.ui_dialog import UiDialogOkCancel, UiDialogResponse, ButtonType
+
+    def raw(value):
+        return lambda *_, **__: LocalizationHelperTuning.get_raw_text(value)
+
+    request = UiDialogResponse.UiDialogUiRequest.SEND_UI_MESSAGE
+
+    class _LoadSlotDialog(UiDialogOkCancel):
+        @property
+        def responses(self):
+            return (
+                UiDialogResponse(dialog_response_id=ButtonType.DIALOG_RESPONSE_OK, text=self.text_ok,
+                                 ui_request=request, ui_message_name='LoadSaveSlot'),
+                UiDialogResponse(dialog_response_id=ButtonType.DIALOG_RESPONSE_CANCEL, text=self.text_cancel,
+                                 ui_request=UiDialogResponse.UiDialogUiRequest.NO_REQUEST),
+            )
+
+        def build_msg(self, **kwargs):
+            msg = super().build_msg(**kwargs)
+            for choice in msg.choices:
+                if choice.ui_request == request:
+                    args = choice.ui_message_args
+                    args.action = Dialog_pb2.UiSendMessageArgs.CALL_GAME_SERVICE
+                    args.name = 'LoadSaveSlot'
+                    parameter = args.parameters.add()
+                    parameter.name = 'slot_id'
+                    parameter.value.raw_int = slot_id
+            return msg
+
+    dialog = _LoadSlotDialog.TunableFactory().default(
+        services.active_sim_info(), title=raw('Sims Mod Manager'),
+        text=raw('Опыт: загрузить сохранение %s с диска прямо из игры?' % slot_id),
+        text_ok=raw('Загрузить'), text_cancel=raw('Отмена'))
+    dialog.show_dialog()
+    _log('Опыт: показал окно загрузки сохранения %s' % slot_id)
 
 
 def _run_cheat(line):
@@ -425,6 +472,17 @@ _install()
 
 
 # ---------- ручная проверка из консоли ----------
+
+@sims4.commands.Command('smm.loadtest', command_type=CommandType.Live)
+def _cmd_loadtest(slot_id: int = 2, _connection=None):
+    out = sims4.commands.CheatOutput(_connection)
+    try:
+        _show_load_dialog(slot_id)
+        out('SimsModManager: окно показано')
+    except Exception as e:
+        _log('Опыт с загрузкой не удался: %s' % e)
+        out('SimsModManager: ошибка — %s' % e)
+
 
 @sims4.commands.Command('smm.status', command_type=CommandType.Live)
 def _cmd_status(_connection=None):
