@@ -62,7 +62,7 @@
                 <Grid>
                     <StackPanel x:Name="HeaderTexts" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="0,0,16,0">
                         <TextBlock Text="Sims Mod Manager" Style="{StaticResource T.Title}" />
-                        <TextBlock Text="{Binding SimsFolder}" FontSize="11" Foreground="{DynamicResource B.TextMuted}" Margin="0,4,0,0"
+                        <TextBlock Text="{Binding SimsFolderShown}" FontSize="11" Foreground="{DynamicResource B.TextMuted}" Margin="0,4,0,0"
                                    TextTrimming="CharacterEllipsis" Visibility="{Binding HasGame, Converter={StaticResource BoolToVisibility}}" />
                     </StackPanel>
                     <Border Style="{StaticResource Tag}" Background="{DynamicResource B.AccentSubtle}" HorizontalAlignment="Right"

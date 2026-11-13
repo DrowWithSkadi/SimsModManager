@@ -205,6 +205,35 @@ public sealed class LocalizationTests
         Assert.Equal(2, raised);
     }
 
+    [Fact]
+    public void DisabledFoldersFollowLanguageOnlyWhenNew()
+    {
+        try
+        {
+            L.SetLanguage(L.English);
+            using (var t = new TestFolder())
+            {
+                var paths = new SimsPaths(t.Sims);
+                Assert.EndsWith("Mods (disabled)", paths.DisabledMods);
+                paths.EnsureCreated();
+                L.SetLanguage(L.Russian);
+                // папка уже есть — смена языка её не меняет
+                Assert.EndsWith("Mods (disabled)", paths.DisabledMods);
+            }
+            using (var t = new TestFolder())
+            {
+                Directory.CreateDirectory(Path.Combine(t.Sims, "Mods (выключенные)"));
+                L.SetLanguage(L.English);
+                Assert.EndsWith("Mods (выключенные)", new SimsPaths(t.Sims).DisabledMods);
+                Assert.EndsWith("Tray (disabled)", new SimsPaths(t.Sims).DisabledTray);
+            }
+        }
+        finally
+        {
+            L.SetLanguage(L.Russian);
+        }
+    }
+
     [Theory]
     [InlineData("ru-RU", "ru")]
     [InlineData("uk-UA", "ru")]

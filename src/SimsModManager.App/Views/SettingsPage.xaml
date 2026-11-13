@@ -82,7 +82,7 @@
                                     CornerRadius="6" Height="32" Padding="10,0" Margin="0,14,0,12">
                                 <StackPanel Orientation="Horizontal">
                                     <ctl:IconView Data="{StaticResource Icon.Folder}" Foreground="{DynamicResource B.Accent}" Margin="0,0,10,0" />
-                                    <TextBlock Text="{Binding SimsFolder}" FontSize="12" Foreground="{DynamicResource B.Text}" VerticalAlignment="Center"
+                                    <TextBlock Text="{Binding SimsFolderShown}" FontSize="12" Foreground="{DynamicResource B.Text}" VerticalAlignment="Center"
                                                TextTrimming="CharacterEllipsis" />
                                 </StackPanel>
                             </Border>

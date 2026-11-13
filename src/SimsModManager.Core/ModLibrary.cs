@@ -258,7 +258,7 @@ public sealed class ModLibrary(SimsPaths paths, IFileDeleter? deleter = null)
         return mod with { Name = clean, Path = target, Files = [target] };
     }
 
-    /// <summary>Выключенный участок/семья переезжает в «Tray (выключенные)» — игра его не видит.</summary>
+    /// <summary>Выключенный участок/семья переезжает в «Tray (выключенные)» / «Tray (disabled)» — игра его не видит.</summary>
     private ModItem SetTrayEnabled(ModItem mod, bool enabled)
     {
         paths.EnsureTrayCreated();
