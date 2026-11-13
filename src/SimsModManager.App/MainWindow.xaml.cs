@@ -61,6 +61,13 @@ public partial class MainWindow : Window
             return;
         }
 
+        if (e.Key == Key.F12 && Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift))
+        {
+            _ = vm.SaveScreenshotAsync(RootBorder);
+            e.Handled = true;
+            return;
+        }
+
         if (e.Key == Key.F && Keyboard.Modifiers == ModifierKeys.Control && vm.ShowLibraryChrome)
         {
             Library.FocusSearch();
