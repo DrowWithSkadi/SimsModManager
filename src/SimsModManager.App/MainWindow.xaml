@@ -1,5 +1,6 @@
 <Window x:Class="SimsModManager.App.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:l="clr-namespace:SimsModManager.App.Localization"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:SimsModManager.App.ViewModels"
         xmlns:views="clr-namespace:SimsModManager.App.Views"
@@ -48,11 +49,11 @@
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" WindowChrome.IsHitTestVisibleInChrome="True">
                     <Button Style="{StaticResource Btn.Caption}" Background="{DynamicResource B.Hover}" ctl:Btn.Icon="{StaticResource Icon.Minus}"
-                            Click="OnMinimize" ToolTip="Свернуть" />
+                            Click="OnMinimize" ToolTip="{l:Tr 'Свернуть'}" />
                     <Button x:Name="MaxButton" Style="{StaticResource Btn.Caption}" Background="{DynamicResource B.Hover}"
-                            ctl:Btn.Icon="{StaticResource Icon.Square}" Click="OnMaximize" ToolTip="Развернуть" />
+                            ctl:Btn.Icon="{StaticResource Icon.Square}" Click="OnMaximize" ToolTip="{l:Tr 'Развернуть'}" />
                     <Button Style="{StaticResource Btn.Caption}" Background="#C42B1C" ctl:Btn.Icon="{StaticResource Icon.X}"
-                            Click="OnClose" ToolTip="Закрыть" />
+                            Click="OnClose" ToolTip="{l:Tr 'Закрыть'}" />
                 </StackPanel>
             </Grid>
 
@@ -66,7 +67,7 @@
                     </StackPanel>
                     <Border Style="{StaticResource Tag}" Background="{DynamicResource B.AccentSubtle}" HorizontalAlignment="Right"
                             Visibility="{Binding HasGame, Converter={StaticResource InverseBoolToVisibility}}">
-                        <TextBlock Style="{StaticResource TagText}" Text="Первый запуск" Foreground="{DynamicResource B.Accent}" />
+                        <TextBlock Style="{StaticResource TagText}" Text="{l:Tr 'Первый запуск'}" Foreground="{DynamicResource B.Accent}" />
                     </Border>
                 </Grid>
             </Border>
@@ -88,14 +89,14 @@
                     <Grid>
                         <TextBlock Text="{Binding SelectionText}" FontSize="14" FontWeight="SemiBold" Foreground="{DynamicResource B.Accent}" VerticalAlignment="Center" />
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-                            <Button Style="{StaticResource Btn.Secondary}" ctl:Btn.Icon="{StaticResource Icon.Shirt}" Content="Настроить одежду"
+                            <Button Style="{StaticResource Btn.Secondary}" ctl:Btn.Icon="{StaticResource Icon.Shirt}" Content="{l:Tr 'Настроить одежду'}"
                                     Command="{Binding EditSelectedCommand}" Margin="0,0,8,0"
-                                    ToolTip="Пол, возраст и категории сразу для всей одежды из выбранных модов" />
-                            <Button Style="{StaticResource Btn.Primary}" Content="Включить" Command="{Binding EnableSelectedCommand}" />
-                            <Button Style="{StaticResource Btn.Secondary}" Content="Выключить" Margin="8,0,0,0" Command="{Binding DisableSelectedCommand}" />
-                            <Button Style="{StaticResource Btn.Danger}" ctl:Btn.Icon="{StaticResource Icon.Trash2}" Content="Удалить" Margin="8,0,0,0"
+                                    ToolTip="{l:Tr 'Пол, возраст и категории сразу для всей одежды из выбранных модов'}" />
+                            <Button Style="{StaticResource Btn.Primary}" Content="{l:Tr 'Включить'}" Command="{Binding EnableSelectedCommand}" />
+                            <Button Style="{StaticResource Btn.Secondary}" Content="{l:Tr 'Выключить'}" Margin="8,0,0,0" Command="{Binding DisableSelectedCommand}" />
+                            <Button Style="{StaticResource Btn.Danger}" ctl:Btn.Icon="{StaticResource Icon.Trash2}" Content="{l:Tr 'Удалить'}" Margin="8,0,0,0"
                                     Command="{Binding DeleteSelectedCommand}" />
-                            <Button Style="{StaticResource Btn.Secondary}" Content="Снять выделение" Margin="8,0,0,0" Command="{Binding ClearSelectionCommand}" />
+                            <Button Style="{StaticResource Btn.Secondary}" Content="{l:Tr 'Снять выделение'}" Margin="8,0,0,0" Command="{Binding ClearSelectionCommand}" />
                         </StackPanel>
                     </Grid>
                 </Border>
@@ -131,7 +132,7 @@
                                         <Setter Property="Text" Value="{Binding Editor.ChangeSummary}" />
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding IsCardPage}" Value="True">
-                                        <Setter Property="Text" Value="Изменения применяются к файлам в папке Mods" />
+                                        <Setter Property="Text" Value="{l:Tr 'Изменения применяются к файлам в папке Mods'}" />
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
@@ -140,7 +141,7 @@
                 </StackPanel>
                 <TextBlock Text="{Binding SummaryText}" FontSize="11" Foreground="{DynamicResource B.TextSecondary}" HorizontalAlignment="Right"
                            VerticalAlignment="Center" Margin="0,0,14,0" Visibility="{Binding HasGame, Converter={StaticResource BoolToVisibility}}" />
-                <TextBlock Text="Данные остаются на вашем компьютере" FontSize="11" Foreground="{DynamicResource B.TextSecondary}" HorizontalAlignment="Right"
+                <TextBlock Text="{l:Tr 'Данные остаются на вашем компьютере'}" FontSize="11" Foreground="{DynamicResource B.TextSecondary}" HorizontalAlignment="Right"
                            VerticalAlignment="Center" Margin="0,0,14,0" Visibility="{Binding HasGame, Converter={StaticResource InverseBoolToVisibility}}" />
             </Grid>
             </Border>
@@ -167,12 +168,12 @@
                         <ctl:IconView Data="{StaticResource Icon.Download}" Foreground="{DynamicResource B.Accent}" Width="32" Height="32"
                                       b:Anim.Bob="{Binding IsDragOver}" />
                     </Grid>
-                    <TextBlock Text="Отпустите, чтобы установить" FontSize="24" FontWeight="SemiBold" Foreground="{DynamicResource B.Text}"
+                    <TextBlock Text="{l:Tr 'Отпустите, чтобы установить'}" FontSize="24" FontWeight="SemiBold" Foreground="{DynamicResource B.Text}"
                                HorizontalAlignment="Center" Margin="0,10,0,12" />
                     <Border Style="{StaticResource Tag}" Background="{DynamicResource B.AccentSubtle}" HorizontalAlignment="Center" Height="22" Padding="10,0">
                         <TextBlock Style="{StaticResource TagText}" Text="{Binding DragCountText}" Foreground="{DynamicResource B.Accent}" FontSize="11" />
                     </Border>
-                    <TextBlock Text="Моды — в Mods, дома и персонажи — в Tray" Style="{StaticResource T.Secondary}" HorizontalAlignment="Center" Margin="0,12,0,0" />
+                    <TextBlock Text="{l:Tr 'Моды — в Mods, дома и персонажи — в Tray'}" Style="{StaticResource T.Secondary}" HorizontalAlignment="Center" Margin="0,12,0,0" />
                 </StackPanel>
             </Grid>
 
@@ -186,7 +187,7 @@
                     <StackPanel>
                         <StackPanel Orientation="Horizontal">
                             <ctl:IconView Data="{StaticResource Icon.PackageOpen}" Foreground="{DynamicResource B.Accent}" Width="22" Height="22" />
-                            <TextBlock Text="Устанавливаю моды…" FontSize="20" FontWeight="SemiBold" Foreground="{DynamicResource B.Text}" Margin="12,0,0,0" />
+                            <TextBlock Text="{l:Tr 'Устанавливаю моды…'}" FontSize="20" FontWeight="SemiBold" Foreground="{DynamicResource B.Text}" Margin="12,0,0,0" />
                         </StackPanel>
                         <Grid Margin="0,20,0,8">
                             <TextBlock Text="{Binding InstallCountText}" Style="{StaticResource T.Secondary}" />
@@ -194,7 +195,7 @@
                         </Grid>
                         <ProgressBar Style="{StaticResource Progress}" Maximum="100" b:Anim.SmoothValue="{Binding InstallPercent}" />
                         <TextBlock Text="{Binding InstallCurrent}" Style="{StaticResource T.Secondary}" FontSize="11" Margin="0,10,0,0" TextTrimming="CharacterEllipsis" />
-                        <TextBlock Text="Распаковываем архивы и раскладываем файлы по папкам. Это займёт несколько секунд." Style="{StaticResource T.Muted}"
+                        <TextBlock Text="{l:Tr 'Распаковываем архивы и раскладываем файлы по папкам. Это займёт несколько секунд.'}" Style="{StaticResource T.Muted}"
                                    TextWrapping="Wrap" Margin="0,16,0,0" />
                     </StackPanel>
                 </Border>
@@ -234,7 +235,7 @@
                             </ctl:IconView>
                             <TextBlock Grid.Column="1" Text="{Binding Title}" FontSize="17" FontWeight="SemiBold" Foreground="{DynamicResource B.Text}" TextWrapping="Wrap" />
                             <Button Grid.Column="2" Style="{StaticResource Btn.IconGhost}" ctl:Btn.Icon="{StaticResource Icon.X}" Command="{Binding CancelCommand}"
-                                    Margin="8,-4,-6,0" VerticalAlignment="Top" ToolTip="Закрыть (Esc)" />
+                                    Margin="8,-4,-6,0" VerticalAlignment="Top" ToolTip="{l:Tr 'Закрыть (Esc)'}" />
                         </Grid>
                         <TextBlock Text="{Binding Message}" Style="{StaticResource T.Secondary}" TextWrapping="Wrap" LineHeight="18" Margin="0,14,0,0"
                                    Visibility="{Binding Message, Converter={StaticResource NullToVisibility}}" />
@@ -272,7 +273,7 @@
                                    Visibility="{Binding HasMessage2, Converter={StaticResource BoolToVisibility}}" />
 
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
-                            <TextBlock Text="Скопировано" Style="{StaticResource T.Muted}" Foreground="{DynamicResource B.Accent}" VerticalAlignment="Center"
+                            <TextBlock Text="{l:Tr 'Скопировано'}" Style="{StaticResource T.Muted}" Foreground="{DynamicResource B.Accent}" VerticalAlignment="Center"
                                        Margin="0,0,12,0" Visibility="{Binding Copied, Converter={StaticResource BoolToVisibility}}" />
                             <Button Style="{StaticResource Btn.Secondary}" Content="{Binding ExtraText}" Command="{Binding ExtraCommand}" Margin="0,0,8,0"
                                     Visibility="{Binding HasExtra, Converter={StaticResource BoolToVisibility}}" />

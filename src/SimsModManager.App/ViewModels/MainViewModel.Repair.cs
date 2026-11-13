@@ -1,6 +1,7 @@
 using System.IO;
 using CommunityToolkit.Mvvm.Input;
 using SimsModManager.Core.Health;
+using SimsModManager.Core;
 
 namespace SimsModManager.App.ViewModels;
 
@@ -46,13 +47,13 @@ public sealed partial class MainViewModel
             {
                 case HealthIssueKind.TooDeep:
                     plan.TooDeep.Add(issue);
-                    plan.Lines.Add($"Переложу файлы {Names(rows)} повыше — сейчас игра их не видит");
+                    plan.Lines.Add(L.F("Переложу файлы {0} повыше — сейчас игра их не видит", Names(rows)));
                     plan.Resolved.Add(issue);
                     break;
 
                 case HealthIssueKind.ArchiveInMods when issue.Issue.FilePath is { } archive && File.Exists(archive):
                     plan.Archives.Add(archive);
-                    plan.Lines.Add($"Распакую и установлю архив «{Path.GetFileName(archive)}»");
+                    plan.Lines.Add(L.F("Распакую и установлю архив «{0}»", Path.GetFileName(archive)));
                     plan.Resolved.Add(issue);
                     break;
 
@@ -63,19 +64,19 @@ public sealed partial class MainViewModel
                                 ?? rows.Where(r => r.Mod.IsEnabled).OrderBy(r => r.Mod.Model.ModifiedAt).Select(r => r.Mod).FirstOrDefault();
                     if (extra is not null && rows.Count(r => r.Mod.IsEnabled) >= 2)
                     {
-                        DisableMod(extra, $"Выключу лишнюю копию «{extra.Name}» — оставлю более новую");
+                        DisableMod(extra, L.F("Выключу лишнюю копию «{0}» — оставлю более новую", extra.Name));
                         plan.Resolved.Add(issue);
                     }
                     break;
                 }
 
                 case HealthIssueKind.Broken:
-                    foreach (var row in rows) DisableMod(row.Mod, $"Выключу повреждённый мод «{row.Name}» — его стоит скачать заново");
+                    foreach (var row in rows) DisableMod(row.Mod, L.F("Выключу повреждённый мод «{0}» — его стоит скачать заново", row.Name));
                     plan.Resolved.Add(issue);
                     break;
 
                 case HealthIssueKind.CausesErrors:
-                    foreach (var row in rows) DisableMod(row.Mod, $"Выключу «{row.Name}» — из-за него ошибки в игре");
+                    foreach (var row in rows) DisableMod(row.Mod, L.F("Выключу «{0}» — из-за него ошибки в игре", row.Name));
                     plan.Resolved.Add(issue);
                     break;
 
@@ -83,10 +84,10 @@ public sealed partial class MainViewModel
                     // Конфликт часто бывает нарочным (мод правит другой мод) — трогаем, только если ясно, что лишнее
                     if (rows.FirstOrDefault(r => r.IsSuggested)?.Mod is { } suggested)
                     {
-                        DisableMod(suggested, $"Выключу «{suggested.Name}» — он мешает {Names(rows.Where(r => r.Mod != suggested))}");
+                        DisableMod(suggested, L.F("Выключу «{0}» — он мешает {1}", suggested.Name, Names(rows.Where(r => r.Mod != suggested))));
                         plan.Resolved.Add(issue);
                     }
-                    else plan.Manual.Add($"{issue.Title} — выберите сами, какой оставить");
+                    else plan.Manual.Add(L.F("{0} — выберите сами, какой оставить", issue.Title));
                     break;
 
                 case HealthIssueKind.UnknownErrors:
@@ -98,14 +99,14 @@ public sealed partial class MainViewModel
         if (includeOutdated && HasGameUpdate)
         {
             plan.OutdatedScripts = true;
-            plan.Lines.Add($"Выключу {Text.Plural(OutdatedScriptCount, "скрипт", "скрипта", "скриптов")}, которые могли сломаться после обновления игры");
+            plan.Lines.Add(L.F("Выключу {0}, которые могли сломаться после обновления игры", L.P(OutdatedScriptCount, "скрипт|скрипта|скриптов")));
         }
         return plan;
 
         static string Names(IEnumerable<HealthModRow> rows)
         {
             var names = rows.Select(r => $"«{r.Name}»").ToList();
-            return names.Count <= 2 ? string.Join(" и ", names) : $"{names[0]} и ещё {names.Count - 1}";
+            return names.Count <= 2 ? string.Join(L.T(" и "), names) : L.F("{0} и ещё {1}", names[0], names.Count - 1);
         }
     }
 
@@ -120,26 +121,26 @@ public sealed partial class MainViewModel
         if (plan.IsEmpty)
         {
             if (plan.HasUnknownErrors) await StartBisect();
-            else ShowToast(plan.Manual.Count > 0 ? "Автоматически тут ничего не исправить — нужен ваш выбор" : "Исправлять нечего", Icons.Info);
+            else ShowToast(plan.Manual.Count > 0 ? L.T("Автоматически тут ничего не исправить — нужен ваш выбор") : L.T("Исправлять нечего"), Icons.Info);
             return false;
         }
 
         var lines = plan.Lines.Take(8).Select(l => "• " + l).ToList();
-        if (plan.Lines.Count > 8) lines.Add($"• и ещё {plan.Lines.Count - 8}");
-        var notes = new List<string> { "Моды не удаляются — только выключаются. Вернуть всё можно одной кнопкой «Отменить»." };
-        if (plan.Manual.Count > 0) notes.Add("Не трону: " + string.Join("; ", plan.Manual.Take(3)) + ".");
-        if (plan.HasUnknownErrors) notes.Add("Ошибки без явного виновника потом можно найти автоматически — «Найти виновника».");
+        if (plan.Lines.Count > 8) lines.Add(L.F("• и ещё {0}", plan.Lines.Count - 8));
+        var notes = new List<string> { L.T("Моды не удаляются — только выключаются. Вернуть всё можно одной кнопкой «Отменить».") };
+        if (plan.Manual.Count > 0) notes.Add(L.T("Не трону: ") + string.Join("; ", plan.Manual.Take(3)) + ".");
+        if (plan.HasUnknownErrors) notes.Add(L.T("Ошибки без явного виновника потом можно найти автоматически — «Найти виновника»."));
 
         var answer = await ShowDialogAsync(new DialogViewModel
         {
-            Title = title ?? "Вот что я исправлю",
+            Title = title ?? L.T("Вот что я исправлю"),
             Icon = (System.Windows.Media.Geometry)System.Windows.Application.Current.FindResource("Icon.Wrench"),
             Message = string.Join(Environment.NewLine, lines),
             Message2 = string.Join(Environment.NewLine, notes),
-            PrimaryText = "Исправить",
-            SecondaryText = "Отмена",
+            PrimaryText = L.T("Исправить"),
+            SecondaryText = L.T("Отмена"),
         });
-        if (answer != DialogResult.Primary || !await EnsureGameClosedAsync("исправить моды")) return false;
+        if (answer != DialogResult.Primary || !await EnsureGameClosedAsync(L.T("исправить моды"))) return false;
 
         var library = _library;
         var disabled = new List<ModItemViewModel>();
@@ -178,12 +179,12 @@ public sealed partial class MainViewModel
 
         var fixedCount = plan.Lines.Count;
         ShowToast(failed > 0
-                ? $"Исправлено, но {Text.Plural(failed, "файл", "файла", "файлов")} заняты другой программой"
-                : $"Готово: {Text.Plural(fixedCount, "исправление", "исправления", "исправлений")}",
+                ? L.F("Исправлено, но {0} заняты другой программой", L.P(failed, "файл|файла|файлов"))
+                : L.F("Готово: {0}", L.P(fixedCount, "исправление|исправления|исправлений")),
             Icons.Check,
             undo: disabled.Count == 0 ? null : () => _ = UndoRepairAsync(disabled),
             seconds: 8);
-        SetLastAction("моды исправлены автоматически");
+        SetLastAction(L.T("моды исправлены автоматически"));
 
         // 3. Архивы — обычной установкой (сама покажет итог)
         if (plan.Archives.Count > 0)
@@ -213,7 +214,7 @@ public sealed partial class MainViewModel
 
     private async Task UndoRepairAsync(IReadOnlyList<ModItemViewModel> disabled)
     {
-        if (_library is null || !await EnsureGameClosedAsync("вернуть моды")) return;
+        if (_library is null || !await EnsureGameClosedAsync(L.T("вернуть моды"))) return;
         var library = _library;
         var back = disabled.Where(m => !m.IsEnabled && Mods.Contains(m)).ToList();
         var results = await Task.Run(() => back.Select(m =>
@@ -224,7 +225,7 @@ public sealed partial class MainViewModel
         for (var i = 0; i < back.Count; i++)
             if (results[i] is { } updated) back[i].ReplaceModel(updated);
         UpdateSummary();
-        ShowToast("Моды включены обратно", Icons.Check);
+        ShowToast(L.T("Моды включены обратно"), Icons.Check);
         _ = RunHealthCheck();
     }
 }

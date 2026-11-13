@@ -5,7 +5,7 @@ namespace SimsModManager.Core.Saves;
 public class CheckpointException(string message) : Exception(message);
 
 /// <summary>Игрок нажал «Остаться» в окне игры.</summary>
-public sealed class RollbackCancelledException() : CheckpointException("Откат отменён — игра продолжается");
+public sealed class RollbackCancelledException() : CheckpointException(L.T("Откат отменён — игра продолжается"));
 
 public enum RollbackStep
 {
@@ -53,20 +53,20 @@ public sealed class CheckpointManager(SimsPaths paths, CheckpointStore store, He
         if (status.State == HelperState.Live)
         {
             var response = await bridge.SendAsync("save", SaveTimeout, cancellation: cancellation);
-            if (!response.Ok) throw new CheckpointException($"Игра не сохранилась: {response.Error}");
+            if (!response.Ok) throw new CheckpointException(L.F("Игра не сохранилась: {0}", response.Error));
             var slotId = (long?)response.Result?["slot_id"] ?? status.SlotId
-                ?? throw new CheckpointException("Игра не сказала, какое сохранение открыто");
+                ?? throw new CheckpointException(L.T("Игра не сказала, какое сохранение открыто"));
             gameName = (string?)response.Result?["slot_name"] ?? gameName;
             slotPath = Path.Combine(paths.Saves, SaveSlots.FileName(slotId));
         }
         else
         {
             if (_isGameRunning() && status.State != HelperState.Menu)
-                throw new CheckpointException("Игра открыта, но помощник не отвечает — сохрани игру сама и попробуй ещё раз, или проверь, что скриптовые моды включены");
-            slotPath = SaveSlots.MostRecent(paths.Saves) ?? throw new CheckpointException("Сохранений пока нет");
+                throw new CheckpointException(L.T("Игра открыта, но помощник не отвечает — сохрани игру сама и попробуй ещё раз, или проверь, что скриптовые моды включены"));
+            slotPath = SaveSlots.MostRecent(paths.Saves) ?? throw new CheckpointException(L.T("Сохранений пока нет"));
         }
 
-        if (!File.Exists(slotPath)) throw new CheckpointException("Файл сохранения не найден");
+        if (!File.Exists(slotPath)) throw new CheckpointException(L.T("Файл сохранения не найден"));
         var checkpoint = await Task.Run(() => store.Create(slotPath, name, kind, gameName,
             skipIfUnchanged: kind != CheckpointKind.Manual), cancellation);
         await Task.Run(() => store.ApplyRetention(Retention), cancellation);
@@ -91,7 +91,7 @@ public sealed class CheckpointManager(SimsPaths paths, CheckpointStore store, He
     public async Task MenuRollbackAsync(Checkpoint checkpoint, IProgress<RollbackStep>? progress = null, CancellationToken cancellation = default)
     {
         if (!CanRollbackViaMenu)
-            throw new CheckpointException("Помощник не отвечает — нельзя безопасно сохранить игру перед откатом");
+            throw new CheckpointException(L.T("Помощник не отвечает — нельзя безопасно сохранить игру перед откатом"));
 
         progress?.Report(RollbackStep.SavingCurrent);
         await MakeAsync("", CheckpointKind.BeforeRollback, cancellation);
@@ -99,11 +99,11 @@ public sealed class CheckpointManager(SimsPaths paths, CheckpointStore store, He
         var response = await bridge.SendAsync("menu_dialog", TimeSpan.FromSeconds(10), new Dictionary<string, object?>
         {
             ["title"] = "Sims Mod Manager",
-            ["text"] = $"Вернуться к точке «{checkpoint.Name}»?\n\nТекущая игра уже сохранена отдельной точкой «Перед откатом» — к ней тоже можно вернуться.\n\nИгра выйдет в главное меню. Там нажми «Продолжить».",
-            ["ok"] = "Вернуться к точке",
-            ["cancel"] = "Остаться",
+            ["text"] = L.F("Вернуться к точке «{0}»?\n\nТекущая игра уже сохранена отдельной точкой «Перед откатом» — к ней тоже можно вернуться.\n\nИгра выйдет в главное меню. Там нажми «Продолжить».", checkpoint.Name),
+            ["ok"] = L.T("Вернуться к точке"),
+            ["cancel"] = L.T("Остаться"),
         }, cancellation);
-        if (!response.Ok) throw new CheckpointException($"Игра не показала окно: {response.Error}");
+        if (!response.Ok) throw new CheckpointException(L.F("Игра не показала окно: {0}", response.Error));
 
         progress?.Report(RollbackStep.WaitingForConfirm);
         while (true)
@@ -136,7 +136,7 @@ public sealed class CheckpointManager(SimsPaths paths, CheckpointStore store, He
     {
         var status = bridge.ReadStatus();
         if (status.State != HelperState.Live)
-            throw new CheckpointException("Помощник не отвечает — нельзя безопасно сохранить игру перед откатом");
+            throw new CheckpointException(L.T("Помощник не отвечает — нельзя безопасно сохранить игру перед откатом"));
 
         progress?.Report(RollbackStep.SavingCurrent);
         await MakeAsync("", CheckpointKind.BeforeRollback, cancellation);
@@ -144,14 +144,14 @@ public sealed class CheckpointManager(SimsPaths paths, CheckpointStore store, He
         // Игра уже сохранена и копия у нас — закрывать безопасно
         progress?.Report(RollbackStep.ClosingGame);
         if (!await CloseGame(TimeSpan.FromSeconds(20)))
-            throw new CheckpointException("Не получилось закрыть игру. Закрой её сама — и нажми «Откатить» ещё раз");
+            throw new CheckpointException(L.T("Не получилось закрыть игру. Закрой её сама — и нажми «Откатить» ещё раз"));
 
         progress?.Report(RollbackStep.Restoring);
         await Task.Run(() => store.Restore(checkpoint, paths.Saves), cancellation);
 
         progress?.Report(RollbackStep.Launching);
         if (LaunchGame is null || !LaunchGame())
-            throw new CheckpointException("Сохранение возвращено к точке, но игру не удалось запустить — запусти её сама и нажми «Продолжить»");
+            throw new CheckpointException(L.T("Сохранение возвращено к точке, но игру не удалось запустить — запусти её сама и нажми «Продолжить»"));
         progress?.Report(RollbackStep.Done);
     }
 
@@ -204,7 +204,7 @@ public sealed class CheckpointManager(SimsPaths paths, CheckpointStore store, He
         else
         {
             if (_isGameRunning() && status.State != HelperState.Menu)
-                throw new CheckpointException("Игра открыта, но помощник не отвечает — выйди из игры и повтори откат");
+                throw new CheckpointException(L.T("Игра открыта, но помощник не отвечает — выйди из игры и повтори откат"));
             if (File.Exists(current))
             {
                 progress?.Report(RollbackStep.SavingCurrent);

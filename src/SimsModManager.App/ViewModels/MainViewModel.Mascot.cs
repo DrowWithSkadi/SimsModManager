@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
+using SimsModManager.Core;
 
 namespace SimsModManager.App.ViewModels;
 
@@ -63,31 +64,31 @@ public sealed partial class MainViewModel
 
         if (HasHealthBanner)
             return CanFixAll
-                ? new("health", NoticeKind.Error, "Кажется, с модами беда!", HealthBannerText + ". Могу исправить сам.",
-                    "Исправить всё", FixAllCommand, "Посмотреть", OpenHealthCommand, "Не напоминать", DismissHealthIssuesCommand)
-                : new("health", NoticeKind.Error, "Кажется, с модами беда!", HealthBannerText,
-                    "Посмотреть", OpenHealthCommand, "Не напоминать", DismissHealthIssuesCommand);
+                ? new("health", NoticeKind.Error, L.T("Кажется, с модами беда!"), HealthBannerText + L.T(". Могу исправить сам."),
+                    L.T("Исправить всё"), FixAllCommand, L.T("Посмотреть"), OpenHealthCommand, L.T("Не напоминать"), DismissHealthIssuesCommand)
+                : new("health", NoticeKind.Error, L.T("Кажется, с модами беда!"), HealthBannerText,
+                    L.T("Посмотреть"), OpenHealthCommand, L.T("Не напоминать"), DismissHealthIssuesCommand);
 
         if (HasOptionsWarning)
             return new("options", NoticeKind.Warning, OptionsWarning + "!",
-                OptionsWarningDetail ?? "Игра их сейчас не загрузит. Включить?",
-                "Включить моды", FixOptionsCommand);
+                OptionsWarningDetail ?? L.T("Игра их сейчас не загрузит. Включить?"),
+                L.T("Включить моды"), FixOptionsCommand);
 
         if (HasGameUpdate)
-            return new("game-update", NoticeKind.Warning, "Игра обновилась!", GameUpdateText,
-                "Выключить их", DisableOutdatedScriptsCommand, "Всё работает", AcknowledgeGameUpdateCommand);
+            return new("game-update", NoticeKind.Warning, L.T("Игра обновилась!"), GameUpdateText,
+                L.T("Выключить их"), DisableOutdatedScriptsCommand, L.T("Всё работает"), AcknowledgeGameUpdateCommand);
 
         if (HasBisect)
-            return new("bisect", NoticeKind.Info, "Ищем мод, который мешает игре", BisectStepText,
-                "Продолжить", OpenHealthCommand);
+            return new("bisect", NoticeKind.Info, L.T("Ищем мод, который мешает игре"), BisectStepText,
+                L.T("Продолжить"), OpenHealthCommand);
 
         if (HasDuplicates)
-            return new("duplicates", NoticeKind.Warning, "Нашёл одинаковые моды!", DuplicateText,
-                "Показать", ShowDuplicatesCommand);
+            return new("duplicates", NoticeKind.Warning, L.T("Нашёл одинаковые моды!"), DuplicateText,
+                L.T("Показать"), ShowDuplicatesCommand);
 
         if (IsGameRunning)
-            return new("game-running", NoticeKind.Info, "Игра сейчас запущена",
-                "Изменения применятся, когда перезапустишь игру.");
+            return new("game-running", NoticeKind.Info, L.T("Игра сейчас запущена"),
+                L.T("Изменения применятся, когда перезапустишь игру."));
 
         return null;
     }

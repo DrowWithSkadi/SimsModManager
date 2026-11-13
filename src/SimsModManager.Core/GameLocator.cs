@@ -73,8 +73,8 @@ public static class GameLocator
         foreach (var docs in GetDocumentRoots().Where(Directory.Exists).Distinct(StringComparer.OrdinalIgnoreCase))
         {
             var label = docs.Contains("OneDrive", StringComparison.OrdinalIgnoreCase)
-                ? "Документы OneDrive"
-                : "Документы на этом компьютере";
+                ? L.T("Документы OneDrive")
+                : L.T("Документы на этом компьютере");
             var ea = System.IO.Path.Combine(docs, "Electronic Arts");
             var found = false;
             if (Directory.Exists(ea))

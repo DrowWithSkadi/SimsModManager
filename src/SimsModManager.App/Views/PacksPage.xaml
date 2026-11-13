@@ -1,13 +1,14 @@
 <UserControl x:Class="SimsModManager.App.Views.PacksPage"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:l="clr-namespace:SimsModManager.App.Localization"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:ctl="clr-namespace:SimsModManager.App.Controls">
     <!-- Вкладка «Дополнения» — пока пустая, наполним позже -->
     <Grid Margin="24,20,24,16">
         <StackPanel Orientation="Horizontal" VerticalAlignment="Top">
-            <Button Style="{StaticResource Btn.Icon}" ctl:Btn.Icon="{StaticResource Icon.ArrowLeft}" ToolTip="Назад (Esc)" VerticalAlignment="Top"
+            <Button Style="{StaticResource Btn.Icon}" ctl:Btn.Icon="{StaticResource Icon.ArrowLeft}" ToolTip="{l:Tr 'Назад (Esc)'}" VerticalAlignment="Top"
                     Margin="0,4,16,0" Command="{Binding GoLibraryCommand}" />
-            <TextBlock Text="Дополнения" Style="{StaticResource T.Page}" />
+            <TextBlock Text="{l:Tr 'Дополнения'}" Style="{StaticResource T.Page}" />
         </StackPanel>
     </Grid>
 </UserControl>

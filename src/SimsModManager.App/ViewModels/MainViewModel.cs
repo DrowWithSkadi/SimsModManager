@@ -64,6 +64,7 @@ public sealed partial class MainViewModel : ObservableObject
         InitGameFolder();
         HookMascot();
         HookPlay();
+        HookLanguage();
         ScanPacks();
         InitOverlay();
     }
@@ -175,12 +176,12 @@ public sealed partial class MainViewModel : ObservableObject
             _settings.SimsFolder = found;
             SaveSettings();
             UseFolder(found);
-            ShowToast("Папка игры найдена", Icons.Check);
+            ShowToast(L.T("Папка игры найдена"), Icons.Check);
         }
         else
         {
             Candidates = GameLocator.GetCandidates();
-            ShowToast("Папка игры по-прежнему не найдена", Icons.Info);
+            ShowToast(L.T("Папка игры по-прежнему не найдена"), Icons.Info);
         }
     }
 
@@ -192,11 +193,11 @@ public sealed partial class MainViewModel : ObservableObject
         {
             await ShowDialogAsync(new DialogViewModel
             {
-                Title = "Такой папки ещё нет",
+                Title = L.T("Такой папки ещё нет"),
                 Icon = Icons.FolderSearch,
-                Message = "Запустите The Sims 4 один раз и закройте игру — она создаст папку сама. Или укажите другую папку.",
+                Message = L.T("Запустите The Sims 4 один раз и закройте игру — она создаст папку сама. Или укажите другую папку."),
                 PathText = candidate.Path,
-                PrimaryText = "Понятно",
+                PrimaryText = L.T("Понятно"),
             });
             return;
         }
@@ -208,7 +209,7 @@ public sealed partial class MainViewModel : ObservableObject
     {
         var dialog = new Microsoft.Win32.OpenFolderDialog
         {
-            Title = "Выберите папку The Sims 4 (внутри «Документы\\Electronic Arts»)",
+            Title = L.T("Выберите папку The Sims 4 (внутри «Документы\\Electronic Arts»)"),
             InitialDirectory = SimsFolder ?? Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments),
         };
         if (dialog.ShowDialog() != true) return;
@@ -225,12 +226,12 @@ public sealed partial class MainViewModel : ObservableObject
         {
             var answer = await ShowDialogAsync(new DialogViewModel
             {
-                Title = "Это папка The Sims 4?",
+                Title = L.T("Это папка The Sims 4?"),
                 Icon = Icons.FolderSearch,
-                Message = "В ней нет Mods, saves или Options.ini. Всё равно использовать?",
+                Message = L.T("В ней нет Mods, saves или Options.ini. Всё равно использовать?"),
                 PathText = folder,
-                PrimaryText = "Да",
-                SecondaryText = "Нет",
+                PrimaryText = L.T("Да"),
+                SecondaryText = L.T("Нет"),
             });
             if (answer != DialogResult.Primary) return;
         }
@@ -289,7 +290,7 @@ public sealed partial class MainViewModel : ObservableObject
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             IsLoading = false;
-            ShowToast("Не удалось прочитать папку Mods: " + ex.Message, Icons.Alert);
+            ShowToast(L.T("Не удалось прочитать папку Mods: ") + ex.Message, Icons.Alert);
             return;
         }
         if (library != _library) return; // пока читали — сменили папку
@@ -432,14 +433,14 @@ public sealed partial class MainViewModel : ObservableObject
 
     public string TypeFilterLabel => TypeFilter switch
     {
-        TypeFilter.Clothing => "Тип: одежда",
-        TypeFilter.Hair => "Тип: причёски",
-        TypeFilter.Makeup => "Тип: макияж",
-        TypeFilter.Objects => "Тип: объекты",
-        TypeFilter.Scripts => "Тип: скрипты",
-        TypeFilter.Other => "Тип: другое",
-        TypeFilter.Tray => "Тип: дома и семьи",
-        _ => "Тип: все",
+        TypeFilter.Clothing => L.T("Тип: одежда"),
+        TypeFilter.Hair => L.T("Тип: причёски"),
+        TypeFilter.Makeup => L.T("Тип: макияж"),
+        TypeFilter.Objects => L.T("Тип: объекты"),
+        TypeFilter.Scripts => L.T("Тип: скрипты"),
+        TypeFilter.Other => L.T("Тип: другое"),
+        TypeFilter.Tray => L.T("Тип: дома и семьи"),
+        _ => L.T("Тип: все"),
     };
 
     [ObservableProperty] private bool _isTypeMenuOpen;
@@ -514,9 +515,9 @@ public sealed partial class MainViewModel : ObservableObject
 
     public string SortLabel => SortBy switch
     {
-        "date" => "По дате",
-        "size" => "По размеру",
-        _ => "По имени",
+        "date" => L.T("По дате"),
+        "size" => L.T("По размеру"),
+        _ => L.T("По имени"),
     };
 
     [RelayCommand]
@@ -565,7 +566,7 @@ public sealed partial class MainViewModel : ObservableObject
     private int _selectedCount;
 
     public bool IsMultiSelect => SelectedCount > 1;
-    public string SelectionText => "Выбрано " + SelectedCount;
+    public string SelectionText => L.T("Выбрано ") + SelectedCount;
 
     public void UpdateSelection(IEnumerable<ModItemViewModel> selected) =>
         SelectedCount = selected.Count();
@@ -595,18 +596,18 @@ public sealed partial class MainViewModel : ObservableObject
     private void UpdateSummary()
     {
         var enabled = Mods.Count(m => m.IsEnabled);
-        SummaryText = $"{Text.Plural(Mods.Count, "мод", "мода", "модов")} · включено {enabled}";
+        SummaryText = L.F("{0} · включено {1}", L.P(Mods.Count, "мод|мода|модов"), enabled);
 
         var visible = ModsView.Cast<object>().Count();
         var arrow = SortDescending ? "↓" : "↑";
-        var sortWord = SortBy switch { "date" => "по дате", "size" => "по размеру", _ => "по имени" };
-        ListHeaderText = $"{Text.Plural(visible, "мод", "мода", "модов")} · {sortWord} {arrow}";
+        var sortWord = SortBy switch { "date" => L.T("по дате"), "size" => L.T("по размеру"), _ => L.T("по имени") };
+        ListHeaderText = $"{L.P(visible, "мод|мода|модов")} · {sortWord} {arrow}";
 
         HasNoMods = !IsLoading && Mods.Count == 0;
         HasNoResults = !IsLoading && Mods.Count > 0 && visible == 0;
         NoResultsTitle = !string.IsNullOrWhiteSpace(SearchText)
-            ? $"Ничего не найдено по запросу «{SearchText.Trim()}»"
-            : "Нет модов с такими фильтрами";
+            ? L.F("Ничего не найдено по запросу «{0}»", SearchText.Trim())
+            : L.T("Нет модов с такими фильтрами");
         ShowList = !IsLoading && visible > 0;
     }
 
@@ -614,10 +615,10 @@ public sealed partial class MainViewModel : ObservableObject
 
     // ---------- Статус ----------
 
-    [ObservableProperty] private string _lastActionText = "Готово к работе";
+    [ObservableProperty] private string _lastActionText = L.T("Готово к работе");
 
     private void SetLastAction(string text) =>
-        LastActionText = $"Последнее действие: {text} · {DateTime.Now:HH:mm}";
+        LastActionText = L.F("Последнее действие: {0} · {1:HH:mm}", text, DateTime.Now);
 
     private void SaveSettings()
     {

@@ -4,6 +4,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SimsModManager.Core.Content;
 using SimsModManager.Core.Dbpf;
+using SimsModManager.Core;
 
 namespace SimsModManager.App.ViewModels;
 
@@ -49,6 +50,9 @@ public sealed partial class SwatchChoice(int index, ImageSource? image) : Observ
 /// <summary>Экран «Настройка одежды»: для одной вещи или сразу для многих.</summary>
 public sealed partial class ClothingEditorViewModel : ObservableObject
 {
+    /// <summary>Перечитать подписи после смены языка.</summary>
+    public void RefreshTexts() => OnPropertyChanged(string.Empty);
+
     private readonly IReadOnlyList<CasItemViewModel> _targets;
     private readonly GenderChoice _originalGender;
 
@@ -61,19 +65,19 @@ public sealed partial class ClothingEditorViewModel : ObservableObject
 
         if (IsBulk)
         {
-            Title = "Изменить " + Text.Plural(targets.Count, "вещь", "вещи", "вещей");
+            Title = L.T("Изменить ") + L.P(targets.Count, "вещь|вещи|вещей");
             var mods = targets.Select(t => t.Mod).Distinct().ToList();
-            var source = collectionName ?? (mods.Count == 1 ? mods[0].Name : "Из " + Text.Plural(mods.Count, "мода", "модов", "модов"));
-            Subtitle = collectionTotal > 0 ? $"{source} / Выбрано {targets.Count} из {collectionTotal}" : $"{source} / {Text.Plural(all.Count, "расцветка", "расцветки", "расцветок")}";
+            var source = collectionName ?? (mods.Count == 1 ? mods[0].Name : L.T("Из ") + L.P(mods.Count, "мода|модов|модов"));
+            Subtitle = collectionTotal > 0 ? L.F("{0} / Выбрано {1} из {2}", source, targets.Count, collectionTotal) : $"{source} / {L.P(all.Count, "расцветка|расцветки|расцветок")}";
             BulkDescription = string.Join(", ", targets.Select(t => t.Item.BodyTypeName.ToLowerInvariant()).Distinct().Take(4)) + " — "
-                              + (mods.Count == 1 ? "из одного мода." : "из " + Text.Plural(mods.Count, "мода", "модов", "модов") + ".");
+                              + (mods.Count == 1 ? L.T("из одного мода.") : L.T("из ") + L.P(mods.Count, "мода|модов|модов") + ".");
             foreach (var img in targets.Select(t => t.Preview).Where(p => p is not null).Take(2)) BulkPreviews.Add(img!);
         }
         else
         {
             var item = targets[0];
             Title = item.Name;
-            Subtitle = item.Name + " / Изменения в свойствах CAS";
+            Subtitle = item.Name + L.T(" / Изменения в свойствах CAS");
             BodyTypeName = item.Item.BodyTypeName;
             Preview = preview ?? item.Preview;
             for (var i = 0; i < item.Item.Swatches.Count; i++)
@@ -98,12 +102,12 @@ public sealed partial class ClothingEditorViewModel : ObservableObject
         foreach (var (age, name) in Describe.AgeNames)
             Ages.Add(Watch(new TriOption(name, Common(all, s => s.Ages.HasFlag(age))) { Age = age }));
         foreach (var (value, name) in OutfitTags.Known.Where(k => k.Value != OutfitTags.Bathing && k.Value != OutfitTags.Situation))
-            Outfits.Add(Watch(new TriOption(name, Common(all, s => s.Outfits.Contains(value))) { TagValue = value }));
+            Outfits.Add(Watch(new TriOption(L.T(name), Common(all, s => s.Outfits.Contains(value))) { TagValue = value }));
         foreach (var (value, name) in OutfitTags.Weather)
-            Weather.Add(Watch(new TriOption(name, Common(all, s => s.Outfits.Contains(value))) { TagValue = value }));
+            Weather.Add(Watch(new TriOption(L.T(name), Common(all, s => s.Outfits.Contains(value))) { TagValue = value }));
         foreach (var (value, name) in SeasonTags.Known)
-            Seasons.Add(Watch(new TriOption(name, Common(all, s => s.Seasons?.Contains(value) == true)) { TagValue = value }));
-        Random = Watch(new TriOption("Случайные симы", Common(all, s => s.AllowRandom)));
+            Seasons.Add(Watch(new TriOption(L.T(name), Common(all, s => s.Seasons?.Contains(value) == true)) { TagValue = value }));
+        Random = Watch(new TriOption(L.T("Случайные симы"), Common(all, s => s.AllowRandom)));
 
         HasMixedValues = _originalGender == GenderChoice.Mixed || AllOptions.Any(o => o.Original is null);
     }
@@ -130,7 +134,7 @@ public sealed partial class ClothingEditorViewModel : ObservableObject
     // ---------- Что показываем ----------
 
     public string Title { get; }
-    public string PageTitle => IsBulk ? Title : "Настройка одежды";
+    public string PageTitle => IsBulk ? Title : L.T("Настройка одежды");
     public string Subtitle { get; }
     public bool IsBulk { get; }
     public bool IsSingle => !IsBulk;
@@ -138,7 +142,7 @@ public sealed partial class ClothingEditorViewModel : ObservableObject
     public ImageSource? Preview { get; }
     public bool HasPreview => Preview is not null;
     public int SwatchTotal { get; }
-    public string BulkCountText => Text.Plural(_targets.Count, "вещь", "вещи", "вещей");
+    public string BulkCountText => L.P(_targets.Count, "вещь|вещи|вещей");
     public string BulkDescription { get; } = "";
     public ObservableCollection<ImageSource> BulkPreviews { get; } = [];
     public bool HasMixedValues { get; }
@@ -158,7 +162,7 @@ public sealed partial class ClothingEditorViewModel : ObservableObject
     [NotifyPropertyChangedFor(nameof(SwatchText), nameof(ChangeSummary))]
     private int _selectedSwatch;
 
-    public string SwatchText => $"Расцветка {SelectedSwatch + 1} из {SwatchTotal}";
+    public string SwatchText => L.F("Расцветка {0} из {1}", SelectedSwatch + 1, SwatchTotal);
 
     /// <summary>Менять все расцветки вещи или только выбранную слева.</summary>
     [ObservableProperty]
@@ -194,11 +198,11 @@ public sealed partial class ClothingEditorViewModel : ObservableObject
         get
         {
             var count = (GenderChanged ? 1 : 0) + AllOptions.Count(o => o.IsChanged);
-            if (count == 0) return "Изменений пока нет";
+            if (count == 0) return L.T("Изменений пока нет");
             var scope = IsBulk
-                ? Text.Plural(_targets.Count, "вещь", "вещи", "вещей")
-                : ApplyToAllSwatches ? Text.Plural(SwatchTotal, "расцветка", "расцветки", "расцветок") : "1 расцветка";
-            return $"Изменено {Text.Plural(count, "параметр", "параметра", "параметров")} · {scope}";
+                ? L.P(_targets.Count, "вещь|вещи|вещей")
+                : ApplyToAllSwatches ? L.P(SwatchTotal, "расцветка|расцветки|расцветок") : L.T("1 расцветка");
+            return L.F("Изменено {0} · {1}", L.P(count, "параметр|параметра|параметров"), scope);
         }
     }
 
@@ -301,9 +305,9 @@ public sealed partial class ClothingEditorViewModel : ObservableObject
     /// <summary>Предупреждение, если после изменений вещь не будет доступна никому.</summary>
     public string? Validate()
     {
-        if (Ages.All(a => a.IsChecked == false)) return "Выберите хотя бы один возраст — иначе вещь пропадёт из игры.";
+        if (Ages.All(a => a.IsChecked == false)) return L.T("Выберите хотя бы один возраст — иначе вещь пропадёт из игры.");
         if (Outfits.Concat(Weather).All(o => o.IsChecked == false))
-            return "Не выбрана ни одна категория одежды. Вещь будет видна в редакторе, но игра не будет её использовать в нарядах.";
+            return L.T("Не выбрана ни одна категория одежды. Вещь будет видна в редакторе, но игра не будет её использовать в нарядах.");
         return null;
     }
 }

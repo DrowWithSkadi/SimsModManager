@@ -40,9 +40,9 @@ public sealed partial class MainViewModel
 
     /// <summary>Плашка в библиотеке: «Найдено 3 проблемы с модами».</summary>
     public bool HasHealthBanner => HealthProblemCount > 0 && !HealthBannerHidden;
-    public string HealthBannerText => "С модами " + (HealthProblemCount == 1
-        ? "есть проблема, которая может мешать игре"
-        : "есть " + Text.Plural(HealthProblemCount, "проблема", "проблемы", "проблем") + ", которые могут мешать игре");
+    public string HealthBannerText => L.T("С модами ") + (HealthProblemCount == 1
+        ? L.T("есть проблема, которая может мешать игре")
+        : L.T("есть ") + L.P(HealthProblemCount, "проблема|проблемы|проблем") + L.T(", которые могут мешать игре"));
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasHealthBanner), nameof(HasDuplicates))]
@@ -51,9 +51,9 @@ public sealed partial class MainViewModel
     public bool ShowHealthAllGood => !IsCheckingHealth && HealthCheckedAt is not null && HealthIssues.Count == 0;
 
     public string HealthStatusText => IsCheckingHealth
-        ? "Смотрю моды…"
+        ? L.T("Смотрю моды…")
         : HealthCheckedAt is { } at
-            ? $"{Text.Plural(HealthCheckedMods, "включённый мод", "включённых мода", "включённых модов")} · обновлено в {at:HH:mm}"
+            ? L.F("{0} · обновлено в {1:HH:mm}", L.P(HealthCheckedMods, "включённый мод|включённых мода|включённых модов"), at)
             : "";
 
     private CancellationTokenSource? _healthCts;
@@ -94,7 +94,7 @@ public sealed partial class MainViewModel
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            ShowToast("Не получилось посмотреть моды: " + ex.Message, Icons.Alert);
+            ShowToast(L.T("Не получилось посмотреть моды: ") + ex.Message, Icons.Alert);
         }
         finally
         {
@@ -150,7 +150,7 @@ public sealed partial class MainViewModel
 
         var packNote = needPacks.Count == 0 ? null
             : string.Join(Environment.NewLine, needPacks.Take(3).Select(m =>
-                  $"«{m.Name}» сделан для дополнения «{GamePacks.NameOf(m.RequiredPacks[0])}», которого у вас нет — вещи могут быть невидимыми."));
+                  L.F("«{0}» сделан для дополнения «{1}», которого у вас нет — вещи могут быть невидимыми.", m.Name, GamePacks.NameOf(m.RequiredPacks[0]))));
 
         // 1. Есть что исправить автоматически — план + одно подтверждение
         var plan = BuildRepairPlan(issues, includeOutdated: false);
@@ -158,7 +158,7 @@ public sealed partial class MainViewModel
         {
             if (packNote is not null) ShowToast(packNote, Icons.Alert, seconds: 8);
             await RepairAsync(issues, includeOutdated: false,
-                title: issues.Count == 1 ? $"С новым модом проблема: {issues[0].Title.TrimEnd('.')}" : "С новыми модами есть проблемы — вот что я исправлю");
+                title: issues.Count == 1 ? L.F("С новым модом проблема: {0}", issues[0].Title.TrimEnd('.')) : L.T("С новыми модами есть проблемы — вот что я исправлю"));
             return;
         }
 
@@ -170,18 +170,18 @@ public sealed partial class MainViewModel
 
         var answer = await ShowDialogAsync(new DialogViewModel
         {
-            Title = first is null ? "Новому моду нужно дополнение"
-                : issues.Count == 1 ? first.Title : $"С новыми модами {Text.Plural(issues.Count, "проблема", "проблемы", "проблем")}",
+            Title = first is null ? L.T("Новому моду нужно дополнение")
+                : issues.Count == 1 ? first.Title : L.F("С новыми модами {0}", L.P(issues.Count, "проблема|проблемы|проблем")),
             Icon = (System.Windows.Media.Geometry)System.Windows.Application.Current.FindResource(first is null ? "Icon.Layers" : "Icon.Flag"),
             IconIsDanger = first is not null,
             Message = first is null ? packNote
                 : issues.Count == 1 ? first.Explanation : string.Join(Environment.NewLine, issues.Take(4).Select(i => "• " + i.Title)),
-            Message2 = first is null ? "Купите или установите дополнение — или выключите мод, чтобы в игре не было пустых вещей."
-                : (issues.Count == 1 ? first.Advice : "Проблемные моды отмечены в списке красным флажком — наведите на него, чтобы увидеть причину.")
+            Message2 = first is null ? L.T("Купите или установите дополнение — или выключите мод, чтобы в игре не было пустых вещей.")
+                : (issues.Count == 1 ? first.Advice : L.T("Проблемные моды отмечены в списке красным флажком — наведите на него, чтобы увидеть причину."))
                   + (packNote is null ? "" : Environment.NewLine + packNote),
-            PrimaryText = single is { IsEnabled: true } ? $"Выключить «{single.Name}»" : "Посмотреть",
-            ExtraText = single is not null && first is not null ? "Подробнее" : null,
-            SecondaryText = "Оставить как есть",
+            PrimaryText = single is { IsEnabled: true } ? L.F("Выключить «{0}»", single.Name) : L.T("Посмотреть"),
+            ExtraText = single is not null && first is not null ? L.T("Подробнее") : null,
+            SecondaryText = L.T("Оставить как есть"),
         });
 
         if (answer == DialogResult.Primary && single is { IsEnabled: true }) await IssueDisableMod(single);
@@ -210,7 +210,7 @@ public sealed partial class MainViewModel
     private async Task IssueDisableMod(ModItemViewModel? mod)
     {
         if (mod is null || !mod.IsEnabled) return;
-        if (!await EnsureGameClosedAsync("выключить мод")) return;
+        if (!await EnsureGameClosedAsync(L.T("выключить мод"))) return;
         mod.IsEnabled = false; // сам переместит файлы и покажет уведомление
         if (!mod.IsEnabled) ResolveIssuesFor(mod);
     }
@@ -231,18 +231,18 @@ public sealed partial class MainViewModel
         switch (issue.Issue.Kind)
         {
             case HealthIssueKind.TooDeep:
-                if (!await EnsureGameClosedAsync("переложить файлы")) return;
+                if (!await EnsureGameClosedAsync(L.T("переложить файлы"))) return;
                 try
                 {
                     foreach (var mod in issue.Mods.Select(m => m.Mod)) mod.ReplaceModel(_library.FixTooDeep(mod.Model));
-                    ShowToast("Файлы переложены — теперь игра их увидит", Icons.Check);
-                    SetLastAction("исправлена установка мода");
+                    ShowToast(L.T("Файлы переложены — теперь игра их увидит"), Icons.Check);
+                    SetLastAction(L.T("исправлена установка мода"));
                     RemoveIssue(issue);
                     await RefreshAsync();
                 }
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
                 {
-                    await ShowErrorAsync("Не удалось переложить файлы", "Файлы мода заняты другой программой.", ex);
+                    await ShowErrorAsync(L.T("Не удалось переложить файлы"), L.T("Файлы мода заняты другой программой."), ex);
                 }
                 break;
 
@@ -264,7 +264,7 @@ public sealed partial class MainViewModel
                 }
                 catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
                 {
-                    await ShowErrorAsync("Не удалось установить архив", "Архив занят другой программой.", ex);
+                    await ShowErrorAsync(L.T("Не удалось установить архив"), L.T("Архив занят другой программой."), ex);
                 }
                 break;
 
@@ -281,7 +281,7 @@ public sealed partial class MainViewModel
         if (!_settings.IgnoredIssues.Contains(issue.Issue.Key)) _settings.IgnoredIssues.Add(issue.Issue.Key);
         SaveSettings();
         RemoveIssue(issue);
-        ShowToast("Больше не покажу это предупреждение", Icons.Check, undo: () =>
+        ShowToast(L.T("Больше не покажу это предупреждение"), Icons.Check, undo: () =>
         {
             _settings.IgnoredIssues.Remove(issue.Issue.Key);
             SaveSettings();
@@ -318,7 +318,7 @@ public sealed partial class MainViewModel
             HealthIssues.Remove(issue);
         ErrorReportCount = 0;
         UpdateHealthCount();
-        ShowToast(removed > 0 ? $"Удалено {Text.Plural(removed, "отчёт", "отчёта", "отчётов")} об ошибках" : "Отчётов об ошибках нет", Icons.Check);
+        ShowToast(removed > 0 ? L.F("Удалено {0} об ошибках", L.P(removed, "отчёт|отчёта|отчётов")) : L.T("Отчётов об ошибках нет"), Icons.Check);
     }
 
     [RelayCommand]
@@ -343,7 +343,7 @@ public sealed partial class MainViewModel
         SaveSettings();
         foreach (var issue in dismissed) HealthIssues.Remove(issue);
         UpdateHealthCount();
-        ShowToast(dismissed.Count == 1 ? "Больше не напомню об этом" : "Больше не напомню об этих проблемах", Icons.Check, undo: () =>
+        ShowToast(dismissed.Count == 1 ? L.T("Больше не напомню об этом") : L.T("Больше не напомню об этих проблемах"), Icons.Check, undo: () =>
         {
             foreach (var key in added) _settings.IgnoredIssues.Remove(key);
             SaveSettings();
@@ -365,9 +365,9 @@ public sealed partial class MainViewModel
     public bool HasGameUpdate => UpdatedGameVersion is not null && OutdatedScriptCount > 0;
 
     public string GameUpdateText =>
-        $"Игра обновилась до версии {UpdatedGameVersion}. " +
-        $"{Text.Plural(OutdatedScriptCount, "скриптовый мод", "скриптовых мода", "скриптовых модов")} могли перестать работать — " +
-        "проверьте, нет ли у авторов новых версий.";
+        L.F("Игра обновилась до версии {0}. ", UpdatedGameVersion) +
+        L.F("{0} могли перестать работать — ", L.P(OutdatedScriptCount, "скриптовый мод|скриптовых мода|скриптовых модов")) +
+        L.T("проверьте, нет ли у авторов новых версий.");
 
     private List<ModItemViewModel> _outdatedScripts = [];
 
@@ -422,7 +422,7 @@ public sealed partial class MainViewModel
     [RelayCommand]
     private async Task DisableOutdatedScripts()
     {
-        if (_library is null || !await EnsureGameClosedAsync("выключить скрипты")) return;
+        if (_library is null || !await EnsureGameClosedAsync(L.T("выключить скрипты"))) return;
         var done = 0;
         foreach (var mod in _outdatedScripts.Where(m => m.IsEnabled && Mods.Contains(m)))
         {
@@ -434,8 +434,8 @@ public sealed partial class MainViewModel
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException) { }
         }
         UpdateSummary();
-        ShowToast($"Выключено: {Text.Plural(done, "скрипт", "скрипта", "скриптов")}. Включите их, когда авторы выпустят обновления.", Icons.Check);
-        SetLastAction("выключены скрипты после обновления игры");
+        ShowToast(L.F("Выключено: {0}. Включите их, когда авторы выпустят обновления.", L.P(done, "скрипт|скрипта|скриптов")), Icons.Check);
+        SetLastAction(L.T("выключены скрипты после обновления игры"));
         AcknowledgeGameUpdate();
     }
 
@@ -443,23 +443,25 @@ public sealed partial class MainViewModel
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(HasBisect), nameof(BisectFinished), nameof(BisectInProgress), nameof(BisectStepText),
-        nameof(BisectHint), nameof(BisectCulprit))]
+        nameof(BisectHint), nameof(BisectCulprit), nameof(BisectCulpritTitle), nameof(BisectBannerText))]
     private ModBisect? _bisect;
 
     public bool HasBisect => Bisect is not null;
     public bool BisectInProgress => Bisect is { IsFinished: false };
     public bool BisectFinished => Bisect is { IsFinished: true };
     public string? BisectCulprit => Bisect?.Culprit;
+    public string BisectCulpritTitle => L.F("Виновник найден: «{0}»", BisectCulprit);
+    public string BisectBannerText => L.F("Идёт поиск мода, который мешает игре · {0}", BisectStepText);
 
     public string BisectStepText => Bisect is null ? "" : Bisect.IsFinished
-        ? "Виновник найден"
-        : $"Проверка {Bisect.Step} · осталось примерно {Text.Plural(Bisect.StepsLeft, "запуск", "запуска", "запусков")}";
+        ? L.T("Виновник найден")
+        : L.F("Проверка {0} · осталось примерно {1}", Bisect.Step, L.P(Bisect.StepsLeft, "запуск|запуска|запусков"));
 
     public string BisectHint => Bisect is null ? "" : Bisect.IsFinished
-        ? $"Похоже, проблему вызывает «{Bisect.Culprit}». Остальные моды можно вернуть как было."
-        : $"Сейчас выключено {Text.Plural(Bisect.Suspects.Count - Bisect.TestingNow.Count, "подозрительный мод", "подозрительных мода", "подозрительных модов")}. " +
-          "Нажмите «Играть и проверить», повторите то, что ломалось, и закройте игру — я сам посмотрю её отчёты об ошибках и сделаю следующий шаг. " +
-          "Если проблема не пишется в отчёты (например, что-то выглядит не так), ответьте кнопками.";
+        ? L.F("Похоже, проблему вызывает «{0}». Остальные моды можно вернуть как было.", Bisect.Culprit)
+        : L.F("Сейчас выключено {0}. ", L.P(Bisect.Suspects.Count - Bisect.TestingNow.Count, "подозрительный мод|подозрительных мода|подозрительных модов")) +
+          L.T("Нажмите «Играть и проверить», повторите то, что ломалось, и закройте игру — я сам посмотрю её отчёты об ошибках и сделаю следующий шаг. ") +
+          L.T("Если проблема не пишется в отчёты (например, что-то выглядит не так), ответьте кнопками.");
 
     /// <summary>Если поиск прервали (закрыли программу), продолжаем с того же места.</summary>
     private void LoadBisect()
@@ -500,19 +502,19 @@ public sealed partial class MainViewModel
 
             if (fresh.Count > 0)
             {
-                ShowToast($"Игра записала {Text.Plural(fresh.Count, "ошибку", "ошибки", "ошибок")} — значит, виновник среди включённых модов. Делаю следующий шаг.", Icons.Info, seconds: 6);
+                ShowToast(L.F("Игра записала {0} — значит, виновник среди включённых модов. Делаю следующий шаг.", L.P(fresh.Count, "ошибку|ошибки|ошибок")), Icons.Info, seconds: 6);
                 await BisectAnswer("yes");
             }
             else
             {
                 var answer = await ShowDialogAsync(new DialogViewModel
                 {
-                    Title = "Игра закрылась без ошибок",
+                    Title = L.T("Игра закрылась без ошибок"),
                     Icon = (System.Windows.Media.Geometry)System.Windows.Application.Current.FindResource("Icon.ScanSearch"),
-                    Message = "В этот раз игра не записала ни одной ошибки. Проблема, которую мы ищем, была?",
-                    PrimaryText = "Нет, всё работало",
-                    ExtraText = "Да, была",
-                    SecondaryText = "Не успел проверить",
+                    Message = L.T("В этот раз игра не записала ни одной ошибки. Проблема, которую мы ищем, была?"),
+                    PrimaryText = L.T("Нет, всё работало"),
+                    ExtraText = L.T("Да, была"),
+                    SecondaryText = L.T("Не успел проверить"),
                 });
                 if (answer == DialogResult.Primary) await BisectAnswer("no");
                 else if (answer == DialogResult.Extra) await BisectAnswer("yes");
@@ -532,7 +534,7 @@ public sealed partial class MainViewModel
         var enabled = Mods.Where(m => m.IsEnabled && !m.IsTray).ToList();
         if (enabled.Count < 2)
         {
-            ShowToast("Для поиска нужно хотя бы два включённых мода", Icons.Info);
+            ShowToast(L.T("Для поиска нужно хотя бы два включённых мода"), Icons.Info);
             return;
         }
         // Ошибки в отчётах игры почти всегда из-за скриптов и модов, меняющих поведение (настройки игры),
@@ -544,19 +546,19 @@ public sealed partial class MainViewModel
 
         var answer = await ShowDialogAsync(new DialogViewModel
         {
-            Title = "Найти мод, который мешает игре",
+            Title = L.T("Найти мод, который мешает игре"),
             Icon = (System.Windows.Media.Geometry)System.Windows.Application.Current.FindResource("Icon.ScanSearch"),
-            Message = "Я выключу половину модов. Нажмите «Играть и проверить», повторите то, что ломалось, и закройте игру — " +
-                      "я сам посмотрю отчёты об ошибках и сделаю следующий шаг. Круг каждый раз сужается вдвое.",
+            Message = L.T("Я выключу половину модов. Нажмите «Играть и проверить», повторите то, что ломалось, и закройте игру — ") +
+                      L.T("я сам посмотрю отчёты об ошибках и сделаю следующий шаг. Круг каждый раз сужается вдвое."),
             Message2 = useLikely
-                ? $"Обычно виноваты скрипты и моды, меняющие игру ({likely.Count} шт.) — их проверка займёт около {Text.Plural(Runs(likely.Count), "запуска", "запусков", "запусков")}. " +
-                  $"Если проблема с одеждой или мебелью — ищите среди всех ({Text.Plural(Runs(enabled.Count), "запуск", "запуска", "запусков")}). В конце все моды вернутся как были."
-                : $"Понадобится около {Text.Plural(Runs(enabled.Count), "запуска", "запусков", "запусков")}. В конце все моды вернутся как были.",
-            PrimaryText = useLikely ? $"Самые вероятные ({likely.Count})" : "Начать",
-            ExtraText = useLikely ? $"Среди всех ({enabled.Count})" : null,
-            SecondaryText = "Отмена",
+                ? L.F("Обычно виноваты скрипты и моды, меняющие игру ({0} шт.) — их проверка займёт около {1}. ", likely.Count, L.P(Runs(likely.Count), "запуска|запусков|запусков")) +
+                  L.F("Если проблема с одеждой или мебелью — ищите среди всех ({0}). В конце все моды вернутся как были.", L.P(Runs(enabled.Count), "запуск|запуска|запусков"))
+                : L.F("Понадобится около {0}. В конце все моды вернутся как были.", L.P(Runs(enabled.Count), "запуска|запусков|запусков")),
+            PrimaryText = useLikely ? L.F("Самые вероятные ({0})", likely.Count) : L.T("Начать"),
+            ExtraText = useLikely ? L.F("Среди всех ({0})", enabled.Count) : null,
+            SecondaryText = L.T("Отмена"),
         });
-        if (answer == DialogResult.Cancel || !await EnsureGameClosedAsync("начать поиск")) return;
+        if (answer == DialogResult.Cancel || !await EnsureGameClosedAsync(L.T("начать поиск"))) return;
 
         var suspects = useLikely && answer == DialogResult.Primary ? likely : enabled;
         Bisect = ModBisect.Start(enabled.Select(m => m.Name), suspects.Select(m => m.Name));
@@ -568,7 +570,7 @@ public sealed partial class MainViewModel
     private async Task BisectAnswer(string? problemStillThere)
     {
         if (Bisect is null || Bisect.IsFinished) return;
-        if (!await EnsureGameClosedAsync("продолжить поиск")) return;
+        if (!await EnsureGameClosedAsync(L.T("продолжить поиск"))) return;
         Bisect.Answer(problemStillThere == "yes");
         OnPropertyChanged(nameof(Bisect));
         NotifyBisect();
@@ -577,7 +579,7 @@ public sealed partial class MainViewModel
 
     private void NotifyBisect()
     {
-        foreach (var name in new[] { nameof(HasBisect), nameof(BisectFinished), nameof(BisectInProgress), nameof(BisectStepText), nameof(BisectHint), nameof(BisectCulprit) })
+        foreach (var name in new[] { nameof(HasBisect), nameof(BisectFinished), nameof(BisectInProgress), nameof(BisectStepText), nameof(BisectHint), nameof(BisectCulprit), nameof(BisectCulpritTitle), nameof(BisectBannerText) })
             OnPropertyChanged(name);
     }
 
@@ -613,7 +615,7 @@ public sealed partial class MainViewModel
         for (var i = 0; i < changes.Count; i++)
             if (results[i] is { } updated) changes[i].ReplaceModel(updated);
         IsLoading = false;
-        if (failed > 0) ShowToast($"Не получилось переключить {Text.Plural(failed, "мод", "мода", "модов")} — файлы заняты", Icons.Alert);
+        if (failed > 0) ShowToast(L.F("Не получилось переключить {0} — файлы заняты", L.P(failed, "мод|мода|модов")), Icons.Alert);
     }
 
     /// <summary>Закончить: вернуть все моды как было. culpritAction: "keep" — вернуть и виновника, "disable" — оставить его выключенным, "delete" — удалить.</summary>
@@ -621,7 +623,7 @@ public sealed partial class MainViewModel
     private async Task FinishBisect(string? culpritAction)
     {
         if (_library is null || Bisect is null) return;
-        if (!await EnsureGameClosedAsync("вернуть моды")) return;
+        if (!await EnsureGameClosedAsync(L.T("вернуть моды"))) return;
         var bisect = Bisect;
         var culprit = bisect.Culprit;
         var want = new HashSet<string>(bisect.OriginallyEnabled, StringComparer.OrdinalIgnoreCase);
@@ -636,9 +638,9 @@ public sealed partial class MainViewModel
             await DeleteMod(mod);
         else
             ShowToast(culpritAction == "disable" && culprit is not null
-                ? $"Готово: «{culprit}» выключен, остальные моды включены как раньше"
-                : "Все моды вернулись как были", Icons.Check);
-        SetLastAction(culpritAction == "disable" ? "найден и выключен проблемный мод" : "поиск виновника завершён");
+                ? L.F("Готово: «{0}» выключен, остальные моды включены как раньше", culprit)
+                : L.T("Все моды вернулись как были"), Icons.Check);
+        SetLastAction(culpritAction == "disable" ? L.T("найден и выключен проблемный мод") : L.T("поиск виновника завершён"));
     }
 }
 
@@ -670,17 +672,17 @@ public sealed partial class HealthIssueViewModel : ObservableObject
 
     public string SeverityText => Issue.Severity switch
     {
-        HealthSeverity.Problem => "Мешает игре",
-        HealthSeverity.Warning => "Стоит проверить",
-        _ => "Можно не трогать",
+        HealthSeverity.Problem => L.T("Мешает игре"),
+        HealthSeverity.Warning => L.T("Стоит проверить"),
+        _ => L.T("Можно не трогать"),
     };
 
     /// <summary>Главная кнопка для проблем, которые менеджер исправит сам.</summary>
     public string? FixText => Issue.Kind switch
     {
-        HealthIssueKind.TooDeep => "Исправить",
-        HealthIssueKind.ArchiveInMods => "Установить",
-        HealthIssueKind.UnknownErrors => "Найти виновника",
+        HealthIssueKind.TooDeep => L.T("Исправить"),
+        HealthIssueKind.ArchiveInMods => L.T("Установить"),
+        HealthIssueKind.UnknownErrors => L.T("Найти виновника"),
         _ => null,
     };
 
@@ -697,15 +699,15 @@ public sealed partial class HealthIssueViewModel : ObservableObject
         var others = Mods.Where(r => r != row).Select(r => $"«{r.Name}»").ToList();
         var text = Issue.Kind switch
         {
-            HealthIssueKind.Conflict => $"Мешает моду {string.Join(", ", others)}: оба меняют одно и то же, работать будет только один.",
-            HealthIssueKind.ScriptConflict => $"Похоже на другую версию {string.Join(", ", others)} — две копии скрипта мешают друг другу.",
-            HealthIssueKind.Duplicate => $"Установлен ещё раз как {string.Join(", ", others)}.",
-            HealthIssueKind.TooDeep => "Файлы лежат слишком глубоко в папках — игра мод не видит.",
-            HealthIssueKind.Broken => "Файл повреждён — скорее всего, недокачался.",
-            HealthIssueKind.CausesErrors => "Из-за этого мода в игре были ошибки.",
+            HealthIssueKind.Conflict => L.F("Мешает моду {0}: оба меняют одно и то же, работать будет только один.", string.Join(", ", others)),
+            HealthIssueKind.ScriptConflict => L.F("Похоже на другую версию {0} — две копии скрипта мешают друг другу.", string.Join(", ", others)),
+            HealthIssueKind.Duplicate => L.F("Установлен ещё раз как {0}.", string.Join(", ", others)),
+            HealthIssueKind.TooDeep => L.T("Файлы лежат слишком глубоко в папках — игра мод не видит."),
+            HealthIssueKind.Broken => L.T("Файл повреждён — скорее всего, недокачался."),
+            HealthIssueKind.CausesErrors => L.T("Из-за этого мода в игре были ошибки."),
             _ => Issue.Title,
         };
-        if (row.IsSuggested) text += " Лучше убрать именно этот.";
+        if (row.IsSuggested) text += L.T(" Лучше убрать именно этот.");
         return text;
     }
 }
@@ -713,5 +715,5 @@ public sealed partial class HealthIssueViewModel : ObservableObject
 public sealed record HealthModRow(ModItemViewModel Mod, bool IsSuggested)
 {
     public string Name => Mod.Name;
-    public string DateText => "установлен " + Mod.Model.ModifiedAt.ToString("dd.MM.yyyy");
+    public string DateText => L.T("установлен ") + Mod.Model.ModifiedAt.ToString("dd.MM.yyyy");
 }

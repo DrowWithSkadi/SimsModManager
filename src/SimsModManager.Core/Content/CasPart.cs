@@ -94,7 +94,7 @@ public sealed class CasPart
         if (version >= 51)
         {
             var n = r.ReadInt32();
-            if (n < 0 || n > 64) throw new InvalidDataException("Повреждённый CASP.");
+            if (n < 0 || n > 64) throw new InvalidDataException(L.T("Повреждённый CASP."));
             ms.Position += n * 8L;
         }
         else
@@ -106,7 +106,7 @@ public sealed class CasPart
 
         var tagsOffset = (int)ms.Position;
         var tagCount = r.ReadInt32();
-        if (tagCount < 0 || tagCount > 10_000) throw new InvalidDataException("Повреждённый CASP.");
+        if (tagCount < 0 || tagCount > 10_000) throw new InvalidDataException(L.T("Повреждённый CASP."));
         var tags = new List<CasTag>(tagCount);
         for (var i = 0; i < tagCount; i++)
         {
@@ -159,7 +159,7 @@ public sealed class CasPart
             length |= (b & 0x7F) << shift;
             shift += 7;
         } while ((b & 0x80) != 0 && shift < 35);
-        if (length < 0 || length > 4096) throw new InvalidDataException("Повреждённый CASP.");
+        if (length < 0 || length > 4096) throw new InvalidDataException(L.T("Повреждённый CASP."));
         return Encoding.BigEndianUnicode.GetString(r.ReadBytes(length));
     }
 
@@ -180,25 +180,25 @@ public sealed class CasPart
 
     public string BodyTypeName => BodyType switch
     {
-        BodyHat => "Головной убор",
-        BodyHair => "Причёска",
-        BodyFull => "Цельный наряд",
-        BodyTop => "Верх",
-        BodyBottom => "Низ",
-        BodyShoes => "Обувь",
-        BodyFacialHair => "Борода",
-        BodySocks => "Носки",
-        BodyTights => "Колготки",
-        >= 0x09 and <= 0x1B => "Аксессуар",
-        0x1D => "Помада",
-        0x1E => "Тени",
-        0x1F => "Подводка",
-        0x20 => "Румяна",
-        0x21 => "Грим",
-        0x22 => "Брови",
-        0x23 => "Цвет глаз",
-        0x25 => "Тушь",
-        >= 0x2D and <= 0x36 => "Тату",
-        _ => "Часть тела",
+        BodyHat => L.T("Головной убор"),
+        BodyHair => L.T("Причёска"),
+        BodyFull => L.T("Цельный наряд"),
+        BodyTop => L.T("Верх"),
+        BodyBottom => L.T("Низ"),
+        BodyShoes => L.T("Обувь"),
+        BodyFacialHair => L.T("Борода"),
+        BodySocks => L.T("Носки"),
+        BodyTights => L.T("Колготки"),
+        >= 0x09 and <= 0x1B => L.T("Аксессуар"),
+        0x1D => L.T("Помада"),
+        0x1E => L.T("Тени"),
+        0x1F => L.T("Подводка"),
+        0x20 => L.T("Румяна"),
+        0x21 => L.T("Грим"),
+        0x22 => L.T("Брови"),
+        0x23 => L.T("Цвет глаз"),
+        0x25 => L.T("Тушь"),
+        >= 0x2D and <= 0x36 => L.T("Тату"),
+        _ => L.T("Часть тела"),
     };
 }

@@ -1,5 +1,6 @@
 <UserControl x:Class="SimsModManager.App.Controls.MascotStage"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:l="clr-namespace:SimsModManager.App.Localization"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:ctl="clr-namespace:SimsModManager.App.Controls"
              xmlns:b="clr-namespace:SimsModManager.App.Behaviors">
@@ -28,7 +29,7 @@
                         <TextBlock Text="{Binding Title}" FontSize="13" FontWeight="SemiBold" Foreground="#1A1F1E" TextWrapping="Wrap" Margin="0,2,26,0" />
                         <Button Style="{StaticResource Btn.IconGhost}" ctl:Btn.Icon="{StaticResource Icon.X}" Foreground="#5C6A68"
                                 Width="24" Height="24" Padding="0" HorizontalAlignment="Right" VerticalAlignment="Top"
-                                ToolTip="Закрыть" Click="OnCloseBubble" />
+                                ToolTip="{l:Tr 'Закрыть'}" Click="OnCloseBubble" />
                     </Grid>
                     <TextBlock Text="{Binding Detail}" FontSize="12" Foreground="#4A5654" TextWrapping="Wrap" Margin="0,4,8,0" LineHeight="17"
                                Visibility="{Binding Detail, Converter={StaticResource NullToVisibility}}" />
