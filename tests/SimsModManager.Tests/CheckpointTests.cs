@@ -345,6 +345,28 @@ public class CheckpointTests
         Assert.False(File.Exists(Path.Combine(scene.Paths.Saves, SaveSlots.AutosaveFile)));
     }
 
+    /// <summary>Откат из игры: сохранить, закрыть, подменить (и автосохранение тоже), запустить.</summary>
+    [Fact]
+    public async Task RestartRollbackReplacesSaveAndAutosaveThenLaunches()
+    {
+        using var scene = new MenuScene();
+        using var game = await scene.StartGameAsync();
+        FakeSave(scene.Paths.Saves, SaveSlots.AutosaveFile, 9);
+        var closed = false; var launched = false;
+        scene.Manager.CloseGame = _ => { closed = true; scene.GameRunning = false; return Task.FromResult(true); };
+        scene.Manager.LaunchGame = () => { launched = closed; return true; };
+
+        var steps = new List<RollbackStep>();
+        await scene.Manager.RestartRollbackAsync(scene.Old, new SyncProgress<RollbackStep>(steps.Add));
+
+        Assert.True(launched); // запуск — только после закрытия
+        Assert.Equal(1, scene.SlotByte);
+        Assert.Equal(1, File.ReadAllBytes(Path.Combine(scene.Paths.Saves, SaveSlots.AutosaveFile))[100]);
+        Assert.Equal(new[] { RollbackStep.SavingCurrent, RollbackStep.ClosingGame, RollbackStep.Restoring, RollbackStep.Launching, RollbackStep.Done }, steps);
+        var before = Assert.Single(scene.Store.List(), c => c.Kind == CheckpointKind.BeforeRollback);
+        Assert.Equal(3, scene.Store.ReadData(before)[100]);
+    }
+
     private sealed class SyncProgress<T>(Action<T> report) : IProgress<T>
     {
         public void Report(T value) => report(value);

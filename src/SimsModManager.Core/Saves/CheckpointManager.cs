@@ -210,7 +210,7 @@ public sealed class CheckpointManager(SimsPaths paths, CheckpointStore store, He
             throw new CheckpointException(L.T("Не получилось закрыть игру. Закрой её сама — и нажми «Откатить» ещё раз"));
 
         progress?.Report(RollbackStep.Restoring);
-        await Task.Run(() => store.Restore(checkpoint, paths.Saves), cancellation);
+        await Task.Run(() => store.Restore(checkpoint, paths.Saves, alsoAutosave: true), cancellation);
 
         progress?.Report(RollbackStep.Launching);
         if (LaunchGame is null || !LaunchGame())
