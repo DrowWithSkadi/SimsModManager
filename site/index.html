@@ -4,588 +4,377 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Sims Mod Manager — менеджер модов для The Sims 4</title>
-<meta name="description" content="Бесплатная программа для The Sims 4: ставит моды из архивов, находит сломанные, делает точки сохранения и откатывает их прямо из игры.">
+<meta name="description" content="Бесплатная программа для The Sims 4: ставит моды из архивов, находит сломанные и откатывает сохранения прямо из игры.">
+<meta name="theme-color" content="#0B1211">
 <link rel="icon" href="logo.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Onest:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..700&display=swap" rel="stylesheet">
 <style>
 /*
-  Идея: программа стоит на столе. Фон — крафтовый картон (Коробок — коробка, моды приходят «посылками»),
-  в центре — ноутбук, на экране которого живёт настоящий интерфейс менеджера.
-  Вся смелость — в одном месте: экран ноутбука рассказывает историю при прокрутке.
-  Всё вокруг спокойное: бумажные заметки, тёмный текст, мятный — только для действий.
+  Сайт — продолжение самой программы: тёмное стекло поверх «обоев», мятный кристалл, Inter.
+  Главная сцена — настоящее окно программы, которое выпрямляется при прокрутке, и живой Коробок
+  на его шапке (как в приложении): следит глазами за курсором, его можно погладить.
 */
 :root {
-  --kraft: #D6BE97;
-  --kraft-deep: #C2A67A;
-  --paper: #F5ECDD;
-  --ink: #2A241C;
-  --ink-soft: #6A5B45;
-  --graphite: #151A19;
-  --graphite-2: #1E2423;
-  --mint: #6FDCC1;
-  --mint-ink: #0E2B23;
-  --box: #C9935A;
-  --display: "Unbounded", "Segoe UI", system-ui, sans-serif;
-  --body: "Onest", "Segoe UI", system-ui, sans-serif;
+  --bg: #0B1211;
+  --glass: rgba(26, 34, 33, .58);
+  --line: rgba(255, 255, 255, .08);
+  --line-strong: rgba(255, 255, 255, .14);
+  --text: #EEF3F1;
+  --muted: #95A29E;
+  --faint: #6F7C78;
+  --mint: #77E1C7;
+  --mint-press: #5ED0B4;
+  --on-mint: #0D2B23;
+  --r-lg: 28px;
+  --r-md: 20px;
+  --font: "Inter", "Segoe UI", system-ui, sans-serif;
+  color-scheme: dark;
 }
 * { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; }
-body {
-  margin: 0; color: var(--ink); font-family: var(--body); font-size: 18px; line-height: 1.55;
-  background-color: var(--kraft);
-  /* Волокна картона: два слоя мелкого шума из градиентов, без картинок */
-  background-image:
-    radial-gradient(circle at 20% 30%, rgba(255,255,255,.12) 0 1px, transparent 1.5px),
-    radial-gradient(circle at 70% 60%, rgba(90,60,20,.10) 0 1px, transparent 1.5px);
-  background-size: 7px 7px, 11px 11px;
-}
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font); font-size: 17px; line-height: 1.6; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+img { display: block; max-width: 100%; height: auto; }
 a { color: inherit; }
-img, svg { display: block; }
-h1, h2, h3 { font-family: var(--display); font-weight: 700; line-height: 1.08; margin: 0; letter-spacing: -0.02em; text-wrap: balance; }
+h1, h2, h3 { margin: 0; font-weight: 650; letter-spacing: -0.035em; line-height: 1.04; text-wrap: balance; }
 p { margin: 0; }
-:focus-visible { outline: 3px solid var(--graphite); outline-offset: 3px; border-radius: 10px; }
-.wrap { width: min(1180px, 100% - 40px); margin-inline: auto; }
-.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+:focus-visible { outline: 2px solid var(--mint); outline-offset: 3px; border-radius: 12px; }
+.wrap { width: min(1200px, 100% - 40px); margin-inline: auto; }
 
-/* ── Шапка ── */
-.top { position: absolute; inset: 0 0 auto; z-index: 20; }
-.top .wrap { display: flex; align-items: center; height: 76px; gap: 16px; }
-.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 700; font-size: 17px; }
-.brand img { width: 30px; height: 30px; }
-.top nav { margin-left: auto; display: flex; gap: 26px; font-size: 16px; }
-.top nav a { text-decoration: none; color: var(--ink-soft); }
-.top nav a:hover { color: var(--ink); }
+/* «Обои» рабочего стола: размытые пятна цвета, как за стеклом программы, и лёгкое зерно */
+.wallpaper { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+.wallpaper i { position: absolute; border-radius: 50%; filter: blur(110px); }
+.wallpaper i:nth-child(1) { width: 60vw; height: 60vw; left: -18vw; top: -26vw; background: #1F5F52; opacity: .55; }
+.wallpaper i:nth-child(2) { width: 46vw; height: 46vw; right: -16vw; top: 6vh; background: #283E6A; opacity: .45; }
+.wallpaper i:nth-child(3) { width: 40vw; height: 40vw; left: 30vw; bottom: -30vw; background: #5A4128; opacity: .35; }
+.wallpaper::after { content: ""; position: absolute; inset: 0; opacity: .07; mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
 
-/* ── Кнопки ── */
-.btn {
-  display: inline-flex; align-items: center; gap: 10px; text-decoration: none; font-weight: 700; font-size: 17px;
-  padding: 16px 26px; border-radius: 16px; border: 2px solid var(--graphite);
-  transition: transform .15s ease, box-shadow .15s ease;
+/* ── Шапка-капсула, как боковая панель программы, только горизонтальная ── */
+.nav { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); z-index: 50; width: max-content; max-width: calc(100% - 24px); display: flex; align-items: center; gap: 4px;
+  padding: 6px 6px 6px 14px; border-radius: 999px; background: rgba(13, 18, 17, .72); border: 1px solid var(--line);
+  backdrop-filter: blur(18px) saturate(1.3); -webkit-backdrop-filter: blur(18px) saturate(1.3); white-space: nowrap; }
+.nav .brand { display: flex; align-items: center; gap: 8px; text-decoration: none; font-weight: 600; font-size: 15px; margin-right: 10px; }
+.nav .brand img { width: 22px; height: 22px; }
+.nav a.link { text-decoration: none; color: var(--muted); font-size: 14.5px; padding: 8px 12px; border-radius: 999px; transition: color .2s, background .2s; }
+.nav a.link:hover { color: var(--text); background: rgba(255,255,255,.06); }
+.nav .btn { padding: 9px 16px; font-size: 14.5px; margin-left: 4px; }
+
+/* ── Кнопки — как «Играть» в программе ── */
+.btn { display: inline-flex; align-items: center; gap: 10px; font: 600 16px/1 var(--font); text-decoration: none; padding: 15px 24px; border-radius: 999px; border: 0; cursor: pointer; transition: background .2s, transform .2s; }
+.btn-mint { background: var(--mint); color: var(--on-mint); box-shadow: 0 0 0 1px rgba(255,255,255,.25) inset, 0 12px 40px -12px rgba(119,225,199,.7); }
+.btn-mint:hover { background: #8BE9D2; transform: translateY(-1px); }
+.btn-mint:active { background: var(--mint-press); transform: none; }
+.btn-mint svg { width: 16px; height: 16px; }
+.btn-glass { background: rgba(255,255,255,.06); color: var(--text); box-shadow: 0 0 0 1px var(--line-strong) inset; }
+.btn-glass:hover { background: rgba(255,255,255,.1); }
+
+/* ── Первый экран ── */
+.hero { padding: 150px 0 0; text-align: center; position: relative; }
+.badge { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: var(--mint); padding: 6px 12px; border-radius: 999px; background: rgba(119,225,199,.1); box-shadow: 0 0 0 1px rgba(119,225,199,.22) inset; }
+.badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--mint); box-shadow: 0 0 10px var(--mint); }
+.hero h1 { margin: 26px auto 0; font-size: clamp(40px, 6.2vw, 86px); }
+@media (min-width: 640px) { .hero h1 span { display: block; } }
+.hero .lead { margin: 22px auto 0; max-width: 40ch; color: var(--muted); font-size: clamp(17px, 1.5vw, 20px); }
+.hero .actions { margin-top: 34px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.hero .meta { margin-top: 16px; font-size: 13.5px; color: var(--faint); }
+
+/* Окно программы: наклонено назад и выпрямляется, пока прокручиваешь (переменная --p от 0 до 1) */
+.showcase { --p: 0; margin: 64px auto 0; width: min(1180px, 100% - 32px); perspective: 1800px; position: relative; }
+.window { position: relative; transform-origin: 50% 0;
+  transform: rotateX(calc((1 - var(--p)) * 24deg)) scale(calc(.9 + var(--p) * .1));
+  border-radius: 14px; box-shadow: 0 0 0 1px var(--line-strong), 0 40px 120px -30px rgba(0,0,0,.8); will-change: transform; }
+.window img { border-radius: 14px; width: 100%; }
+.window::before { content: ""; position: absolute; inset: 8% 4% -6%; z-index: -1; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(119,225,199,.38), transparent); filter: blur(50px); opacity: calc(.5 + var(--p) * .5); }
+/* Низ окна растворяется в фоне — без жёсткой границы */
+.showcase::after { content: ""; position: absolute; left: -2%; right: -2%; bottom: -2px; height: 24%; background: linear-gradient(transparent, var(--bg) 92%); pointer-events: none; }
+
+/* ── Коробок (те же пропорции, что в программе: 120 × 62) ── */
+.box-buddy { position: absolute; cursor: grab; touch-action: none; }
+.box-buddy svg { width: 100%; height: auto; overflow: visible; display: block; }
+.box-buddy .body { transform-box: view-box; transform-origin: 60px 50px; }
+.box-buddy .flap-l { transform-box: view-box; transform-origin: 18px 16px; }
+.box-buddy .flap-r { transform-box: view-box; transform-origin: 102px 16px; }
+.box-buddy .eyes { transform-box: view-box; transform-origin: 60px 24px; animation: blink 5s infinite; transition: opacity .15s; }
+.box-buddy .pupil { transition: transform .12s ease-out; }
+.box-buddy .happy, .box-buddy .blush { opacity: 0; transition: opacity .2s; }
+.box-buddy.petted .happy, .box-buddy.petted .blush { opacity: 1; }
+.box-buddy.petted .eyes { opacity: 0; }
+.box-buddy.petted .flap-l { animation: wiggle-l .5s ease-in-out infinite; }
+.box-buddy.petted .flap-r { animation: wiggle-r .5s ease-in-out infinite; }
+.box-buddy.hop .body { animation: hop .55s cubic-bezier(.3,1.5,.4,1); }
+@keyframes blink { 0%, 93%, 100% { transform: scaleY(1); } 95% { transform: scaleY(.08); } }
+@keyframes wiggle-l { 50% { transform: rotate(-14deg); } }
+@keyframes wiggle-r { 50% { transform: rotate(14deg); } }
+@keyframes hop { 0% { transform: translateY(0) scale(1.06, .9); } 40% { transform: translateY(-16px) scale(.95, 1.06); } 100% { transform: translateY(0); } }
+.heart { position: absolute; pointer-events: none; font-size: 15px; color: #F08FA6; animation: heart 1s ease-out forwards; }
+@keyframes heart { from { opacity: 1; transform: translate(-50%, 0) scale(.6); } to { opacity: 0; transform: translate(-50%, -46px) scale(1.2); } }
+/* На шапке окна — ровно там, где он стоит в программе */
+.window .box-buddy { left: 63.7%; top: 9.4%; width: 5.6%; }
+.tip { position: absolute; left: 50%; bottom: calc(100% + 10px); transform: translateX(-50%) translateY(4px); white-space: nowrap; font-size: 13px; font-weight: 500; background: #F3F1EA; color: #1C1F1E;
+  padding: 7px 11px; border-radius: 12px; opacity: 0; transition: opacity .2s, transform .2s; pointer-events: none; }
+.box-buddy:hover .tip { opacity: 1; transform: translateX(-50%); }
+
+/* ── Разделы ── */
+section { position: relative; }
+.sec { padding: 140px 0 0; }
+.sec-head { max-width: 760px; }
+.sec-head.center { margin-inline: auto; text-align: center; }
+.sec-head h2 { font-size: clamp(34px, 4.6vw, 60px); }
+.sec-head p { margin-top: 18px; color: var(--muted); font-size: clamp(17px, 1.4vw, 19px); max-width: 52ch; }
+.sec-head.center p { margin-inline: auto; }
+
+/* В игре: настоящий скриншот с оверлеем и клавиша F9 */
+.ingame { margin-top: 56px; position: relative; }
+.ingame figure { margin: 0; border-radius: var(--r-lg); overflow: hidden; box-shadow: 0 0 0 1px var(--line-strong), 0 50px 120px -40px rgba(0,0,0,.9); }
+.ingame figure img { width: 100%; }
+.keycap { position: absolute; right: -14px; top: -26px; width: 92px; height: 84px; border-radius: 18px; display: grid; place-items: center;
+  font: 650 28px var(--font); color: #1A1F1E; background: linear-gradient(180deg, #F6F7F5, #D9DDDB);
+  box-shadow: 0 8px 0 #A8AEAB, 0 24px 40px -10px rgba(0,0,0,.6); transform: rotate(6deg); }
+.keycap.pressed { animation: press 2.8s ease-in-out infinite; }
+@keyframes press { 0%, 70%, 100% { transform: rotate(6deg) translateY(0); box-shadow: 0 8px 0 #A8AEAB, 0 24px 40px -10px rgba(0,0,0,.6); } 76% { transform: rotate(6deg) translateY(6px); box-shadow: 0 2px 0 #A8AEAB, 0 10px 20px -10px rgba(0,0,0,.6); } }
+.steps { margin: 40px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; counter-reset: s; }
+.steps li { list-style: none; padding: 22px 22px 24px; border-radius: var(--r-md); background: var(--glass); box-shadow: 0 0 0 1px var(--line) inset; counter-increment: s; }
+.steps li::before { content: counter(s); display: grid; place-items: center; width: 30px; height: 30px; border-radius: 10px; background: rgba(119,225,199,.12); color: var(--mint); font-weight: 650; font-size: 15px; margin-bottom: 14px; }
+.steps h3 { font-size: 19px; letter-spacing: -0.015em; line-height: 1.25; }
+.steps p { margin-top: 6px; color: var(--muted); font-size: 15.5px; }
+
+/* Возможности: кусочки настоящего интерфейса в стеклянных рамках */
+.grid { margin-top: 56px; display: grid; grid-template-columns: repeat(6, 1fr); gap: 16px; }
+.card { position: relative; border-radius: var(--r-lg); background: var(--glass); box-shadow: 0 0 0 1px var(--line) inset; overflow: hidden; display: flex; flex-direction: column; }
+.card .txt { padding: 26px 26px 0; }
+.card h3 { font-size: 22px; letter-spacing: -0.02em; line-height: 1.2; }
+.card p { margin-top: 8px; color: var(--muted); font-size: 15.5px; max-width: 46ch; }
+.card .shot { margin: auto 0 0 26px; border-radius: 14px 0 0 0; overflow: hidden; box-shadow: 0 0 0 1px var(--line-strong); }
+.card .txt + .shot { margin-top: 24px; }
+.card .shot img { width: 100%; }
+.card .shot.full { margin: auto 26px 26px; border-radius: 14px; }
+.card .txt + .shot.full { margin-top: 24px; }
+.span-4 { grid-column: span 4; }
+.span-3 { grid-column: span 3; }
+.span-2 { grid-column: span 2; }
+.tall { grid-row: span 2; }
+.tall .shot { margin: 24px auto 0; width: 64%; border-radius: 16px 16px 0 0; }
+.c-buddy { text-align: center; min-height: 340px; }
+.c-buddy .txt { padding-top: 28px; }
+.c-buddy p { margin-inline: auto; }
+.c-buddy .stage { position: relative; flex: 1; display: grid; place-items: end center; padding: 40px 0 44px;
+  background: radial-gradient(60% 55% at 50% 100%, rgba(201,147,90,.22), transparent); }
+.c-buddy .box-buddy { position: relative; width: 150px; }
+
+/* Вопросы */
+.faq { margin-top: 48px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px 16px; align-items: start; }
+.faq details { border-radius: var(--r-md); background: var(--glass); box-shadow: 0 0 0 1px var(--line) inset; padding: 20px 22px; }
+.faq summary { cursor: pointer; font-weight: 600; font-size: 17px; list-style: none; display: flex; justify-content: space-between; gap: 16px; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: ""; flex: none; width: 9px; height: 9px; margin-top: 7px; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: rotate(45deg); transition: transform .25s; }
+.faq details[open] summary::after { transform: rotate(225deg); margin-top: 11px; }
+.faq details p { margin-top: 10px; color: var(--muted); font-size: 15.5px; }
+
+/* Скачать: кристалл, как на заставке программы */
+.download { padding: 170px 0 120px; text-align: center; }
+.crystal { width: 132px; margin: 0 auto 30px; perspective: 600px; }
+.crystal img { width: 100%; filter: drop-shadow(0 20px 50px rgba(119,225,199,.45)); }
+.crystal.spin img { animation: spin 1.3s cubic-bezier(.3,.8,.3,1); }
+@keyframes spin { from { transform: rotateY(0); } to { transform: rotateY(360deg); } }
+.download h2 { font-size: clamp(40px, 5.6vw, 76px); }
+.download p { margin: 18px auto 0; color: var(--muted); max-width: 44ch; font-size: 18px; }
+.download .actions { margin-top: 34px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.download small { display: block; margin-top: 16px; color: var(--faint); font-size: 13.5px; }
+
+footer { border-top: 1px solid var(--line); padding: 28px 0 40px; color: var(--faint); font-size: 14px; }
+footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+footer a { color: var(--muted); }
+
+/* Появление первого экрана — одно, при загрузке */
+.intro > * { animation: rise .9s cubic-bezier(.2,.8,.2,1) both; }
+.intro > :nth-child(2) { animation-delay: .08s; }
+.intro > :nth-child(3) { animation-delay: .16s; }
+.intro > :nth-child(4) { animation-delay: .24s; }
+.intro > :nth-child(5) { animation-delay: .3s; }
+.showcase { animation: rise 1.2s .35s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes rise { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+
+@media (max-width: 900px) {
+  .nav a.link { display: none; }
+  .hero { padding-top: 120px; }
+  .grid { grid-template-columns: 1fr; }
+  .span-4, .span-3, .span-2 { grid-column: auto; }
+  .tall { grid-row: auto; }
+  .tall .shot { width: 70%; max-height: 420px; }
+  .steps { grid-template-columns: 1fr; }
+  .faq { grid-template-columns: 1fr; }
+  .keycap { width: 64px; height: 58px; font-size: 20px; border-radius: 14px; right: 6px; top: -22px; }
+  .sec { padding-top: 100px; }
 }
-.btn-main { background: var(--graphite); color: #F3F3EF; box-shadow: 0 5px 0 #000; }
-.btn-main:hover { transform: translateY(2px); box-shadow: 0 3px 0 #000; }
-.btn-main:active { transform: translateY(5px); box-shadow: 0 0 0 #000; }
-.btn-main .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--mint); }
-.btn-plain { background: transparent; color: var(--ink); }
-.btn-plain:hover { background: rgba(255,255,255,.25); }
-
-/* ── Сцена: заголовок + ноутбук, который ведёт рассказ ── */
-.stage { position: relative; height: 560vh; }
-.stage-pin { position: sticky; top: 0; height: 100vh; min-height: 640px; overflow: hidden; display: grid; grid-template-columns: 1fr; place-items: center; }
-
-.copy { position: absolute; left: max(20px, calc(50% - 590px)); top: 0; bottom: 0; width: min(440px, 40vw); display: grid; align-items: center; z-index: 5; pointer-events: none; }
-.copy > * { grid-area: 1 / 1; pointer-events: auto; transition: opacity .45s ease, transform .45s ease; }
-.copy .step { opacity: 0; transform: translateY(18px); visibility: hidden; }
-.stage[data-step="1"] .copy [data-for="1"],
-.stage[data-step="2"] .copy [data-for="2"],
-.stage[data-step="3"] .copy [data-for="3"],
-.stage[data-step="4"] .copy [data-for="4"] { opacity: 1; transform: none; visibility: visible; }
-.step h2 { font-size: clamp(28px, 3vw, 40px); margin-bottom: 18px; }
-.step p { color: var(--ink-soft); max-width: 34ch; }
-.step .keys { display: inline-flex; gap: 6px; margin-top: 18px; }
-.kbd { font-family: var(--display); font-size: 15px; font-weight: 500; padding: 8px 12px; border-radius: 9px; background: var(--paper); border: 2px solid var(--graphite); box-shadow: 0 3px 0 var(--graphite); }
-
-/* Первый экран: заголовок над ноутбуком */
-.hero-text { position: absolute; top: 108px; left: 0; right: 0; text-align: center; z-index: 6; transition: opacity .45s ease, transform .45s ease; }
-.hero-text h1 { font-size: clamp(34px, 5vw, 68px); }
-.hero-text h1 span { display: block; }
-.hero-text p { margin: 18px auto 0; max-width: 46ch; color: var(--ink-soft); font-size: 19px; }
-.hero-text .actions { margin-top: 28px; display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; }
-.stage:not([data-step="0"]) .hero-text { opacity: 0; transform: translateY(-30px); pointer-events: none; }
-
-/* ── Ноутбук ── */
-/* На первом экране ноутбук выглядывает снизу под заголовком; дальше встаёт справа по центру */
-.laptop {
-  --w: min(860px, 86vw, calc((100vh - 480px) * 1.8));
-  position: absolute; width: var(--w); left: 50%; top: 100%;
-  transform: translate(-50%, -76%);
-  transition: transform .8s cubic-bezier(.2,.8,.2,1), width .8s cubic-bezier(.2,.8,.2,1), top .8s cubic-bezier(.2,.8,.2,1);
-  perspective: 2200px; z-index: 4;
-}
-.stage:not([data-step="0"]) .laptop { --w: min(720px, 56vw, calc((100vh - 120px) * 1.45)); top: 50%; transform: translate(-22%, -50%); }
-.lid {
-  position: relative; border-radius: 22px 22px 6px 6px; padding: 2.1% 2.1% 2.6%;
-  background: linear-gradient(180deg, #2B2F31, #1B1E20);
-  box-shadow: inset 0 0 0 1.5px #4A4F53, 0 30px 60px -30px rgba(40,25,5,.7);
-  transform-origin: 50% 100%; transform: rotateX(0deg);
-}
-.screen { position: relative; aspect-ratio: 16 / 10; border-radius: 10px; overflow: hidden; background: #000; container-type: inline-size; }
-.base {
-  position: relative; height: calc(var(--w) * .034); margin: 0 -7%;
-  background: linear-gradient(180deg, #E3E5E7 0%, #C6C9CD 55%, #9EA2A7 100%);
-  border-radius: 2px 2px 22px 22px / 2px 2px 14px 14px;
-  box-shadow: 0 24px 40px -18px rgba(50,30,5,.65);
-}
-.base::before { content: ""; position: absolute; left: 50%; top: 0; width: 14%; height: 42%; transform: translateX(-50%); background: linear-gradient(180deg, #A9ADB2, #C9CCD0); border-radius: 0 0 10px 10px; }
-
-/* Экран рисуется в «настоящих» 1000×625 и масштабируется под размер ноутбука */
-.ui { position: absolute; left: 0; top: 0; width: 1000px; height: 625px; transform-origin: 0 0; transform: scale(var(--k, .8)); font-family: var(--body); color: #E9EEEC; }
-.layer { position: absolute; inset: 0; opacity: 0; transition: opacity .5s ease; }
-.stage[data-step="0"] .l-lib, .stage[data-step="1"] .l-lib { opacity: 1; }
-.stage[data-step="2"] .l-health { opacity: 1; }
-.stage[data-step="3"] .l-game, .stage[data-step="4"] .l-game { opacity: 1; }
-
-/* Загрузка: экран сначала чёрный, кристалл вспыхивает, потом появляется программа */
-.boot { position: absolute; inset: 0; background: #000; display: grid; place-items: center; z-index: 9; transition: opacity .6s ease .1s; }
-.boot img { width: 120px; opacity: 0; transform: scale(.7) rotate(-20deg); transition: opacity .5s ease, transform .9s cubic-bezier(.2,1.4,.3,1); }
-.booted .boot img { opacity: 1; transform: none; }
-.ready .boot { opacity: 0; pointer-events: none; }
-
-/* — Окно программы — */
-.app { position: absolute; inset: 0; background: var(--graphite); display: grid; grid-template-columns: 76px 1fr; }
-.side { margin: 14px 0 14px 14px; background: #0D1110; border-radius: 22px; display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 14px 0; }
-.side img { width: 36px; margin-bottom: 10px; }
-.side i { width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; }
-.side i.on { background: #222A28; }
-.side i b { width: 16px; height: 16px; border-radius: 4px; border: 2.4px solid #8E9A96; }
-.side i.on b { border-color: var(--mint); }
-.side .play { margin-top: auto; width: 46px; height: 46px; border-radius: 14px; background: var(--mint); display: grid; place-items: center; }
-.side .play::before { content: ""; border-left: 13px solid var(--mint-ink); border-top: 8px solid transparent; border-bottom: 8px solid transparent; margin-left: 4px; }
-.main { padding: 22px 24px 0 22px; display: flex; flex-direction: column; min-width: 0; }
-.bar { display: flex; align-items: center; gap: 14px; }
-.bar h3 { font-family: var(--body); font-size: 24px; font-weight: 700; letter-spacing: 0; }
-.bar .count { color: #8E9A96; font-size: 15px; }
-.bar .search { margin-left: auto; width: 260px; height: 38px; border-radius: 12px; background: var(--graphite-2); color: #6E7A76; font-size: 14px; display: flex; align-items: center; padding: 0 14px; }
-.tiles { margin-top: 18px; display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
-.tile { background: var(--graphite-2); border-radius: 14px; overflow: hidden; transition: opacity .4s, transform .5s cubic-bezier(.2,1.3,.3,1), box-shadow .4s; }
-.tile .pic { height: 118px; }
-.tile .t { padding: 9px 11px 11px; font-size: 13px; font-weight: 600; line-height: 1.25; }
-.tile .t small { display: block; color: #8E9A96; font-weight: 500; font-size: 11.5px; margin-top: 3px; }
-.tile.off { opacity: .4; filter: grayscale(1); }
-.tile.new { opacity: 0; transform: scale(.6); }
-.stage[data-step="1"] .tile.new { opacity: 1; transform: none; box-shadow: 0 0 0 2px var(--mint); }
-.stage[data-step="1"] .tile.new:nth-last-of-type(2) { transition-delay: .12s; }
-.stage[data-step="1"] .tile.new:nth-last-of-type(1) { transition-delay: .24s; }
-/* Картинки модов — абстрактные «миниатюры» из градиентов */
-.p1 { background: radial-gradient(circle at 50% 38%, #3A2A20 0 22%, transparent 23%), linear-gradient(160deg, #B98B6A, #6B4A3A); }
-.p2 { background: linear-gradient(180deg, transparent 55%, #6E8C7A 55% 80%, #4F6B5B 80%), linear-gradient(160deg, #E6D7C3, #CDB79B); }
-.p3 { background: radial-gradient(ellipse at 50% 100%, #D86F8E 0 40%, transparent 41%), linear-gradient(160deg, #F2C7D3, #E3A2B6); }
-.p4 { background: repeating-linear-gradient(90deg, #8C6A4A 0 14px, #7A5A3D 14px 28px); }
-.p5 { background: radial-gradient(circle at 50% 50%, #F4E2A6 0 18%, transparent 19%), linear-gradient(160deg, #3C4C66, #22304A); }
-.p6 { background: linear-gradient(135deg, #9EC6D9 0 50%, #7AA9C2 50%); }
-.p7 { background: radial-gradient(circle at 30% 40%, #E5B04F 0 14%, transparent 15%), radial-gradient(circle at 65% 60%, #E07A5F 0 16%, transparent 17%), #3D5A47; }
-.p8 { background: linear-gradient(160deg, #CFC6F2, #8F84C9); }
-.p9 { background: repeating-linear-gradient(45deg, #D9D2C5 0 8px, #CBC2B3 8px 16px); }
-.p10 { background: radial-gradient(circle at 50% 120%, #2C2C2C 0 45%, transparent 46%), linear-gradient(160deg, #F5D0A9, #E8A87C); }
-
-.status { margin: auto -2px 14px; height: 46px; border-radius: 14px; background: #1A201F; display: flex; align-items: center; padding: 0 16px; font-size: 14px; color: #A7B2AE; position: relative; }
-.status b { color: #E9EEEC; font-weight: 600; margin-right: 6px; }
-
-/* Перетаскивание архива на шаге 1 */
-.drop { position: absolute; inset: 70px 24px 74px 98px; border: 2.5px dashed var(--mint); border-radius: 18px; background: rgba(111,220,193,.08); display: grid; place-items: center; opacity: 0; transition: opacity .4s; pointer-events: none; }
-.drop span { font-size: 20px; font-weight: 600; color: var(--mint); }
-.zip { position: absolute; width: 74px; height: 92px; border-radius: 10px; background: #F1E6D2; box-shadow: 0 14px 30px rgba(0,0,0,.4); left: 640px; top: 690px; transform: rotate(10deg); }
-.zip::before { content: ""; position: absolute; left: 31px; top: 0; width: 12px; height: 60px; background: repeating-linear-gradient(180deg, #8A7451 0 6px, transparent 6px 12px); }
-.zip::after { content: "zip"; position: absolute; bottom: 8px; left: 0; right: 0; text-align: center; font: 700 13px var(--body); color: #6A5B45; }
-.stage[data-step="1"] .zip { animation: zip-in 1.6s cubic-bezier(.3,.7,.3,1) forwards; }
-.stage[data-step="1"] .drop { animation: drop-flash 1.6s ease forwards; }
-@keyframes zip-in { 0% { left: 640px; top: 690px; transform: rotate(10deg); } 55% { left: 460px; top: 250px; transform: rotate(-4deg); opacity: 1; } 75% { left: 463px; top: 262px; transform: scale(.9); opacity: 1; } 100% { left: 463px; top: 262px; transform: scale(.2); opacity: 0; } }
-@keyframes drop-flash { 0%, 30% { opacity: 0; } 45%, 75% { opacity: 1; } 100% { opacity: 0; } }
-
-/* — Проверка модов — */
-.l-health .app { grid-template-columns: 76px 1fr; }
-.issues { margin-top: 22px; display: grid; gap: 12px; }
-.issue { background: var(--graphite-2); border-radius: 14px; padding: 16px 18px; display: grid; grid-template-columns: 34px 1fr auto; gap: 14px; align-items: center; }
-.issue .ic { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; font-weight: 800; font-size: 18px; }
-.issue.bad .ic { background: #3A2422; color: #F08A7E; }
-.issue.warn .ic { background: #3A3222; color: #F0C27E; }
-.issue h4 { margin: 0; font-size: 16px; }
-.issue p { font-size: 13.5px; color: #93A09B; margin-top: 2px; }
-.issue .fix { font-size: 13px; font-weight: 700; padding: 9px 14px; border-radius: 10px; background: #26302D; color: #DDE7E3; }
-.fixall { align-self: flex-start; margin-top: 18px; background: var(--mint); color: var(--mint-ink); font-weight: 700; border-radius: 12px; padding: 12px 20px; font-size: 15px; }
-
-/* — Игра + оверлей — */
-.l-game { background: #000; }
-.scene { position: absolute; inset: 0; }
-.panel {
-  position: absolute; left: 14px; top: 14px; bottom: 14px; width: 300px; border-radius: 16px; padding: 16px;
-  background: rgba(20,24,23,.72); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-  box-shadow: inset 0 0 0 1px rgba(255,255,255,.08);
-  transform: translateX(-340px); transition: transform .6s cubic-bezier(.2,.9,.2,1) .25s;
-}
-.stage[data-step="3"] .panel { transform: none; }
-.panel .ph { display: flex; gap: 10px; align-items: center; }
-.panel .ph img { width: 24px; }
-.panel .ph b { font-size: 14px; display: block; }
-.panel .ph small { color: #93A09B; font-size: 11.5px; }
-.panel .tabs { margin-top: 14px; background: rgba(255,255,255,.07); border-radius: 10px; padding: 3px; display: grid; grid-template-columns: 1fr 1fr; font-size: 12.5px; text-align: center; color: #93A09B; }
-.panel .tabs span { padding: 6px; border-radius: 8px; }
-.panel .tabs span:first-child { background: rgba(255,255,255,.12); color: #fff; }
-.panel .make { margin-top: 12px; background: var(--mint); color: var(--mint-ink); font-weight: 700; font-size: 13px; text-align: center; border-radius: 10px; padding: 9px; }
-.cp { margin-top: 10px; background: rgba(255,255,255,.07); border-radius: 12px; padding: 11px 12px; }
-.cp b { font-size: 13.5px; display: block; }
-.cp small { color: #93A09B; font-size: 11.5px; }
-.cp .go { margin-top: 9px; background: rgba(111,220,193,.16); color: var(--mint); font-weight: 700; font-size: 12.5px; text-align: center; border-radius: 9px; padding: 7px; }
-.cp.hl { box-shadow: inset 0 0 0 1.5px var(--mint); }
-
-/* Окно в стиле игры: «Вернуться к точке?» */
-.dialog { position: absolute; left: 50%; top: 50%; width: 420px; transform: translate(-50%, -40%) scale(.9); opacity: 0; transition: opacity .35s ease .3s, transform .5s cubic-bezier(.2,1.3,.3,1) .3s; background: #FDFBF7; color: #23466E; border-radius: 14px; padding: 24px 26px 20px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,.5); }
-.stage[data-step="4"] .dialog { opacity: 1; transform: translate(-50%, -50%); }
-.dialog h4 { margin: 0 0 10px; font-size: 20px; font-weight: 700; color: #1F4E8C; }
-.dialog p { font-size: 14px; color: #3D5F86; }
-.dialog .btns { margin-top: 18px; display: flex; justify-content: center; gap: 10px; }
-.dialog .btns span { padding: 9px 18px; border-radius: 22px; font-weight: 700; font-size: 14px; border: 2px solid #2F6DB5; color: #2F6DB5; }
-.dialog .btns span:first-child { background: #2F6DB5; color: #fff; }
-.stage[data-step="4"] .scene-dim { opacity: 1; }
-.scene-dim { position: absolute; inset: 0; background: rgba(10,20,40,.35); opacity: 0; transition: opacity .4s; }
-
-/* ── Коробок ── */
-.buddy { position: absolute; right: 34px; bottom: 30px; width: 116px; z-index: 3; }
-.buddy svg { width: 100%; overflow: visible; }
-.buddy .body { transform-origin: 60px 50px; animation: breathe 3.2s ease-in-out infinite; }
-.buddy .lid-l { transform-origin: 18px 16px; animation: flap-l 3.2s ease-in-out infinite; }
-.buddy .lid-r { transform-origin: 102px 16px; animation: flap-r 3.2s ease-in-out infinite; }
-.buddy .eyes { animation: blink 4.6s infinite; transform-origin: 60px 24px; }
-@keyframes breathe { 0%, 100% { transform: scale(1, 1); } 50% { transform: scale(1.02, .97); } }
-@keyframes flap-l { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-8deg); } }
-@keyframes flap-r { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(8deg); } }
-@keyframes blink { 0%, 94%, 100% { transform: scaleY(1); } 96% { transform: scaleY(.1); } }
-.bubble {
-  position: absolute; right: 64px; bottom: 88px; width: 250px; background: #F5F2EA; color: #22201C;
-  border-radius: 16px 16px 4px 16px; padding: 12px 14px; font-size: 14px; line-height: 1.35; font-weight: 500;
-  box-shadow: 0 10px 30px rgba(0,0,0,.35);
-}
-.bubble span { display: none; }
-.stage[data-step="0"] .bubble [data-for="0"], .stage[data-step="1"] .bubble [data-for="1"], .stage[data-step="2"] .bubble [data-for="2"] { display: inline; }
-.stage[data-step="3"] .bubble, .stage[data-step="4"] .bubble { opacity: 0; }
-.bubble { transition: opacity .3s; }
-.hop { animation: hop .5s cubic-bezier(.3,1.6,.4,1); }
-@keyframes hop { 0% { transform: translateY(0); } 40% { transform: translateY(-14px); } 100% { transform: translateY(0); } }
-
-/* Прогресс рассказа справа */
-.dots { position: absolute; right: max(20px, calc(50% - 600px)); top: 50%; transform: translateY(-50%); display: grid; gap: 10px; z-index: 6; }
-.dots i { width: 9px; height: 9px; border-radius: 50%; background: rgba(42,36,28,.25); transition: background .3s, transform .3s; }
-.stage[data-step="0"] .dots i:nth-child(1), .stage[data-step="1"] .dots i:nth-child(2), .stage[data-step="2"] .dots i:nth-child(3), .stage[data-step="3"] .dots i:nth-child(4), .stage[data-step="4"] .dots i:nth-child(5) { background: var(--ink); transform: scale(1.3); }
-
-/* ── Заметки: что ещё умеет ── */
-.notes-sec { padding: 120px 0 80px; }
-.notes-sec h2 { font-size: clamp(30px, 4vw, 52px); max-width: 15ch; }
-.notes { margin-top: 56px; display: grid; grid-template-columns: repeat(12, 1fr); gap: 26px; align-items: start; }
-.note { background: var(--paper); padding: 28px 26px 30px; border-radius: 4px; box-shadow: 0 2px 0 rgba(0,0,0,.05), 0 18px 30px -18px rgba(60,40,10,.45); position: relative; }
-.note::before { content: ""; position: absolute; top: -12px; left: 50%; width: 96px; height: 26px; transform: translateX(-50%) rotate(-2deg); background: rgba(232,214,170,.78); box-shadow: inset 0 0 0 1px rgba(150,120,70,.15); }
-.note h3 { font-size: 21px; margin-bottom: 10px; font-weight: 500; }
-.note p { color: var(--ink-soft); font-size: 16.5px; }
-.note:nth-child(1) { grid-column: 1 / span 5; transform: rotate(-1.4deg); }
-.note:nth-child(2) { grid-column: 7 / span 6; transform: rotate(1deg); margin-top: 40px; }
-.note:nth-child(3) { grid-column: 2 / span 5; transform: rotate(.8deg); }
-.note:nth-child(4) { grid-column: 8 / span 5; transform: rotate(-1deg); margin-top: -20px; }
-.note .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
-.note .tags span { font-size: 13.5px; padding: 4px 10px; border-radius: 20px; background: #E9DCC6; color: var(--ink); }
-
-/* ── Вопросы ── */
-.faq-sec { padding: 60px 0 100px; display: grid; grid-template-columns: 1fr 1.6fr; gap: 60px; }
-.faq-sec h2 { font-size: clamp(30px, 3.6vw, 46px); }
-.faq-sec details { border-top: 2px solid rgba(42,36,28,.18); padding: 18px 0; }
-.faq-sec details:last-child { border-bottom: 2px solid rgba(42,36,28,.18); }
-.faq-sec summary { cursor: pointer; font-weight: 600; font-size: 19px; list-style: none; display: flex; justify-content: space-between; gap: 20px; }
-.faq-sec summary::-webkit-details-marker { display: none; }
-.faq-sec summary::after { content: "+"; font-family: var(--display); font-size: 22px; line-height: 1; transition: transform .25s; }
-.faq-sec details[open] summary::after { transform: rotate(45deg); }
-.faq-sec details p { margin-top: 10px; color: var(--ink-soft); max-width: 62ch; }
-
-/* ── Посылка: скачать ── */
-.parcel-sec { padding: 40px 0 120px; }
-.parcel { position: relative; background: var(--box); border-radius: 12px; padding: 70px 40px 56px; text-align: center; box-shadow: inset 0 -10px 0 rgba(0,0,0,.08), 0 30px 50px -30px rgba(60,35,5,.7); }
-/* Скотч только по краям коробки — текст остаётся на чистом картоне */
-.parcel::before, .parcel::after { content: ""; position: absolute; left: calc(50% - 30px); width: 60px; height: 64px; background: rgba(120,80,35,.45); }
-.parcel::before { top: 0; }
-.parcel::after { bottom: 0; }
-.parcel > * { position: relative; }
-.parcel .buddy-big { width: 170px; margin: -140px auto 26px; }
-.parcel h2 { font-size: clamp(30px, 4.2vw, 56px); color: #2A1C0D; }
-.parcel p { margin: 14px auto 0; color: #4A3218; max-width: 44ch; }
-.parcel .actions { margin-top: 30px; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
-.parcel .btn-plain { border-color: #2A1C0D; color: #2A1C0D; }
-.parcel small { display: block; margin-top: 18px; color: #4A3218; font-size: 14.5px; }
-.label { position: absolute; right: 40px; top: 30px; background: #F7F1E4; color: #4A3218; padding: 10px 14px; font-size: 13px; line-height: 1.4; text-align: left; transform: rotate(3deg); border-radius: 3px; }
-
-footer { padding: 30px 0 50px; font-size: 14.5px; color: var(--ink-soft); }
-footer .wrap { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
-
-/* ── Телефоны и узкие окна ── */
-@media (max-width: 860px) {
-  .top nav a:not(:last-child) { display: none; }
-  .stage { height: 520vh; }
-  .hero-text { top: 92px; padding: 0 20px; }
-  .hero-text p { font-size: 17px; }
-  .laptop { --w: 94vw; transform: translate(-50%, -82%); }
-  .stage:not([data-step="0"]) .laptop { --w: 92vw; top: 84px; transform: translate(-50%, 0); }
-  .copy { left: 20px; right: 20px; width: auto; top: calc(84px + 92vw * .68 + 28px); bottom: auto; align-items: start; }
-  .step h2 { font-size: 26px; margin-bottom: 10px; }
-  .step p { font-size: 16px; }
-  .dots { display: none; }
-  .notes { grid-template-columns: 1fr; }
-  .note:nth-child(n) { grid-column: auto; margin-top: 0; }
-  .faq-sec { grid-template-columns: 1fr; gap: 20px; }
-  .label { display: none; }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation: none !important; transition-duration: 0s !important; transition-delay: 0s !important; }
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  html { scroll-behavior: auto; }
+  .showcase { --p: 1 !important; }
 }
 </style>
 </head>
 <body>
+<div class="wallpaper" aria-hidden="true"><i></i><i></i><i></i></div>
 
-<header class="top">
-  <div class="wrap">
-    <a class="brand" href="#"><img src="logo.png" alt="">Sims Mod Manager</a>
-    <nav aria-label="Разделы">
-      <a href="#more">Возможности</a>
-      <a href="#faq">Вопросы</a>
-      <a href="#download">Скачать</a>
-    </nav>
-  </div>
-</header>
+<template id="buddy-svg">
+  <svg viewBox="0 -4 120 66" aria-hidden="true">
+    <rect x="34" y="44" width="11" height="13" rx="4" fill="#4A5654"/>
+    <rect x="75" y="44" width="11" height="13" rx="4" fill="#4A5654"/>
+    <g class="body">
+      <polygon class="flap-l" points="18,14 3,27 5,35 18,26" fill="#B07D46"/>
+      <polygon class="flap-r" points="102,14 117,27 115,35 102,26" fill="#B07D46"/>
+      <rect x="16" y="6" width="88" height="42" rx="6" fill="#C9935A"/>
+      <rect x="16" y="42" width="88" height="6" rx="3" fill="#B5824B"/>
+      <rect x="56" y="6" width="8" height="42" fill="#9E6D3A"/>
+      <g class="eyes">
+        <ellipse cx="40" cy="24" rx="7" ry="8" fill="#141817"/><circle class="pupil" cx="40" cy="24" r="3" fill="#F2F2EE"/>
+        <ellipse cx="80" cy="24" rx="7" ry="8" fill="#141817"/><circle class="pupil" cx="80" cy="24" r="3" fill="#F2F2EE"/>
+      </g>
+      <path class="happy" d="M34,27 Q40,19 46,27 M74,27 Q80,19 86,27" stroke="#141817" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+      <g class="blush"><ellipse cx="29" cy="33" rx="5" ry="2.5" fill="#F08FA6"/><ellipse cx="91" cy="33" rx="5" ry="2.5" fill="#F08FA6"/></g>
+    </g>
+  </svg>
+</template>
 
-<main>
-  <section class="stage" id="stage" data-step="0" aria-label="Как работает программа">
-    <div class="stage-pin">
+<nav class="nav" aria-label="Разделы">
+  <a class="brand" href="#top"><img src="logo.png" alt="">Sims Mod Manager</a>
+  <a class="link" href="#ingame">В игре</a>
+  <a class="link" href="#features">Возможности</a>
+  <a class="link" href="#faq">Вопросы</a>
+  <a class="btn btn-mint" href="#download">Скачать</a>
+</nav>
 
-      <div class="hero-text">
-        <h1><span>Моды для Sims 4,</span><span>разложенные по коробкам</span></h1>
-        <p>Ставит моды из архивов, находит те, что ломают игру, и откатывает сохранение прямо из игры — без танцев с папками.</p>
-        <div class="actions">
-          <a class="btn btn-main" href="#download"><span class="dot"></span>Скачать для Windows</a>
-          <a class="btn btn-plain" href="#step-1">Посмотреть, как работает</a>
-        </div>
-      </div>
-
-      <div class="copy">
-        <div class="step" data-for="1" id="step-1">
-          <h2>Брось архив в окно</h2>
-          <p>Zip, rar или 7z — программа сама распакует, разложит файлы по нужным папкам и покажет, что появилось. Ничего не нужно искать в «Документах».</p>
-        </div>
-        <div class="step" data-for="2">
-          <h2>Сломанный мод найдётся сам</h2>
-          <p>После вылета Коробок читает отчёты игры, называет виновника и предлагает выключить его одним нажатием. Выключенный мод не удаляется — вернуть можно в любой момент.</p>
-        </div>
-        <div class="step" data-for="3">
-          <h2>Точки сохранения прямо в игре</h2>
-          <p>Нажми клавишу — слева выедет панель. Сделай точку перед свадьбой, переездом или экспериментом с читами. Хранятся они отдельно и не засоряют список сохранений.</p>
-          <div class="keys"><span class="kbd">F9</span></div>
-        </div>
-        <div class="step" data-for="4">
-          <h2>Не понравилось? Вернись</h2>
-          <p>Выбери точку, подтверди в окне игры и нажми «Продолжить». Текущая игра при этом тоже сохранится, так что передумать можно и в обратную сторону.</p>
-        </div>
-      </div>
-
-      <div class="laptop" id="laptop" aria-hidden="true">
-        <div class="lid" id="lid">
-          <div class="screen" id="screen">
-            <div class="ui">
-
-              <!-- Библиотека модов -->
-              <div class="layer l-lib">
-                <div class="app">
-                  <div class="side"><img src="logo.png" alt=""><i class="on"><b></b></i><i><b></b></i><i><b></b></i><i><b></b></i><span class="play"></span></div>
-                  <div class="main">
-                    <div class="bar"><h3>Моды</h3><span class="count">248</span><span class="search">Найти мод…</span></div>
-                    <div class="tiles">
-                      <div class="tile"><div class="pic p1"></div><div class="t">Короткое каре<small>Причёски</small></div></div>
-                      <div class="tile"><div class="pic p2"></div><div class="t">Диван «Мох»<small>Мебель</small></div></div>
-                      <div class="tile"><div class="pic p3"></div><div class="t">Летний сарафан<small>Одежда</small></div></div>
-                      <div class="tile off"><div class="pic p4"></div><div class="t">Старый паркет<small>Выключен</small></div></div>
-                      <div class="tile"><div class="pic p5"></div><div class="t">Ночник «Луна»<small>Свет</small></div></div>
-                      <div class="tile"><div class="pic p6"></div><div class="t">Окна в пол<small>Строительство</small></div></div>
-                      <div class="tile"><div class="pic p7"></div><div class="t">Больше черт характера<small>Скрипт</small></div></div>
-                      <div class="tile new"><div class="pic p8"></div><div class="t">Платье «Лаванда»<small>Одежда · новый</small></div></div>
-                      <div class="tile new"><div class="pic p9"></div><div class="t">Плитка для ванной<small>Строительство · новый</small></div></div>
-                      <div class="tile new"><div class="pic p10"></div><div class="t">Кудри до плеч<small>Причёски · новый</small></div></div>
-                    </div>
-                    <div class="status"><b>248 модов</b> · 1 выключен · сохранения в безопасности</div>
-                  </div>
-                </div>
-                <div class="drop"><span>Отпусти, чтобы установить</span></div>
-                <div class="zip"></div>
-              </div>
-
-              <!-- Проверка -->
-              <div class="layer l-health">
-                <div class="app">
-                  <div class="side"><img src="logo.png" alt=""><i><b></b></i><i class="on"><b></b></i><i><b></b></i><i><b></b></i><span class="play"></span></div>
-                  <div class="main">
-                    <div class="bar"><h3>Состояние</h3><span class="count">последний запуск игры</span></div>
-                    <div class="issues">
-                      <div class="issue bad"><span class="ic">!</span><div><h4>Больше черт характера</h4><p>Вызвал ошибку при загрузке семьи. Скрипт устарел после обновления игры.</p></div><span class="fix">Выключить</span></div>
-                      <div class="issue bad"><span class="ic">!</span><div><h4>Старый паркет</h4><p>Ломает режим строительства — найден в отчёте об ошибке.</p></div><span class="fix">Выключить</span></div>
-                      <div class="issue warn"><span class="ic">2</span><div><h4>Два одинаковых мода</h4><p>Кудри до плеч лежат в двух папках — достаточно одной копии.</p></div><span class="fix">Оставить одну</span></div>
-                    </div>
-                    <span class="fixall">Исправить всё</span>
-                    <div class="status"><b>3 проблемы</b> · исправление можно отменить</div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Игра с оверлеем -->
-              <div class="layer l-game">
-                <svg class="scene" viewBox="0 0 1000 625" preserveAspectRatio="xMidYMid slice">
-                  <defs>
-                    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8FB8D8"/><stop offset="1" stop-color="#C9E0EE"/></linearGradient>
-                    <linearGradient id="floor" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#C98E5A"/><stop offset="1" stop-color="#A86F40"/></linearGradient>
-                  </defs>
-                  <rect width="1000" height="625" fill="#6E9A63"/>
-                  <!-- Пол и стены «кукольного домика» -->
-                  <polygon points="200,330 560,170 940,330 580,520" fill="url(#floor)"/>
-                  <g stroke="#9A6436" stroke-width="2" opacity=".35">
-                    <line x1="290" y1="290" x2="650" y2="450"/><line x1="380" y1="250" x2="740" y2="410"/><line x1="470" y1="210" x2="830" y2="370"/>
-                  </g>
-                  <polygon points="200,330 560,170 560,40 200,200" fill="#E9DCCB"/>
-                  <polygon points="560,170 940,330 940,200 560,40" fill="#D9C6AE"/>
-                  <polygon points="300,250 400,206 400,130 300,174" fill="url(#sky)" stroke="#FFF" stroke-width="5"/>
-                  <polygon points="660,180 780,230 780,150 660,100" fill="url(#sky)" stroke="#FFF" stroke-width="5"/>
-                  <!-- Диван -->
-                  <polygon points="420,330 560,268 640,304 500,366" fill="#5E8C78"/>
-                  <polygon points="420,330 500,366 500,392 420,356" fill="#4A7262"/>
-                  <polygon points="500,366 640,304 640,330 500,392" fill="#3F6355"/>
-                  <polygon points="420,330 560,268 560,240 420,302" fill="#6E9E89"/>
-                  <!-- Растение и торшер -->
-                  <ellipse cx="760" cy="372" rx="26" ry="10" fill="#7A4A2A"/>
-                  <path d="M760 370 C 730 330, 740 300, 760 280 C 780 300, 790 330, 760 370Z" fill="#3E7D4E"/>
-                  <path d="M760 368 C 790 340, 805 330, 815 318 C 800 350, 785 360, 760 368Z" fill="#4E9460"/>
-                  <line x1="330" y1="390" x2="330" y2="290" stroke="#2F2F2F" stroke-width="5"/>
-                  <path d="M305 292 L355 292 L345 262 L315 262Z" fill="#F4D58D"/>
-                  <!-- Два человечка -->
-                  <g>
-                    <ellipse cx="610" cy="430" rx="22" ry="7" fill="rgba(0,0,0,.18)"/>
-                    <rect x="596" y="370" width="28" height="58" rx="12" fill="#3B5B8C"/>
-                    <circle cx="610" cy="356" r="15" fill="#E8B48F"/>
-                    <path d="M595 352 Q610 334 625 352 Q622 342 610 340 Q598 342 595 352Z" fill="#3A2A20"/>
-                  </g>
-                  <g>
-                    <ellipse cx="680" cy="410" rx="22" ry="7" fill="rgba(0,0,0,.18)"/>
-                    <rect x="666" y="350" width="28" height="58" rx="12" fill="#C9677F"/>
-                    <circle cx="680" cy="336" r="15" fill="#C58A63"/>
-                    <path d="M664 336 Q666 314 680 316 Q695 314 697 338 Q694 326 680 326 Q668 326 664 336Z" fill="#7A3B2A"/>
-                  </g>
-                  <!-- Нижняя панель времени, как в любой симуляции -->
-                  <rect x="380" y="572" width="240" height="40" rx="20" fill="rgba(255,255,255,.85)"/>
-                  <polygon points="452,582 452,602 468,592" fill="#2F6DB5"/><polygon points="486,582 486,602 498,592" fill="#2F6DB5"/><polygon points="496,582 496,602 508,592" fill="#2F6DB5"/>
-                  <rect x="524" y="582" width="6" height="20" rx="2" fill="#E05A5A"/><rect x="534" y="582" width="6" height="20" rx="2" fill="#E05A5A"/>
-                </svg>
-                <div class="scene-dim"></div>
-
-                <div class="panel">
-                  <div class="ph"><img src="logo.png" alt=""><div><b>Sims Mod Manager</b><small>В игре · Семья Солнцевых</small></div></div>
-                  <div class="tabs"><span>Точки сохранения</span><span>Команды</span></div>
-                  <div class="make">+ Сделать точку</div>
-                  <div class="cp hl"><b>Перед свадьбой</b><small>сегодня, 21:10 · 4,1 МБ</small><div class="go">Откатить</div></div>
-                  <div class="cp"><b>Переехали в дом у моря</b><small>вчера, 19:42 · 4,0 МБ</small><div class="go">Откатить</div></div>
-                  <div class="cp"><b>Автосохранение</b><small>вчера, 18:00 · 3,9 МБ</small><div class="go">Откатить</div></div>
-                </div>
-
-                <div class="dialog">
-                  <h4>Вернуться к точке «Перед свадьбой»?</h4>
-                  <p>Текущая игра уже сохранена отдельной точкой. Игра выйдет в главное меню — там нажми «Продолжить».</p>
-                  <div class="btns"><span>Вернуться к точке</span><span>Остаться</span></div>
-                </div>
-              </div>
-
-              <!-- Коробок живёт в углу экрана -->
-              <div class="buddy" id="buddy">
-                <div class="bubble">
-                  <span data-for="0">Привет! Я Коробок. Слежу, чтобы моды не ломали игру.</span>
-                  <span data-for="1">Распаковал архив: три новых мода уже в игре.</span>
-                  <span data-for="2">Нашёл, кто ломал игру. Выключить их?</span>
-                </div>
-                <svg viewBox="0 -4 120 66" aria-hidden="true">
-                  <rect x="34" y="44" width="11" height="13" rx="4" fill="#4A5654"/>
-                  <rect x="75" y="44" width="11" height="13" rx="4" fill="#4A5654"/>
-                  <g class="body">
-                    <polygon class="lid-l" points="18,14 3,27 5,35 18,26" fill="#B07D46"/>
-                    <polygon class="lid-r" points="102,14 117,27 115,35 102,26" fill="#B07D46"/>
-                    <rect x="16" y="6" width="88" height="42" rx="6" fill="#C9935A"/>
-                    <rect x="16" y="42" width="88" height="6" rx="3" fill="#B5824B"/>
-                    <rect x="56" y="6" width="8" height="42" fill="#9E6D3A"/>
-                    <g class="eyes">
-                      <ellipse cx="40" cy="24" rx="7" ry="8" fill="#141817"/><circle cx="42" cy="22" r="3" fill="#F2F2EE"/>
-                      <ellipse cx="80" cy="24" rx="7" ry="8" fill="#141817"/><circle cx="82" cy="22" r="3" fill="#F2F2EE"/>
-                    </g>
-                  </g>
-                </svg>
-              </div>
-
-              <div class="boot"><img src="logo.png" alt=""></div>
-            </div>
-          </div>
-        </div>
-        <div class="base"></div>
-      </div>
-
-      <div class="dots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
-    </div>
-  </section>
-
-  <section class="notes-sec" id="more">
-    <div class="wrap">
-      <h2>И ещё немного полезного на столе</h2>
-      <div class="notes">
-        <article class="note">
-          <h3>Погода и сезоны для одежды</h3>
-          <p>Отметь, в какую погоду и в какой сезон сим носит вещь, — прямо в программе, без редакторов пакетов. Если для сезонов не хватает дополнения, программа предупредит.</p>
-          <div class="tags"><span>Жара</span><span>Холод</span><span>Зима</span><span>Лето</span></div>
-        </article>
-        <article class="note">
-          <h3>Копия сохранений перед каждой игрой</h3>
-          <p>Нажимаешь «Играть» — и папка сохранений тихо копируется. Хранятся последние десять копий, лишние удаляются сами.</p>
-        </article>
-        <article class="note">
-          <h3>Видно, каких дополнений не хватает</h3>
-          <p>Если вещь сделана для дополнения, которого у тебя нет, на карточке мода будет пометка — и станет понятно, почему она не появляется в игре.</p>
-        </article>
-        <article class="note">
-          <h3>Обновляется сама</h3>
-          <p>Новая версия скачивается в фоне и ставится при следующем запуске. Ничего не нужно искать и переустанавливать.</p>
-        </article>
-      </div>
-    </div>
-  </section>
-
-  <section class="wrap faq-sec" id="faq" aria-labelledby="faq-h">
-    <h2 id="faq-h">Частые вопросы</h2>
-    <div>
-      <details open><summary>Windows пишет «Windows защитила ваш компьютер». Это нормально?</summary>
-        <p>Да. Так Windows встречает любую новую программу без платной цифровой подписи. Нажми «Подробнее», затем «Выполнить в любом случае». Исходный код открыт на GitHub — его может проверить кто угодно.</p></details>
-      <details><summary>Программа удаляет мои моды?</summary>
-        <p>Нет, если ты сам не попросишь. Исправления только выключают моды — переносят их в соседнюю папку «Mods (выключенные)». Включить обратно можно одним нажатием.</p></details>
-      <details><summary>Оверлей не сломает игру?</summary>
-        <p>Нет. Оверлей — отдельное окно поверх игры, он не встраивается в неё и не трогает её файлы. Для работы нужен режим «На весь экран в окне» или «В окне».</p></details>
-      <details><summary>Работает с EA app и Steam?</summary>
-        <p>Да. Программа находит игру сама и запускает её через нужный лаунчер. Если не нашла — один раз спросит, где лежит игра.</p></details>
-      <details><summary>Нужен интернет или аккаунт?</summary>
-        <p>Нет. Всё работает на твоём компьютере, без регистрации. Интернет нужен только для обновлений программы.</p></details>
-    </div>
-  </section>
-
-  <section class="wrap parcel-sec" id="download" aria-labelledby="dl-h">
-    <div class="parcel">
-      <div class="label">Получатель: ты<br>Отправитель: Коробок<br>Хрупкое, не бросать</div>
-      <div class="buddy-big" aria-hidden="true">
-        <svg viewBox="0 -4 120 66">
-          <rect x="34" y="44" width="11" height="13" rx="4" fill="#4A5654"/>
-          <rect x="75" y="44" width="11" height="13" rx="4" fill="#4A5654"/>
-          <g class="wave-body">
-            <polygon points="18,14 3,27 5,35 18,26" fill="#B07D46"/>
-            <polygon class="wave" points="102,14 117,27 115,35 102,26" fill="#B07D46"/>
-            <rect x="16" y="6" width="88" height="42" rx="6" fill="#DDA86E"/>
-            <rect x="16" y="42" width="88" height="6" rx="3" fill="#C99760"/>
-            <rect x="56" y="6" width="8" height="42" fill="#9E6D3A"/>
-            <path d="M34,27 Q40,19 46,27" stroke="#141817" stroke-width="3.2" fill="none" stroke-linecap="round"/>
-            <path d="M74,27 Q80,19 86,27" stroke="#141817" stroke-width="3.2" fill="none" stroke-linecap="round"/>
-            <ellipse cx="29" cy="33" rx="5" ry="2.5" fill="#F08FA6"/><ellipse cx="91" cy="33" rx="5" ry="2.5" fill="#F08FA6"/>
-          </g>
-        </svg>
-      </div>
-      <h2 id="dl-h">Забирай посылку</h2>
-      <p>Бесплатно, без регистрации. Программа ещё в разработке и обновляется сама.</p>
+<main id="top">
+  <section class="hero">
+    <div class="wrap intro">
+      <span class="badge">Бесплатно для Windows 10 и 11</span>
+      <h1><span>Моды для Sims 4</span> <span>без поломок и хаоса</span></h1>
+      <p class="lead">Ставит моды из архивов в один шаг, находит виновника вылета и откатывает сохранение прямо из игры.</p>
       <div class="actions">
-        <a class="btn btn-main" href="https://github.com/DrowWithSkadi/SimsModManager/releases/download/dev/SimsModManager-win-Setup.exe"><span class="dot"></span>Скачать установщик</a>
-        <a class="btn btn-plain" href="https://github.com/DrowWithSkadi/SimsModManager/releases/download/dev/SimsModManager-win-Portable.zip">Версия без установки</a>
+        <a class="btn btn-mint" href="#download">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1v9m0 0L4.5 6.5M8 10l3.5-3.5M2 14h12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Скачать бесплатно
+        </a>
+        <a class="btn btn-glass" href="#ingame">Как это выглядит в игре</a>
       </div>
-      <small>Для Windows 10 и 11, около 70 МБ</small>
+      <p class="meta">Открытый исходный код. Без аккаунта и рекламы.</p>
+    </div>
+
+    <div class="showcase" id="showcase">
+      <div class="window">
+        <img src="img/library.webp" width="1373" height="903" alt="Окно Sims Mod Manager: библиотека модов с карточками, фильтрами по типам и зоной для перетаскивания архивов">
+        <div class="box-buddy" data-buddy><span class="tip">Погладь меня</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="ingame" aria-labelledby="ingame-h">
+    <div class="wrap">
+      <div class="sec-head center">
+        <h2 id="ingame-h">Точки сохранения прямо в игре</h2>
+        <p>Нажми F9 — слева появится панель. Сделай точку перед свадьбой, переездом или экспериментом с читами и возвращайся к ней, когда захочешь.</p>
+      </div>
+      <div class="ingame">
+        <figure><img src="img/ingame.webp" width="1536" height="1031" loading="lazy" alt="The Sims 4 с открытой слева панелью Sims Mod Manager: список точек сохранения с кнопками «Откатить»"></figure>
+        <span class="keycap" id="keycap" aria-hidden="true">F9</span>
+      </div>
+      <ol class="steps">
+        <li><h3>Сделай точку</h3><p>Игра сохранится сама, а копия ляжет отдельно — список сохранений в игре не засоряется.</p></li>
+        <li><h3>Играй как хочешь</h3><p>Точки хранятся сколько нужно. Важные можно закрепить, остальные удалятся по твоим правилам.</p></li>
+        <li><h3>Откатись в пару нажатий</h3><p>Выбери точку и подтверди в окне игры. Текущая игра тоже сохранится — передумать можно в обе стороны.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="sec" id="features" aria-labelledby="features-h">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2 id="features-h">Всё, что раньше делал руками в папке Mods</h2>
+        <p>Программа сама находит игру, понимает, что лежит в каждом файле, и не даёт модам ломать сохранения.</p>
+      </div>
+      <div class="grid">
+        <article class="card span-4">
+          <div class="txt">
+            <h3>Перетащи архив — и мод уже в игре</h3>
+            <p>Zip, rar или 7z: программа распакует, разложит файлы по нужным папкам и сразу покажет, что появилось. Одежда, причёски, объекты и скрипты — каждый на своей вкладке.</p>
+          </div>
+          <div class="shot"><img src="img/toolbar.webp" width="1485" height="572" loading="lazy" alt="Поиск, фильтры по типам модов, зона «Перетащите архивы сюда» и карточки модов"></div>
+        </article>
+        <article class="card span-2 tall">
+          <div class="txt">
+            <h3>Одна кнопка «Играть»</h3>
+            <p>Перед запуском программа копирует сохранения и проверяет моды. Можно запустить и без модов — чтобы понять, они ли виноваты.</p>
+          </div>
+          <div class="shot"><img src="img/sidebar.webp" width="340" height="1025" loading="lazy" alt="Боковая панель программы с разделами и кнопкой «Играть»"></div>
+        </article>
+        <article class="card span-2">
+          <div class="txt">
+            <h3>Найдёт мод, который ломает игру</h3>
+            <p>После вылета Коробок читает отчёты игры, называет виновника и предлагает выключить его одним нажатием.</p>
+          </div>
+          <div class="shot full"><img src="img/game-switches.webp" width="802" height="240" loading="lazy" alt="Переключатели «Пользовательский контент и моды» и «Скриптовые моды»"></div>
+        </article>
+        <article class="card span-2">
+          <div class="txt">
+            <h3>Тёмная, светлая или стекло</h3>
+            <p>Стекло на Windows 11 пропускает обои рабочего стола — как у системных приложений.</p>
+          </div>
+          <div class="shot full"><img src="img/themes.webp" width="642" height="250" loading="lazy" alt="Выбор оформления: тёмная, светлая и стекло"></div>
+        </article>
+        <article class="card span-3">
+          <div class="txt">
+            <h3>Оверлей под тебя</h3>
+            <p>Любая клавиша вместо F9, пауза в игре, пока панель открыта, и скрытие от OBS и записи экрана — для стримеров.</p>
+          </div>
+          <div class="shot full"><img src="img/overlay-settings.webp" width="642" height="262" loading="lazy" alt="Настройки оверлея: включение и выбор клавиши F9"></div>
+        </article>
+        <article class="card span-3 c-buddy">
+          <div class="txt">
+            <h3>А это Коробок</h3>
+            <p>Живёт в программе, подсказывает и радуется, когда его гладят. Поводи по нему курсором туда-сюда.</p>
+          </div>
+          <div class="stage"><div class="box-buddy" data-buddy><span class="tip">Ещё!</span></div></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="faq" aria-labelledby="faq-h">
+    <div class="wrap">
+      <div class="sec-head center"><h2 id="faq-h">Частые вопросы</h2></div>
+      <div class="faq">
+        <details><summary>Windows пишет «Windows защитила ваш компьютер». Это нормально?</summary>
+          <p>Да. Так Windows встречает любую новую программу без платной цифровой подписи. Нажми «Подробнее», затем «Выполнить в любом случае». Исходный код открыт на GitHub — проверить его может кто угодно.</p></details>
+        <details><summary>Программа удаляет мои моды?</summary>
+          <p>Нет, если ты сам не попросишь. Исправления только выключают моды — переносят их в папку «Mods (выключенные)». Включить обратно можно одним нажатием.</p></details>
+        <details><summary>Оверлей не сломает игру?</summary>
+          <p>Нет. Это отдельное окно поверх игры: оно не встраивается в неё и не трогает её файлы. Нужен режим экрана «На весь экран в окне» или «В окне».</p></details>
+        <details><summary>Работает с EA app и Steam?</summary>
+          <p>Да. Программа находит игру сама и запускает её через нужный лаунчер. Если не нашла — один раз спросит, где лежит игра.</p></details>
+        <details><summary>Нужен интернет или аккаунт?</summary>
+          <p>Нет. Всё работает на твоём компьютере, без регистрации. Интернет нужен только для обновлений программы.</p></details>
+        <details><summary>Сколько места занимают точки сохранения?</summary>
+          <p>Одна точка весит примерно как само сохранение — обычно несколько мегабайт. Лимит по количеству, возрасту или размеру задаёшь сам в настройках.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="download" id="download" aria-labelledby="dl-h">
+    <div class="wrap">
+      <div class="crystal" id="crystal"><img src="img/logo-512.webp" width="512" height="512" alt=""></div>
+      <h2 id="dl-h">Скачай и попробуй</h2>
+      <p>Бесплатно и без регистрации. Программа ещё развивается и обновляется сама.</p>
+      <div class="actions">
+        <a class="btn btn-mint" href="https://github.com/DrowWithSkadi/SimsModManager/releases/download/dev/SimsModManager-win-Setup.exe">
+          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1v9m0 0L4.5 6.5M8 10l3.5-3.5M2 14h12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Скачать установщик
+        </a>
+        <a class="btn btn-glass" href="https://github.com/DrowWithSkadi/SimsModManager/releases/download/dev/SimsModManager-win-Portable.zip">Версия без установки</a>
+      </div>
+      <small>Windows 10 и 11, около 70 МБ</small>
     </div>
   </section>
 </main>
@@ -599,59 +388,66 @@ footer .wrap { display: flex; justify-content: space-between; gap: 20px; flex-wr
 
 <script>
 (() => {
-  const stage = document.getElementById('stage');
-  const screen = document.getElementById('screen');
-  const ui = screen.querySelector('.ui');
-  const buddy = document.getElementById('buddy');
-  const lid = document.getElementById('lid');
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // Интерфейс нарисован в 1000×625 — подгоняем под ширину экрана ноутбука
-  new ResizeObserver(([e]) => ui.style.setProperty('--k', e.contentRect.width / 1000)).observe(screen);
-
-  // Одна заставка: крышка открывается, кристалл вспыхивает, появляется программа
-  if (reduce) {
-    stage.classList.add('booted', 'ready');
-  } else {
-    lid.animate([{ transform: 'rotateX(-88deg)' }, { transform: 'rotateX(0deg)' }],
-      { duration: 1100, easing: 'cubic-bezier(.2,.9,.25,1.05)', fill: 'backwards', delay: 150 });
-    setTimeout(() => stage.classList.add('booted'), 1050);
-    setTimeout(() => stage.classList.add('ready'), 2100);
+  // Окно выпрямляется, пока его прокручивают к центру экрана
+  const showcase = document.getElementById('showcase');
+  if (!reduce) {
+    let ticking = false;
+    const tilt = () => {
+      ticking = false;
+      const r = showcase.getBoundingClientRect();
+      const p = Math.min(1, Math.max(0, (innerHeight - r.top) / (innerHeight * 0.85) - 0.2));
+      showcase.style.setProperty('--p', p.toFixed(3));
+    };
+    addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(tilt); } }, { passive: true });
+    addEventListener('resize', tilt);
+    tilt();
   }
 
-  // Шаг рассказа зависит от того, насколько прокручена сцена
-  let current = '0';
-  const update = () => {
-    const r = stage.getBoundingClientRect();
-    const total = r.height - innerHeight;
-    const p = Math.min(1, Math.max(0, -r.top / total));
-    const step = String(Math.min(4, Math.floor(p * 5)));
-    if (step !== current) {
-      current = step;
-      stage.dataset.step = step;
-      if (!reduce) { buddy.classList.remove('hop'); void buddy.offsetWidth; buddy.classList.add('hop'); }
-    }
-  };
-  addEventListener('scroll', () => requestAnimationFrame(update), { passive: true });
-  update();
-
-  // «Посмотреть, как работает» — прокрутить к первому шагу
-  document.querySelector('a[href="#step-1"]').addEventListener('click', e => {
-    e.preventDefault();
-    const top = stage.offsetTop + (stage.offsetHeight - innerHeight) * 0.21;
-    scrollTo({ top, behavior: reduce ? 'auto' : 'smooth' });
+  // Коробок: смотрит на курсор, радуется, если его гладить (водить туда-сюда), подпрыгивает от клика
+  const tpl = document.getElementById('buddy-svg');
+  document.querySelectorAll('[data-buddy]').forEach(buddy => {
+    buddy.appendChild(tpl.content.cloneNode(true));
+    const pupils = buddy.querySelectorAll('.pupil');
+    let lastDir = 0, rub = 0, calm;
+    addEventListener('pointermove', e => {
+      const r = buddy.getBoundingClientRect();
+      const dx = e.clientX - (r.left + r.width / 2), dy = e.clientY - (r.top + r.height * 0.4);
+      const d = Math.hypot(dx, dy) || 1, k = Math.min(1, d / 160);
+      pupils.forEach(p => p.style.transform = `translate(${(dx / d) * 2.6 * k}px, ${(dy / d) * 2.4 * k}px)`);
+    }, { passive: true });
+    buddy.addEventListener('pointermove', e => {
+      const dir = Math.sign(e.movementX);
+      if (dir && lastDir && dir !== lastDir) rub++;
+      if (dir) lastDir = dir;
+      if (rub < 3) return;
+      buddy.classList.add('petted');
+      if (!reduce && Math.random() < 0.2) {
+        const h = document.createElement('span');
+        h.className = 'heart'; h.textContent = '♥';
+        h.style.left = 20 + Math.random() * 60 + '%'; h.style.top = '-4px';
+        buddy.appendChild(h); setTimeout(() => h.remove(), 1000);
+      }
+      clearTimeout(calm);
+      calm = setTimeout(() => { buddy.classList.remove('petted'); rub = 0; }, 900);
+    });
+    buddy.addEventListener('pointerleave', () => { lastDir = 0; });
+    buddy.addEventListener('click', () => {
+      if (reduce) return;
+      buddy.classList.remove('hop'); void buddy.offsetWidth; buddy.classList.add('hop');
+    });
   });
 
-  // Коробок на посылке машет клапаном, когда до неё докрутили
-  const wave = document.querySelector('.parcel .wave');
-  if (!reduce && wave) {
+  // Клавиша F9 «нажимается», пока скриншот игры в кадре; кристалл крутится, когда доходишь до скачивания
+  if (!reduce) {
+    const key = document.getElementById('keycap');
+    const crystal = document.getElementById('crystal');
+    new IntersectionObserver(([e]) => key.classList.toggle('pressed', e.isIntersecting), { threshold: 0.6 }).observe(key);
     new IntersectionObserver(([e]) => {
-      if (e.isIntersecting) wave.animate(
-        [{ transform: 'rotate(0)' }, { transform: 'rotate(-28deg)' }, { transform: 'rotate(4deg)' }, { transform: 'rotate(-24deg)' }, { transform: 'rotate(0)' }],
-        { duration: 1300, easing: 'ease-in-out' });
-    }, { threshold: .6 }).observe(wave.closest('svg'));
-    wave.style.transformOrigin = '102px 16px';
-    wave.style.transformBox = 'view-box';
+      if (!e.isIntersecting) return;
+      crystal.classList.remove('spin'); void crystal.offsetWidth; crystal.classList.add('spin');
+    }, { threshold: 0.8 }).observe(crystal);
   }
 })();
 </script>
