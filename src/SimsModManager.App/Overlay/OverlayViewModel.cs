@@ -263,22 +263,9 @@ public sealed partial class OverlayViewModel : ObservableObject
                 _pausedByUs = false;
                 await manager.Bridge.SendAsync("resume", TimeSpan.FromSeconds(2));
             }
-            if (manager.CanRollbackViaMenu)
-            {
-                // Без перезапуска: подтверждение — в окне самой игры, поэтому панель убираем
-                var menuProgress = new Progress<RollbackStep>(step =>
-                {
-                    ((IProgress<RollbackStep>)progress).Report(step);
-                    if (step == RollbackStep.WaitingForConfirm) _close();
-                });
-                await manager.MenuRollbackAsync(item.Checkpoint, menuProgress);
-                RefreshList();
-                Say(L.F("Готово! В главном меню нажми «Загрузить игру», затем «Играть» у своего сохранения и выбери семью — откроется «{0}». Кнопка «Продолжить» не подойдёт: она вернёт игру без отката. Прежняя игра сохранена точкой «Перед откатом».", item.Name));
-                // Панель остаётся с подсказкой, а когда игра начнёт грузиться — уберётся сама
-                _closeAfterMenu = true;
-                _sawMenu = false;
-            }
-            else if (manager.Bridge.ReadStatus().State == HelperState.Live)
+            // Игра читает сохранение с диска только при запуске или через «Загрузить игру»
+            // («Продолжить» в той же сессии берёт игру из памяти), поэтому из игры откатываем перезапуском.
+            if (manager.Bridge.ReadStatus().State == HelperState.Live)
             {
                 // Игра открыта: сохраняем, закрываем, подменяем, запускаем снова
                 await manager.RestartRollbackAsync(item.Checkpoint, progress);

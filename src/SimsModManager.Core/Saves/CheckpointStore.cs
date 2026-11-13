@@ -152,7 +152,11 @@ public sealed class CheckpointStore(string folder)
     /// Кладёт точку в папку saves вместо текущего файла того же сохранения.
     /// Пишется во временный файл, проверяется и только потом подменяет — сохранение не может остаться наполовину записанным.
     /// </summary>
-    public string Restore(Checkpoint checkpoint, string savesFolder)
+    /// <param name="alsoAutosave">
+    /// Положить точку и на место автосохранения игры (если оно есть). Нужно перед запуском игры:
+    /// «Продолжить» открывает то сохранение, в которое игра писала последним, а это часто автосохранение.
+    /// </param>
+    public string Restore(Checkpoint checkpoint, string savesFolder, bool alsoAutosave = false)
     {
         var bytes = ReadData(checkpoint);
         EnsureValidSave(bytes, checkpoint.Name);
@@ -160,6 +164,9 @@ public sealed class CheckpointStore(string folder)
         var target = Path.Combine(savesFolder, checkpoint.SlotFile);
         Replace(target, bytes);
 
+        var autosave = Path.Combine(savesFolder, SaveSlots.AutosaveFile);
+        if (alsoAutosave && File.Exists(autosave) && !string.Equals(checkpoint.SlotFile, SaveSlots.AutosaveFile, StringComparison.OrdinalIgnoreCase))
+            Replace(autosave, bytes);
         return target;
     }
 
@@ -249,11 +256,7 @@ public static class SaveSlots
 {
     public static string FileName(long slotId) => $"Slot_{slotId:x8}.save";
 
-    /// <summary>
-    /// Автосохранение игры: один общий слот, который она перезаписывает сама. Его не трогаем:
-    /// «Продолжить» всё равно берёт игру из памяти, а не из файла, а копия точки в этом слоте
-    /// только задваивала сохранение в списке «Загрузить игру».
-    /// </summary>
+    /// <summary>Автосохранение игры: один общий слот, который она перезаписывает сама.</summary>
     public const string AutosaveFile = "Slot_ffffffff.save";
 
     /// <summary>Самое недавно записанное сохранение (без резервных .verN).</summary>
