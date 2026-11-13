@@ -401,3 +401,17 @@ body.no-buddy .box-buddy { transform: scale(0); opacity: 0; transition: transfor
   .range output { min-width: 0; }
   .hero h1 { font-size: 38px; }
 }
+
+/* ── Искорки, как у кристалла в логотипе: изредка вспыхивают на фоне ── */
+.sky { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+.sky .star { position: absolute; width: var(--s); height: var(--s); color: var(--mint); opacity: 0;
+  animation: twinkle var(--d) var(--delay) ease-in-out infinite; filter: drop-shadow(0 0 6px rgba(119,225,199,.7)); }
+.sky .star.white { color: #EAFBF6; filter: drop-shadow(0 0 6px rgba(255,255,255,.6)); }
+.sky .star svg { width: 100%; height: 100%; display: block; }
+@keyframes twinkle {
+  0%, 62%, 100% { opacity: 0; transform: scale(.2) rotate(0deg); }
+  72% { opacity: var(--o); transform: scale(1) rotate(20deg); }
+  80% { opacity: calc(var(--o) * .55); transform: scale(.75) rotate(32deg); }
+  88% { opacity: var(--o); transform: scale(.95) rotate(40deg); }
+}
+@media (prefers-reduced-motion: reduce) { .sky { display: none; } }

@@ -260,4 +260,27 @@
   addEventListener('scroll', () => { if (!ticking) { ticking = true; requestAnimationFrame(frame); } }, { passive: true });
   addEventListener('resize', frame);
   frame();
+
+  // Искорки на фоне: появляются в случайных местах и после каждой вспышки переезжают
+  const sky = document.getElementById('sky');
+  if (sky && !reduce) {
+    const path = 'M12 0C12.8 7.2 16.8 11.2 24 12C16.8 12.8 12.8 16.8 12 24C11.2 16.8 7.2 12.8 0 12C7.2 11.2 11.2 7.2 12 0Z';
+    const count = innerWidth < 700 ? 9 : 18;
+    const place = (el) => {
+      el.style.left = (3 + Math.random() * 94) + '%';
+      el.style.top = (3 + Math.random() * 94) + '%';
+    };
+    for (let i = 0; i < count; i++) {
+      const el = document.createElement('span');
+      el.className = 'star' + (Math.random() < 0.3 ? ' white' : '');
+      el.innerHTML = '<svg viewBox="0 0 24 24"><path fill="currentColor" d="' + path + '"/></svg>';
+      el.style.setProperty('--s', (8 + Math.random() * 9).toFixed(1) + 'px');
+      el.style.setProperty('--o', (0.55 + Math.random() * 0.4).toFixed(2));
+      el.style.setProperty('--d', (4 + Math.random() * 5).toFixed(1) + 's');
+      el.style.setProperty('--delay', (-Math.random() * 9).toFixed(1) + 's');
+      place(el);
+      el.addEventListener('animationiteration', () => place(el));
+      sky.appendChild(el);
+    }
+  }
 })();
