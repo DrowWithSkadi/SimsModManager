@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
 using SimsModManager.App.ViewModels;
+using SimsModManager.Core;
 
 namespace SimsModManager.App;
 
@@ -34,7 +35,7 @@ public partial class MainWindow : Window
     {
         // Развёрнутое окно без системной рамки вылезает за экран на толщину рамки — компенсируем.
         RootBorder.Margin = WindowState == WindowState.Maximized ? new Thickness(7) : new Thickness(0);
-        MaxButton.ToolTip = WindowState == WindowState.Maximized ? "Восстановить" : "Развернуть";
+        MaxButton.ToolTip = WindowState == WindowState.Maximized ? L.T("Восстановить") : L.T("Развернуть");
     }
 
     /// <summary>Скругление углов, тёмная/светлая рамка и размытие — по текущей теме.</summary>

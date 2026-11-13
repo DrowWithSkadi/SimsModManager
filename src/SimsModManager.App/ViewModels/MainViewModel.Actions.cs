@@ -44,10 +44,10 @@ public sealed partial class MainViewModel
             Icon = Icons.Error,
             IconIsDanger = true,
             Message = message,
-            Details = $"{ex.GetType().FullName}: {ex.Message}\nВремя: {DateTime.Now:dd.MM.yyyy, HH:mm:ss}",
-            Message2 = "Закройте игру и другие программы, работающие с папкой Mods. Скопируйте подробности для сообщения об ошибке.",
-            PrimaryText = "Закрыть",
-            ExtraText = "Скопировать",
+            Details = L.F("{0}: {1}\nВремя: {2:dd.MM.yyyy, HH:mm:ss}", ex.GetType().FullName, ex.Message, DateTime.Now),
+            Message2 = L.T("Закройте игру и другие программы, работающие с папкой Mods. Скопируйте подробности для сообщения об ошибке."),
+            PrimaryText = L.T("Закрыть"),
+            ExtraText = L.T("Скопировать"),
         });
 
     private async Task<bool> EnsureGameClosedAsync(string action)
@@ -56,11 +56,11 @@ public sealed partial class MainViewModel
         IsGameRunning = true;
         await ShowDialogAsync(new DialogViewModel
         {
-            Title = "Закройте игру, чтобы " + action,
+            Title = L.T("Закройте игру, чтобы ") + action,
             Icon = Icons.Gamepad,
-            Message = "The Sims 4 сейчас запущена. Игра может удерживать файлы и перезаписать настройки.",
-            Message2 = "Сохраните игру, выйдите на рабочий стол и повторите действие. Ваши изменения не потеряются.",
-            PrimaryText = "Понятно",
+            Message = L.T("The Sims 4 сейчас запущена. Игра может удерживать файлы и перезаписать настройки."),
+            Message2 = L.T("Сохраните игру, выйдите на рабочий стол и повторите действие. Ваши изменения не потеряются."),
+            PrimaryText = L.T("Понятно"),
         });
         return false;
     }
@@ -128,8 +128,8 @@ public sealed partial class MainViewModel
 
     [ObservableProperty] private int _duplicateCount;
 
-    public string DuplicateText => "Найдено " + Text.Plural(DuplicateCount, "дубликат", "дубликата", "дубликатов")
-                                   + " — одинаковые файлы в разных модах";
+    public string DuplicateText => L.T("Найдено ") + L.P(DuplicateCount, "дубликат|дубликата|дубликатов")
+                                   + L.T(" — одинаковые файлы в разных модах");
     public bool HasDuplicates => DuplicateCount > 0 && !DuplicatesOnly && !HasHealthBanner;
 
     partial void OnDuplicateCountChanged(int value)
@@ -154,13 +154,13 @@ public sealed partial class MainViewModel
         }
         else if (!state.ModsEnabled)
         {
-            OptionsWarning = "Моды выключены в настройках игры";
-            OptionsWarningDetail = state.ScriptModsEnabled ? null : "Скриптовые моды выключены";
+            OptionsWarning = L.T("Моды выключены в настройках игры");
+            OptionsWarningDetail = state.ScriptModsEnabled ? null : L.T("Скриптовые моды выключены");
         }
         else
         {
-            OptionsWarning = "Скриптовые моды выключены в настройках игры";
-            OptionsWarningDetail = "Моды со скриптами работать не будут";
+            OptionsWarning = L.T("Скриптовые моды выключены в настройках игры");
+            OptionsWarningDetail = L.T("Моды со скриптами работать не будут");
         }
         RefreshSettingsPage();
     }
@@ -168,16 +168,16 @@ public sealed partial class MainViewModel
     [RelayCommand]
     private async Task FixOptions()
     {
-        if (_library is null || !await EnsureGameClosedAsync("изменить настройки")) return;
+        if (_library is null || !await EnsureGameClosedAsync(L.T("изменить настройки"))) return;
         try
         {
             GameOptions.EnableMods(_library.Paths);
-            ShowToast("Моды и скрипты включены в настройках игры", Icons.Check);
-            SetLastAction("включены моды в игре");
+            ShowToast(L.T("Моды и скрипты включены в настройках игры"), Icons.Check);
+            SetLastAction(L.T("включены моды в игре"));
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            await ShowErrorAsync("Не удалось изменить настройки", "Файл Options.ini не получилось сохранить.", ex);
+            await ShowErrorAsync(L.T("Не удалось изменить настройки"), L.T("Файл Options.ini не получилось сохранить."), ex);
         }
         RefreshGameState();
     }
@@ -185,16 +185,16 @@ public sealed partial class MainViewModel
     [RelayCommand]
     private async Task ClearCache()
     {
-        if (_library is null || !await EnsureGameClosedAsync("очистить кэш")) return;
+        if (_library is null || !await EnsureGameClosedAsync(L.T("очистить кэш"))) return;
         try
         {
             var cleared = GameOptions.ClearThumbnailCache(_library.Paths);
-            ShowToast(cleared ? "Кэш очищен" : "Кэш уже пуст", Icons.Check);
-            if (cleared) SetLastAction("очищен кэш");
+            ShowToast(cleared ? L.T("Кэш очищен") : L.T("Кэш уже пуст"), Icons.Check);
+            if (cleared) SetLastAction(L.T("очищен кэш"));
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            await ShowErrorAsync("Не удалось очистить кэш", "Файл localthumbcache.package занят или защищён.", ex);
+            await ShowErrorAsync(L.T("Не удалось очистить кэш"), L.T("Файл localthumbcache.package занят или защищён."), ex);
         }
     }
 
@@ -206,9 +206,9 @@ public sealed partial class MainViewModel
         try
         {
             var updated = _library.SetEnabled(vm.Model, enabled);
-            var text = enabled ? $"«{vm.Name}» включён" : $"«{vm.Name}» выключен";
+            var text = enabled ? L.F("«{0}» включён", vm.Name) : L.F("«{0}» выключен", vm.Name);
             ShowToast(text, Icons.Check);
-            SetLastAction(enabled ? "мод включён" : "мод выключен");
+            SetLastAction(enabled ? L.T("мод включён") : L.T("мод выключен"));
             if (!enabled) ResolveIssuesFor(vm);
             UpdateSummary(); // живой фильтр сам уберёт мод, если он больше не подходит
             return updated;
@@ -217,17 +217,17 @@ public sealed partial class MainViewModel
         {
             _ = ShowDialogAsync(new DialogViewModel
             {
-                Title = "В папке уже есть мод с таким именем",
+                Title = L.T("В папке уже есть мод с таким именем"),
                 Icon = Icons.Files,
-                Message = $"Не удалось {(enabled ? "включить" : "выключить")} «{vm.Name}». " + ex.Message,
-                Message2 = "Переименуйте один из модов или перенесите его в другую папку, затем повторите.",
-                PrimaryText = "Понятно",
+                Message = L.F("Не удалось {0} «{1}». ", (enabled ? L.T("включить") : L.T("выключить")), vm.Name) + ex.Message,
+                Message2 = L.T("Переименуйте один из модов или перенесите его в другую папку, затем повторите."),
+                PrimaryText = L.T("Понятно"),
             });
             return null;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            _ = ShowErrorAsync("Что-то пошло не так", $"Не удалось {(enabled ? "включить" : "выключить")} «{vm.Name}».", ex);
+            _ = ShowErrorAsync(L.T("Что-то пошло не так"), L.F("Не удалось {0} «{1}».", (enabled ? L.T("включить") : L.T("выключить")), vm.Name), ex);
             return null;
         }
     }
@@ -255,10 +255,10 @@ public sealed partial class MainViewModel
             }
         }
         var done = targets.Count - failed;
-        var word = Text.Plural(done, "мод", "мода", "модов");
-        ShowToast((enabled ? "Включено: " : "Выключено: ") + word + (failed > 0 ? $", не получилось: {failed}" : ""),
+        var word = L.P(done, "мод|мода|модов");
+        ShowToast((enabled ? L.T("Включено: ") : L.T("Выключено: ")) + word + (failed > 0 ? L.F(", не получилось: {0}", failed) : ""),
             failed > 0 ? Icons.Alert : Icons.Check);
-        SetLastAction((enabled ? "включено " : "выключено ") + word);
+        SetLastAction((enabled ? L.T("включено ") : L.T("выключено ")) + word);
         UpdateSummary();
     }
 
@@ -281,15 +281,15 @@ public sealed partial class MainViewModel
         if (mod is null || _library is null) return;
         var answer = await ShowDialogAsync(new DialogViewModel
         {
-            Title = $"Удалить мод «{mod.Name}»?",
+            Title = L.F("Удалить мод «{0}»?", mod.Name),
             Icon = Icons.Trash,
             IconIsDanger = true,
-            Message = DeleteToRecycleBin ? "Файлы будут перемещены в корзину." : "Файлы будут удалены насовсем.",
+            Message = DeleteToRecycleBin ? L.T("Файлы будут перемещены в корзину.") : L.T("Файлы будут удалены насовсем."),
             InfoTitle = mod.Name,
             InfoSubtitle = mod.DetailsText,
-            PrimaryText = "Удалить",
+            PrimaryText = L.T("Удалить"),
             PrimaryIsDanger = true,
-            SecondaryText = "Отмена",
+            SecondaryText = L.T("Отмена"),
         });
         if (answer != DialogResult.Primary) return;
         await DeleteAsync([mod]);
@@ -310,14 +310,14 @@ public sealed partial class MainViewModel
         var size = targets.Sum(m => m.SizeBytes);
         var answer = await ShowDialogAsync(new DialogViewModel
         {
-            Title = $"Удалить {Text.Plural(targets.Count, "мод", "мода", "модов")}?",
+            Title = L.F("Удалить {0}?", L.P(targets.Count, "мод|мода|модов")),
             Icon = Icons.Trash,
             IconIsDanger = true,
-            Message = (DeleteToRecycleBin ? "Все связанные файлы будут перемещены в корзину. " : "Все связанные файлы будут удалены насовсем. ")
-                      + $"Это действие затронет {Text.Plural(files, "файл", "файла", "файлов")} общим размером {Text.Size(size)}.",
-            PrimaryText = "Удалить",
+            Message = (DeleteToRecycleBin ? L.T("Все связанные файлы будут перемещены в корзину. ") : L.T("Все связанные файлы будут удалены насовсем. "))
+                      + L.F("Это действие затронет {0} общим размером {1}.", L.P(files, "файл|файла|файлов"), Text.Size(size)),
+            PrimaryText = L.T("Удалить"),
             PrimaryIsDanger = true,
-            SecondaryText = "Отмена",
+            SecondaryText = L.T("Отмена"),
         });
         if (answer != DialogResult.Primary) return;
         await DeleteAsync(targets);
@@ -337,7 +337,7 @@ public sealed partial class MainViewModel
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
-                await ShowErrorAsync("Не удалось удалить", $"Мод «{vm.Name}» занят другой программой.", ex);
+                await ShowErrorAsync(L.T("Не удалось удалить"), L.F("Мод «{0}» занят другой программой.", vm.Name), ex);
             }
         }
         if (trashed.Count == 0) return;
@@ -358,8 +358,8 @@ public sealed partial class MainViewModel
         SelectedCount = 0;
         UpdateSummary();
 
-        var message = trashed.Count == 1 ? "Мод удалён" : $"Удалено: {Text.Plural(trashed.Count, "мод", "мода", "модов")}";
-        SetLastAction(trashed.Count == 1 ? "мод удалён" : "удалено " + Text.Plural(trashed.Count, "мод", "мода", "модов"));
+        var message = trashed.Count == 1 ? L.T("Мод удалён") : L.F("Удалено: {0}", L.P(trashed.Count, "мод|мода|модов"));
+        SetLastAction(trashed.Count == 1 ? L.T("мод удалён") : L.T("удалено ") + L.P(trashed.Count, "мод|мода|модов"));
 
         ShowToast(message, Icons.Check, seconds: 6,
             undo: () =>
@@ -375,7 +375,7 @@ public sealed partial class MainViewModel
                     catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException) { }
                     lock (_pendingDeletes) _pendingDeletes.Remove(t);
                 }
-                SetLastAction("удаление отменено");
+                SetLastAction(L.T("удаление отменено"));
                 _ = RefreshAsync(trashed.Select(t => t.Vm.Name).ToHashSet());
             },
             onExpired: () =>

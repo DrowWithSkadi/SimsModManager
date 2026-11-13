@@ -10,7 +10,7 @@ public sealed record PackRow(string Code, string Name, PackState State)
 {
     public bool IsPartial => State == PackState.Partial;
     public string Tooltip => IsPartial
-        ? $"{Code}: папка есть, но основных файлов нет (только обновления) — вещи из этого дополнения будут невидимыми или «квадратами»"
+        ? L.F("{0}: папка есть, но основных файлов нет (только обновления) — вещи из этого дополнения будут невидимыми или «квадратами»", Code)
         : Code;
 }
 
@@ -22,7 +22,7 @@ public sealed partial class MainViewModel
 
     public ObservableCollection<PackRow> PackRows { get; } = [];
 
-    [ObservableProperty] private string _packsSummary = "Смотрю, какие дополнения установлены…";
+    [ObservableProperty] private string _packsSummary = L.T("Смотрю, какие дополнения установлены…");
     [ObservableProperty] private bool _hasPartialPacks;
 
     public bool PacksKnown => _packs is not null;
@@ -35,10 +35,10 @@ public sealed partial class MainViewModel
 
     public string SeasonsHint => PackStateOf(GamePacks.Seasons) switch
     {
-        PackState.Installed => "Нужно дополнение «Времена года» · установлено",
-        PackState.Partial => "Нужно дополнение «Времена года» · установлено не полностью",
-        PackState.Missing => "Нужно дополнение «Времена года» · у вас его нет",
-        _ => "Нужно дополнение «Времена года»",
+        PackState.Installed => L.T("Нужно дополнение «Времена года» · установлено"),
+        PackState.Partial => L.T("Нужно дополнение «Времена года» · установлено не полностью"),
+        PackState.Missing => L.T("Нужно дополнение «Времена года» · у вас его нет"),
+        _ => L.T("Нужно дополнение «Времена года»"),
     };
 
     private async void ScanPacks()
@@ -59,7 +59,7 @@ public sealed partial class MainViewModel
         PackRows.Clear();
         if (packs is null)
         {
-            PacksSummary = "Не нашёл, где установлена игра. Укажите её один раз — через кнопку «Играть».";
+            PacksSummary = L.T("Не нашёл, где установлена игра. Укажите её один раз — через кнопку «Играть».");
             HasPartialPacks = false;
         }
         else
@@ -72,9 +72,9 @@ public sealed partial class MainViewModel
             var full = PackRows.Count(r => !r.IsPartial);
             HasPartialPacks = PackRows.Any(r => r.IsPartial);
             PacksSummary = full == 0 && !HasPartialPacks
-                ? "Дополнений нет — только базовая игра"
-                : "Установлено: " + Text.Plural(full, "дополнение", "дополнения", "дополнений")
-                  + (HasPartialPacks ? " · есть установленные не полностью" : "");
+                ? L.T("Дополнений нет — только базовая игра")
+                : L.T("Установлено: ") + L.P(full, "дополнение|дополнения|дополнений")
+                  + (HasPartialPacks ? L.T(" · есть установленные не полностью") : "");
         }
         OnPropertyChanged(nameof(PacksKnown));
         OnPropertyChanged(nameof(SeasonsMissing));

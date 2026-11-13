@@ -11,6 +11,9 @@ public sealed class AppSettings
     public bool GridView { get; set; }
     public string SortBy { get; set; } = "name";
     public bool SortDescending { get; set; }
+    /// <summary>Язык интерфейса: «ru», «en» или null — как в Windows.</summary>
+    public string? Language { get; set; }
+
     /// <summary>Тема оформления: Dark, Light или Glass.</summary>
     public string Theme { get; set; } = "Dark";
 

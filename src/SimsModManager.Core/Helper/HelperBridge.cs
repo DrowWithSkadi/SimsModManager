@@ -112,11 +112,11 @@ public sealed class HelperBridge(string bridgeFolder)
                 }
                 await Task.Delay(50, cancellation);
             }
-            return HelperResponse.Fail("Игра не ответила");
+            return HelperResponse.Fail(L.T("Игра не ответила"));
         }
         catch (OperationCanceledException)
         {
-            return HelperResponse.Fail("Отменено");
+            return HelperResponse.Fail(L.T("Отменено"));
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {

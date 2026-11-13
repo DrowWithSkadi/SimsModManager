@@ -7,6 +7,9 @@ namespace SimsModManager.App.ViewModels;
 
 public sealed partial class ModItemViewModel : ObservableObject
 {
+    /// <summary>Перечитать подписи после смены языка.</summary>
+    public void RefreshTexts() => OnPropertyChanged(string.Empty);
+
     private readonly MainViewModel _owner;
     private bool _suppressToggle;
 
@@ -35,13 +38,13 @@ public sealed partial class ModItemViewModel : ObservableObject
             var parts = new List<string>();
             if (Model.IsTray)
             {
-                parts.Add(Text.Plural(Model.Files.Count, "файл", "файла", "файлов") + " в Tray");
+                parts.Add(L.P(Model.Files.Count, "файл|файла|файлов") + L.T(" в Tray"));
                 parts.Add(Text.Size(Model.SizeBytes));
                 parts.Add(Model.InstalledAt.ToString("dd.MM.yyyy"));
                 return string.Join(" · ", parts);
             }
-            if (Model.PackageCount > 0) parts.Add(Text.Plural(Model.PackageCount, "файл", "файла", "файлов") + " .package");
-            if (Model.ScriptCount > 0) parts.Add(Text.Plural(Model.ScriptCount, "скрипт", "скрипта", "скриптов"));
+            if (Model.PackageCount > 0) parts.Add(L.P(Model.PackageCount, "файл|файла|файлов") + " .package");
+            if (Model.ScriptCount > 0) parts.Add(L.P(Model.ScriptCount, "скрипт|скрипта|скриптов"));
             parts.Add(Text.Size(Model.SizeBytes));
             parts.Add(Model.InstalledAt.ToString("dd.MM.yyyy"));
             return string.Join(" · ", parts);
@@ -56,12 +59,12 @@ public sealed partial class ModItemViewModel : ObservableObject
 
     public string CategoryLabel => Category switch
     {
-        ModCategory.Clothing => "Одежда",
-        ModCategory.Hair => "Причёски",
-        ModCategory.Makeup => "Макияж",
-        ModCategory.Objects => "Объекты",
-        ModCategory.Scripts => "Скрипты",
-        ModCategory.Other => "Другое",
+        ModCategory.Clothing => L.T("Одежда"),
+        ModCategory.Hair => L.T("Причёски"),
+        ModCategory.Makeup => L.T("Макияж"),
+        ModCategory.Objects => L.T("Объекты"),
+        ModCategory.Scripts => L.T("Скрипты"),
+        ModCategory.Other => L.T("Другое"),
         ModCategory.Tray => ModFiles.TrayKindName(Model.TrayKind),
         _ => "",
     };
@@ -80,8 +83,8 @@ public sealed partial class ModItemViewModel : ObservableObject
     public string RequiredPacksLabel => RequiredPacks.Length switch
     {
         0 => "",
-        1 => "Нужно: " + GamePacks.NameOf(RequiredPacks[0]),
-        _ => "Нужно: " + GamePacks.NameOf(RequiredPacks[0]) + " +" + (RequiredPacks.Length - 1),
+        1 => L.T("Нужно: ") + GamePacks.NameOf(RequiredPacks[0]),
+        _ => L.T("Нужно: ") + GamePacks.NameOf(RequiredPacks[0]) + " +" + (RequiredPacks.Length - 1),
     };
 
     /// <summary>Нужного дополнения нет (или оно установлено не полностью) — вещи могут быть невидимыми.</summary>
@@ -95,12 +98,12 @@ public sealed partial class ModItemViewModel : ObservableObject
             var lines = RequiredPacks.Select(c => _owner.PackStateOf(c) switch
             {
                 PackState.Installed => $"✓ {GamePacks.NameOf(c)} ({c})",
-                PackState.Partial => $"! {GamePacks.NameOf(c)} ({c}) — установлено не полностью",
-                PackState.Missing => $"✗ {GamePacks.NameOf(c)} ({c}) — у вас нет",
+                PackState.Partial => L.F("! {0} ({1}) — установлено не полностью", GamePacks.NameOf(c), c),
+                PackState.Missing => L.F("✗ {0} ({1}) — у вас нет", GamePacks.NameOf(c), c),
                 _ => $"• {GamePacks.NameOf(c)} ({c})",
             });
-            var text = "Вещи из этого мода сделаны для дополнения:\n" + string.Join("\n", lines);
-            return MissingPack ? text + "\n\nБез него вещи могут быть невидимыми или «квадратами»." : text;
+            var text = L.T("Вещи из этого мода сделаны для дополнения:\n") + string.Join("\n", lines);
+            return MissingPack ? text + L.T("\n\nБез него вещи могут быть невидимыми или «квадратами».") : text;
         }
     }
 

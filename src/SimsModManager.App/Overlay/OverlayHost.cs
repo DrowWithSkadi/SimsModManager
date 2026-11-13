@@ -221,7 +221,7 @@ public sealed class OverlayHost
         if (_registered || _messages is null) return;
 
         _registered = Native.RegisterHotKey(_messages.Handle, HotkeyId, _hotkey.NativeModifiers, _hotkey.VirtualKey);
-        SetProblem(_registered ? null : $"Клавиша {_hotkey} занята другой программой — выбери другую в настройках");
+        SetProblem(_registered ? null : L.F("Клавиша {0} занята другой программой — выбери другую в настройках", _hotkey));
     }
 
     private void Unregister()

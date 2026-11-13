@@ -8,7 +8,7 @@ public static class RefPack
     public static byte[] Decompress(ReadOnlySpan<byte> data)
     {
         if (data.Length < 5 || data[1] != 0xFB)
-            throw new InvalidDataException("Неизвестный формат сжатия RefPack.");
+            throw new InvalidDataException(L.T("Неизвестный формат сжатия RefPack."));
 
         var flags = data[0];
         var pos = 2;
@@ -64,7 +64,7 @@ public static class RefPack
             {
                 var from = outPos - offset;
                 if (from < 0 || outPos + copy > output.Length)
-                    throw new InvalidDataException("Повреждённые данные RefPack.");
+                    throw new InvalidDataException(L.T("Повреждённые данные RefPack."));
                 // Побайтно: области могут перекрываться — это нормально для этого формата.
                 for (var i = 0; i < copy; i++) output[outPos++] = output[from + i];
             }
@@ -77,7 +77,7 @@ public static class RefPack
     {
         if (count == 0) return;
         if (pos + count > src.Length || dstPos + count > dst.Length)
-            throw new InvalidDataException("Повреждённые данные RefPack.");
+            throw new InvalidDataException(L.T("Повреждённые данные RefPack."));
         src.Slice(pos, count).CopyTo(dst.AsSpan(dstPos));
         pos += count;
         dstPos += count;

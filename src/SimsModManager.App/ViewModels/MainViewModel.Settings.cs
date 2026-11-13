@@ -50,9 +50,9 @@ public sealed partial class MainViewModel
 
     public string ThemeLabel => Theme switch
     {
-        Services.ThemeService.Light => "Светлая · слоновая кость",
-        Services.ThemeService.Glass => "Стекло · размытие Windows 11",
-        _ => "Тёмная · графит",
+        Services.ThemeService.Light => L.T("Светлая · слоновая кость"),
+        Services.ThemeService.Glass => L.T("Стекло · размытие Windows 11"),
+        _ => L.T("Тёмная · графит"),
     };
 
 
@@ -64,6 +64,7 @@ public sealed partial class MainViewModel
         DeleteToRecycleBin = _settings.DeleteToRecycleBin;
         ShowSplash = _settings.ShowSplash;
         ShowMascot = _settings.ShowMascot;
+        Language = _settings.Language is L.Russian or L.English ? _settings.Language : "auto";
         _loadingSettings = false;
     }
 
@@ -94,7 +95,7 @@ public sealed partial class MainViewModel
     private async Task ApplyGameOptionAsync(bool? mods, bool? scripts)
     {
         if (_library is null) return;
-        if (!await EnsureGameClosedAsync("изменить настройки"))
+        if (!await EnsureGameClosedAsync(L.T("изменить настройки")))
         {
             RefreshGameState();
             return;
@@ -102,11 +103,11 @@ public sealed partial class MainViewModel
         try
         {
             GameOptions.SetModSettings(_library.Paths, mods, scripts);
-            ShowToast("Настройки игры сохранены", Icons.Check);
+            ShowToast(L.T("Настройки игры сохранены"), Icons.Check);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            await ShowErrorAsync("Не удалось изменить настройки", "Файл Options.ini не получилось сохранить.", ex);
+            await ShowErrorAsync(L.T("Не удалось изменить настройки"), L.T("Файл Options.ini не получилось сохранить."), ex);
         }
         RefreshGameState();
     }
@@ -169,7 +170,7 @@ public sealed partial class MainViewModel
             if (mgr.IsInstalled)
             {
                 IsCheckingUpdates = true;
-                UpdateStatus = "Проверяем…";
+                UpdateStatus = L.T("Проверяем…");
                 Velopack.UpdateInfo? info;
                 try
                 {
@@ -182,27 +183,27 @@ public sealed partial class MainViewModel
                 }
                 if (info is null)
                 {
-                    UpdateStatus = $"У вас последняя версия. Последняя проверка: сегодня, {DateTime.Now:HH:mm}";
+                    UpdateStatus = L.F("У вас последняя версия. Последняя проверка: сегодня, {0:HH:mm}", DateTime.Now);
                     return;
                 }
 
                 var version = info.TargetFullRelease.Version.ToString();
                 var answer = await ShowDialogAsync(new DialogViewModel
                 {
-                    Title = "Доступно обновление",
+                    Title = L.T("Доступно обновление"),
                     Icon = (System.Windows.Media.Geometry)System.Windows.Application.Current.FindResource("Icon.Download"),
-                    Message = $"Новая версия {version}. Программа скачает её и перезапустится — моды и настройки не затрагиваются.",
-                    PrimaryText = "Обновить",
-                    SecondaryText = "Позже",
+                    Message = L.F("Новая версия {0}. Программа скачает её и перезапустится — моды и настройки не затрагиваются.", version),
+                    PrimaryText = L.T("Обновить"),
+                    SecondaryText = L.T("Позже"),
                 });
                 if (answer != DialogResult.Primary)
                 {
-                    UpdateStatus = $"Доступна версия {version}";
+                    UpdateStatus = L.F("Доступна версия {0}", version);
                     return;
                 }
 
-                UpdateStatus = "Скачиваем обновление…";
-                await mgr.DownloadUpdatesAsync(info, p => UpdateStatus = $"Скачиваем обновление… {p}%");
+                UpdateStatus = L.T("Скачиваем обновление…");
+                await mgr.DownloadUpdatesAsync(info, p => UpdateStatus = L.F("Скачиваем обновление… {0}%", p));
                 Shutdown();
                 mgr.ApplyUpdatesAndRestart(info);
                 return;
@@ -211,8 +212,8 @@ public sealed partial class MainViewModel
         catch (Exception ex)
         {
             UpdateStatus = ex is HttpRequestException or TaskCanceledException
-                ? "GitHub сейчас не отвечает. Попробуйте через пару минут — или скачайте установщик на странице GitHub."
-                : "Не удалось обновиться: " + ex.Message;
+                ? L.T("GitHub сейчас не отвечает. Попробуйте через пару минут — или скачайте установщик на странице GitHub.")
+                : L.T("Не удалось обновиться: ") + ex.Message;
             IsCheckingUpdates = false;
             return;
         }
@@ -222,16 +223,16 @@ public sealed partial class MainViewModel
         }
 
         IsCheckingUpdates = true;
-        UpdateStatus = "Проверяем…";
+        UpdateStatus = L.T("Проверяем…");
         try
         {
             using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
             http.DefaultRequestHeaders.UserAgent.ParseAdd("SimsModManager");
             using var response = await http.GetAsync("https://api.github.com/repos/DrowWithSkadi/SimsModManager/releases/latest");
-            var when = $"Последняя проверка: сегодня, {DateTime.Now:HH:mm}";
+            var when = L.F("Последняя проверка: сегодня, {0:HH:mm}", DateTime.Now);
             if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
-                UpdateStatus = "Стабильных версий пока нет. " + when;
+                UpdateStatus = L.T("Стабильных версий пока нет. ") + when;
                 return;
             }
             response.EnsureSuccessStatusCode();
@@ -240,12 +241,12 @@ public sealed partial class MainViewModel
             var latest = tag.TrimStart('v');
             var current = VersionText.TrimStart('v');
             UpdateStatus = Version.TryParse(latest, out var l) && Version.TryParse(current, out var c) && l > c
-                ? $"Доступна версия {tag} — откройте GitHub, чтобы скачать. {when}"
-                : $"У вас последняя версия. {when}";
+                ? L.F("Доступна версия {0} — откройте GitHub, чтобы скачать. {1}", tag, when)
+                : L.F("У вас последняя версия. {0}", when);
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException or JsonException or KeyNotFoundException)
         {
-            UpdateStatus = "Не удалось проверить: нет связи с GitHub.";
+            UpdateStatus = L.T("Не удалось проверить: нет связи с GitHub.");
         }
         finally
         {

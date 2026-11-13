@@ -80,7 +80,7 @@ public sealed partial class MainViewModel
         }
         catch (Exception ex)
         {
-            OverlayProblem = "Оверлей не запустился: " + ex.Message;
+            OverlayProblem = L.T("Оверлей не запустился: ") + ex.Message;
         }
     }
 
@@ -105,18 +105,18 @@ public sealed partial class MainViewModel
         if (_library is null) { HelperStatusText = ""; return; }
         if (!HelperMod.IsInstalled(_library.Paths))
         {
-            HelperStatusText = File.Exists(BundledHelper) ? "Не установлен" : "Не входит в эту сборку";
+            HelperStatusText = File.Exists(BundledHelper) ? L.T("Не установлен") : L.T("Не входит в эту сборку");
             return;
         }
         var status = new HelperBridge(HelperMod.BridgeFolder(_library.Paths)).ReadStatus();
         HelperStatusText = status.State switch
         {
-            HelperState.Live => "Работает в игре",
-            HelperState.Menu => "Работает · игра в главном меню",
-            HelperState.Starting => "Игра загружается",
-            _ when IsGameRunning && !GameScriptsEnabled => "Скриптовые моды выключены — помощник не работает",
-            _ when IsGameRunning => "Не отвечает — перезапусти игру",
-            _ => "Установлен · заработает при запуске игры",
+            HelperState.Live => L.T("Работает в игре"),
+            HelperState.Menu => L.T("Работает · игра в главном меню"),
+            HelperState.Starting => L.T("Игра загружается"),
+            _ when IsGameRunning && !GameScriptsEnabled => L.T("Скриптовые моды выключены — помощник не работает"),
+            _ when IsGameRunning => L.T("Не отвечает — перезапусти игру"),
+            _ => L.T("Установлен · заработает при запуске игры"),
         };
         CheckpointStorageText = StorageSummary();
     }
@@ -127,8 +127,8 @@ public sealed partial class MainViewModel
         {
             var store = new CheckpointStore(CheckpointStore.DefaultFolder);
             var all = store.List();
-            if (all.Count == 0) return "Точек пока нет";
-            return $"Точек: {all.Count} · {all.Sum(c => c.SizeBytes) / 1024.0 / 1024.0:0.#} МБ · закреплено: {all.Count(c => c.Pinned)}";
+            if (all.Count == 0) return L.T("Точек пока нет");
+            return L.F("Точек: {0} · {1:0.#} МБ · закреплено: {2}", all.Count, all.Sum(c => c.SizeBytes) / 1024.0 / 1024.0, all.Count(c => c.Pinned));
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {

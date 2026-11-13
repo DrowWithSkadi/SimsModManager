@@ -16,7 +16,7 @@ public sealed partial class MainViewModel
 
     public void SetDragFiles(int count)
     {
-        DragCountText = Text.Plural(count, "файл", "файла", "файлов");
+        DragCountText = L.P(count, "файл|файла|файлов");
         IsDragOver = count > 0 && !IsInstalling && HasGame;
     }
 
@@ -39,9 +39,9 @@ public sealed partial class MainViewModel
     {
         var dialog = new Microsoft.Win32.OpenFileDialog
         {
-            Title = "Выберите архивы или файлы модов",
+            Title = L.T("Выберите архивы или файлы модов"),
             Multiselect = true,
-            Filter = "Моды, дома и архивы|*.zip;*.rar;*.7z;*.package;*.ts4script;*.trayitem;*.blueprint;*.bpi;*.room;*.rmi;*.householdbinary;*.hhi;*.sgi|Все файлы|*.*",
+            Filter = L.T("Моды, дома и архивы|*.zip;*.rar;*.7z;*.package;*.ts4script;*.trayitem;*.blueprint;*.bpi;*.room;*.rmi;*.householdbinary;*.hhi;*.sgi|Все файлы|*.*"),
             InitialDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads"),
         };
         if (dialog.ShowDialog() == true)
@@ -55,10 +55,10 @@ public sealed partial class MainViewModel
         {
             await ShowDialogAsync(new DialogViewModel
             {
-                Title = "Сначала укажите папку игры",
+                Title = L.T("Сначала укажите папку игры"),
                 Icon = Icons.FolderSearch,
-                Message = "Без неё менеджер не знает, куда ставить моды.",
-                PrimaryText = "Понятно",
+                Message = L.T("Без неё менеджер не знает, куда ставить моды."),
+                PrimaryText = L.T("Понятно"),
             });
             return;
         }
@@ -66,7 +66,7 @@ public sealed partial class MainViewModel
 
         IsInstalling = true;
         InstallPercent = 0;
-        InstallCountText = $"0 из {sources.Count}";
+        InstallCountText = L.F("0 из {0}", sources.Count);
         InstallCurrent = "";
 
         IReadOnlyList<InstallResult> results;
@@ -76,7 +76,7 @@ public sealed partial class MainViewModel
             var progress = new Progress<InstallProgress>(p =>
             {
                 InstallPercent = p.Total == 0 ? 100 : 100.0 * p.Index / p.Total;
-                InstallCountText = $"{Math.Min(p.Index + 1, p.Total)} из {p.Total}";
+                InstallCountText = L.F("{0} из {1}", Math.Min(p.Index + 1, p.Total), p.Total);
                 if (p.CurrentName.Length > 0) InstallCurrent = p.CurrentName;
             });
             // Небольшая минимальная длительность, чтобы окно установки не «мигало».
@@ -88,7 +88,7 @@ public sealed partial class MainViewModel
         catch (Exception ex)
         {
             IsInstalling = false;
-            await ShowErrorAsync("Что-то пошло не так", "Не удалось завершить установку. Уже установленные моды не затронуты.", ex);
+            await ShowErrorAsync(L.T("Что-то пошло не так"), L.T("Не удалось завершить установку. Уже установленные моды не затронуты."), ex);
             return;
         }
 
@@ -96,15 +96,15 @@ public sealed partial class MainViewModel
         foreach (var r in results) LastResults.Add(new InstallResultViewModel(r));
 
         var ok = results.Count(r => r.Succeeded);
-        ResultSummary = $"{Text.Plural(results.Count, "файл обработан", "файла обработано", "файлов обработано")} · "
-                        + $"{Text.Plural(ok, "мод готов", "мода готовы", "модов готовы")} к игре";
+        ResultSummary = $"{L.P(results.Count, "файл обработан|файла обработано|файлов обработано")} · "
+                        + L.F("{0} к игре", L.P(ok, "мод готов|мода готовы|модов готовы"));
 
         var installed = results.Where(r => r.Succeeded && r.ModName is not null).Select(r => r.ModName!).ToHashSet();
         // Новая версия мода — старые копии оригинала больше не относятся к нему.
         foreach (var name in installed) _originals.Forget(name);
         if (ok > 0)
         {
-            SetLastAction("установлено " + Text.Plural(ok, "мод", "мода", "модов"));
+            SetLastAction(L.T("установлено ") + L.P(ok, "мод|мода|модов"));
             if (_settings.AutoClearCache && _library is not null && !GameOptions.IsGameRunning())
             {
                 try { GameOptions.ClearThumbnailCache(_library.Paths); }
@@ -118,7 +118,7 @@ public sealed partial class MainViewModel
         await RefreshAsync(installed);
 
         if (GameOptions.IsGameRunning())
-            ShowToast("Игра запущена — изменения применятся после перезапуска", Icons.Info, seconds: 6);
+            ShowToast(L.T("Игра запущена — изменения применятся после перезапуска"), Icons.Info, seconds: 6);
     }
 
     [RelayCommand]
@@ -137,19 +137,19 @@ public sealed class InstallResultViewModel(InstallResult result)
 
     public string Message => result.Status switch
     {
-        InstallStatus.Installed => "Установлен · " + Where(),
-        InstallStatus.Updated => "Обновлён · " + Where(),
-        InstallStatus.Skipped => result.Message ?? "Пропущен",
-        _ => result.Message ?? "Ошибка",
+        InstallStatus.Installed => L.T("Установлен · ") + Where(),
+        InstallStatus.Updated => L.T("Обновлён · ") + Where(),
+        InstallStatus.Skipped => result.Message ?? L.T("Пропущен"),
+        _ => result.Message ?? L.T("Ошибка"),
     };
 
     /// <summary>«3 файла в Mods · участок в Tray».</summary>
     private string Where()
     {
         var parts = new List<string>();
-        if (result.FileCount > 0) parts.Add(Text.Plural(result.FileCount, "файл", "файла", "файлов") + " в Mods");
+        if (result.FileCount > 0) parts.Add(L.P(result.FileCount, "файл|файла|файлов") + L.T(" в Mods"));
         if (result.TrayFileCount > 0 && result.TrayKind is { } kind)
-            parts.Add(ModFiles.TrayKindName(kind).ToLowerInvariant() + " в Tray");
+            parts.Add(ModFiles.TrayKindName(kind).ToLowerInvariant() + L.T(" в Tray"));
         return string.Join(" · ", parts);
     }
 

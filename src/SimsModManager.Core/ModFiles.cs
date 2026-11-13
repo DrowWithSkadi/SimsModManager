@@ -41,10 +41,10 @@ public static class ModFiles
 
     public static string TrayKindName(TrayKind kind) => kind switch
     {
-        TrayKind.Lot => "Участок",
-        TrayKind.Room => "Комната",
-        TrayKind.Household => "Семья",
-        _ => "Библиотека",
+        TrayKind.Lot => L.T("Участок"),
+        TrayKind.Room => L.T("Комната"),
+        TrayKind.Household => L.T("Семья"),
+        _ => L.T("Библиотека"),
     };
 
     public static bool IsModFile(string path)

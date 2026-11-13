@@ -1,4 +1,5 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:l="clr-namespace:SimsModManager.App.Localization"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:ctl="clr-namespace:SimsModManager.App.Controls"
                     xmlns:vm="clr-namespace:SimsModManager.App.ViewModels"
@@ -71,9 +72,9 @@
                     b:Anim.Show="{Binding HasHealthFlag}" b:Anim.Offset="0">
                 <Button.ToolTip>
                     <StackPanel MaxWidth="320">
-                        <TextBlock Text="Проблема с модом" FontWeight="SemiBold" Margin="0,0,0,4" />
+                        <TextBlock Text="{l:Tr 'Проблема с модом'}" FontWeight="SemiBold" Margin="0,0,0,4" />
                         <TextBlock Text="{Binding HealthFlag}" TextWrapping="Wrap" />
-                        <TextBlock Text="Нажмите, чтобы решить" Opacity="0.6" Margin="0,6,0,0" />
+                        <TextBlock Text="{l:Tr 'Нажмите, чтобы решить'}" Opacity="0.6" Margin="0,6,0,0" />
                     </StackPanel>
                 </Button.ToolTip>
                 <Button.Template>
@@ -120,17 +121,17 @@
             <Border Style="{StaticResource Tag}" Visibility="{Binding ShowCategory, Converter={StaticResource BoolToVisibility}}">
                 <TextBlock Style="{StaticResource TagText}" Text="{Binding CategoryLabel}" />
             </Border>
-            <Border Style="{StaticResource Tag}" Margin="4,0,0,0" ToolTip="Настройки вещей изменены в менеджере. Оригинал сохранён."
+            <Border Style="{StaticResource Tag}" Margin="4,0,0,0" ToolTip="{l:Tr 'Настройки вещей изменены в менеджере. Оригинал сохранён.'}"
                     Visibility="{Binding IsModified, Converter={StaticResource BoolToVisibility}}">
-                <TextBlock Style="{StaticResource TagText}" Text="Изменён" Foreground="{DynamicResource B.Accent}" />
+                <TextBlock Style="{StaticResource TagText}" Text="{l:Tr 'Изменён'}" Foreground="{DynamicResource B.Accent}" />
             </Border>
             <Border Style="{StaticResource Tag}" Background="{DynamicResource B.AccentSubtle}" Margin="4,0,0,0"
                     Visibility="{Binding ShowScriptBadge, Converter={StaticResource BoolToVisibility}}">
-                <TextBlock Style="{StaticResource TagText}" Text="Скрипт" Foreground="{DynamicResource B.Accent}" />
+                <TextBlock Style="{StaticResource TagText}" Text="{l:Tr 'Скрипт'}" Foreground="{DynamicResource B.Accent}" />
             </Border>
             <Border Style="{StaticResource Tag}" Margin="4,0,0,0"
                     Visibility="{Binding IsEnabled, Converter={StaticResource InverseBoolToVisibility}}">
-                <TextBlock Style="{StaticResource TagText}" Text="Выключен" Foreground="{DynamicResource B.TextMuted}" />
+                <TextBlock Style="{StaticResource TagText}" Text="{l:Tr 'Выключен'}" Foreground="{DynamicResource B.TextMuted}" />
             </Border>
         </StackPanel>
     </DataTemplate>
@@ -176,13 +177,13 @@
             <ContentPresenter x:Name="Tags" Grid.Column="3" Content="{Binding}" ContentTemplate="{StaticResource ModTags}" Margin="12,0,16,0" />
 
             <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center">
-                <Button Style="{StaticResource Btn.Icon}" ctl:Btn.Icon="{StaticResource Icon.FolderOpen}" ToolTip="Показать в проводнике"
+                <Button Style="{StaticResource Btn.Icon}" ctl:Btn.Icon="{StaticResource Icon.FolderOpen}" ToolTip="{l:Tr 'Показать в проводнике'}"
                         Command="{Binding DataContext.OpenModLocationCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
                         CommandParameter="{Binding}" />
-                <Button Style="{StaticResource Btn.Icon}" ctl:Btn.Icon="{StaticResource Icon.Trash2}" ToolTip="Удалить в корзину" Margin="8,0,8,0"
+                <Button Style="{StaticResource Btn.Icon}" ctl:Btn.Icon="{StaticResource Icon.Trash2}" ToolTip="{l:Tr 'Удалить в корзину'}" Margin="8,0,8,0"
                         Command="{Binding DataContext.DeleteModCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
                         CommandParameter="{Binding}" />
-                <CheckBox Style="{StaticResource Switch}" IsChecked="{Binding IsEnabled}" ToolTip="Включить / выключить мод" />
+                <CheckBox Style="{StaticResource Switch}" IsChecked="{Binding IsEnabled}" ToolTip="{l:Tr 'Включить / выключить мод'}" />
             </StackPanel>
         </Grid>
         <DataTemplate.Triggers>
@@ -546,7 +547,7 @@
                 <ctl:IconView Data="{Binding Icon}" Foreground="{DynamicResource B.Accent}" Margin="0,0,10,0" />
                 <TextBlock Grid.Column="1" Text="{Binding Message}" FontSize="12" Foreground="{DynamicResource B.Text}" VerticalAlignment="Center"
                            TextTrimming="CharacterEllipsis" MaxWidth="460" />
-                <Button Grid.Column="2" Style="{StaticResource Btn.Link}" Content="Отменить" Command="{Binding UndoCommand}" Margin="16,0,0,0"
+                <Button Grid.Column="2" Style="{StaticResource Btn.Link}" Content="{l:Tr 'Отменить'}" Command="{Binding UndoCommand}" Margin="16,0,0,0"
                         Visibility="{Binding CanUndo, Converter={StaticResource BoolToVisibility}}" />
                 <Button Grid.Column="3" Style="{StaticResource Btn.IconGhost}" ctl:Btn.Icon="{StaticResource Icon.X}" Command="{Binding CloseCommand}"
                         Margin="4,0,0,0" Width="24" Height="24" />

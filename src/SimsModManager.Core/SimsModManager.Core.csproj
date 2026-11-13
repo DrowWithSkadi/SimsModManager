@@ -11,6 +11,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Английский перевод интерфейса: «русская строка»: «английская» -->
+    <EmbeddedResource Include="Localization\*.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <InternalsVisibleTo Include="SimsModManager.Tests" />
   </ItemGroup>
 

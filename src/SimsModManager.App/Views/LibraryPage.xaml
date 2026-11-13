@@ -1,5 +1,6 @@
 <UserControl x:Class="SimsModManager.App.Views.LibraryPage"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:l="clr-namespace:SimsModManager.App.Localization"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:ctl="clr-namespace:SimsModManager.App.Controls"
              xmlns:b="clr-namespace:SimsModManager.App.Behaviors"
@@ -19,14 +20,14 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <ctl:SearchBox x:Name="Search" Placeholder="Найти мод по названию…"
+                <ctl:SearchBox x:Name="Search" Placeholder="{l:Tr 'Найти мод по названию…'}"
                                Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged, Delay=120}" />
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="12,0,0,0" VerticalAlignment="Center">
-                    <RadioButton Style="{StaticResource ChipRadio}" Content="Все" GroupName="State"
+                    <RadioButton Style="{StaticResource ChipRadio}" Content="{l:Tr 'Все'}" GroupName="State"
                                  IsChecked="{Binding StateFilter, Converter={StaticResource Equals}, ConverterParameter=All}" />
-                    <RadioButton Style="{StaticResource ChipRadio}" Content="Включённые" GroupName="State" Margin="4,0,0,0"
+                    <RadioButton Style="{StaticResource ChipRadio}" Content="{l:Tr 'Включённые'}" GroupName="State" Margin="4,0,0,0"
                                  IsChecked="{Binding StateFilter, Converter={StaticResource Equals}, ConverterParameter=Enabled}" />
-                    <RadioButton Style="{StaticResource ChipRadio}" Content="Выключенные" GroupName="State" Margin="4,0,0,0"
+                    <RadioButton Style="{StaticResource ChipRadio}" Content="{l:Tr 'Выключенные'}" GroupName="State" Margin="4,0,0,0"
                                  IsChecked="{Binding StateFilter, Converter={StaticResource Equals}, ConverterParameter=Disabled}" />
                 </StackPanel>
             </Grid>
@@ -40,22 +41,22 @@
                 <!-- Типы: чипами в широком окне, выпадающим списком в узком -->
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center"
                             Visibility="{Binding IsCompact, Converter={StaticResource InverseBoolToVisibility}}">
-                    <RadioButton Style="{StaticResource ChipRadio}" Content="Все типы" GroupName="Type"
+                    <RadioButton Style="{StaticResource ChipRadio}" Content="{l:Tr 'Все типы'}" GroupName="Type"
                                  IsChecked="{Binding TypeFilter, Converter={StaticResource Equals}, ConverterParameter=All}" />
-                    <RadioButton Style="{StaticResource ChipRadio}" Content="Одежда" GroupName="Type" Margin="4,0,0,0"
+                    <RadioButton Style="{StaticResource ChipRadio}" Content="{l:Tr 'Одежда'}" GroupName="Type" Margin="4,0,0,0"
                                  IsChecked="{Binding TypeFilter, Converter={StaticResource Equals}, ConverterParameter=Clothing}" />
-                    <RadioButton Style="{StaticResource ChipRadio}" Content="Причёски" GroupName="Type" Margin="4,0,0,0"
+                    <RadioButton Style="{StaticResource ChipRadio}" Content="{l:Tr 'Причёски'}" GroupName="Type" Margin="4,0,0,0"
                                  IsChecked="{Binding TypeFilter, Converter={StaticResource Equals}, ConverterParameter=Hair}" />
-                    <RadioButton Style="{StaticResource ChipRadio}" Content="Макияж" GroupName="Type" Margin="4,0,0,0"
+                    <RadioButton Style="{StaticResource ChipRadio}" Content="{l:Tr 'Макияж'}" GroupName="Type" Margin="4,0,0,0"
                                  IsChecked="{Binding TypeFilter, Converter={StaticResource Equals}, ConverterParameter=Makeup}" />
-                    <RadioButton Style="{StaticResource ChipRadio}" Content="Объекты" GroupName="Type" Margin="4,0,0,0"
+                    <RadioButton Style="{StaticResource ChipRadio}" Content="{l:Tr 'Объекты'}" GroupName="Type" Margin="4,0,0,0"
                                  IsChecked="{Binding TypeFilter, Converter={StaticResource Equals}, ConverterParameter=Objects}" />
-                    <RadioButton Style="{StaticResource ChipRadio}" Content="Скрипты" GroupName="Type" Margin="4,0,0,0"
+                    <RadioButton Style="{StaticResource ChipRadio}" Content="{l:Tr 'Скрипты'}" GroupName="Type" Margin="4,0,0,0"
                                  IsChecked="{Binding TypeFilter, Converter={StaticResource Equals}, ConverterParameter=Scripts}" />
-                    <RadioButton Style="{StaticResource ChipRadio}" Content="Другое" GroupName="Type" Margin="4,0,0,0"
+                    <RadioButton Style="{StaticResource ChipRadio}" Content="{l:Tr 'Другое'}" GroupName="Type" Margin="4,0,0,0"
                                  IsChecked="{Binding TypeFilter, Converter={StaticResource Equals}, ConverterParameter=Other}" />
-                    <RadioButton Style="{StaticResource ChipRadio}" Content="Дома и семьи" GroupName="Type" Margin="4,0,0,0"
-                                 ToolTip="Участки, комнаты и персонажи — они лежат в папке Tray"
+                    <RadioButton Style="{StaticResource ChipRadio}" Content="{l:Tr 'Дома и семьи'}" GroupName="Type" Margin="4,0,0,0"
+                                 ToolTip="{l:Tr 'Участки, комнаты и персонажи — они лежат в папке Tray'}"
                                  IsChecked="{Binding TypeFilter, Converter={StaticResource Equals}, ConverterParameter=Tray}" />
                 </StackPanel>
 
@@ -67,21 +68,21 @@
                         <Border Background="{DynamicResource B.Popup}" BorderBrush="{DynamicResource B.Border}" BorderThickness="1"
                                 CornerRadius="8" Padding="4" MinWidth="170">
                             <StackPanel>
-                                <RadioButton Style="{StaticResource MenuOption}" Content="Все типы" GroupName="TypeMenu"
+                                <RadioButton Style="{StaticResource MenuOption}" Content="{l:Tr 'Все типы'}" GroupName="TypeMenu"
                                              IsChecked="{Binding TypeFilter, Converter={StaticResource Equals}, ConverterParameter=All}" />
-                                <RadioButton Style="{StaticResource MenuOption}" Content="Одежда" GroupName="TypeMenu"
+                                <RadioButton Style="{StaticResource MenuOption}" Content="{l:Tr 'Одежда'}" GroupName="TypeMenu"
                                              IsChecked="{Binding TypeFilter, Converter={StaticResource Equals}, ConverterParameter=Clothing}" />
-                                <RadioButton Style="{StaticResource MenuOption}" Content="Причёски" GroupName="TypeMenu"
+                                <RadioButton Style="{StaticResource MenuOption}" Content="{l:Tr 'Причёски'}" GroupName="TypeMenu"
                                              IsChecked="{Binding TypeFilter, Converter={StaticResource Equals}, ConverterParameter=Hair}" />
-                                <RadioButton Style="{StaticResource MenuOption}" Content="Макияж" GroupName="TypeMenu"
+                                <RadioButton Style="{StaticResource MenuOption}" Content="{l:Tr 'Макияж'}" GroupName="TypeMenu"
                                              IsChecked="{Binding TypeFilter, Converter={StaticResource Equals}, ConverterParameter=Makeup}" />
-                                <RadioButton Style="{StaticResource MenuOption}" Content="Объекты" GroupName="TypeMenu"
+                                <RadioButton Style="{StaticResource MenuOption}" Content="{l:Tr 'Объекты'}" GroupName="TypeMenu"
                                              IsChecked="{Binding TypeFilter, Converter={StaticResource Equals}, ConverterParameter=Objects}" />
-                                <RadioButton Style="{StaticResource MenuOption}" Content="Скрипты" GroupName="TypeMenu"
+                                <RadioButton Style="{StaticResource MenuOption}" Content="{l:Tr 'Скрипты'}" GroupName="TypeMenu"
                                              IsChecked="{Binding TypeFilter, Converter={StaticResource Equals}, ConverterParameter=Scripts}" />
-                                <RadioButton Style="{StaticResource MenuOption}" Content="Другое" GroupName="TypeMenu"
+                                <RadioButton Style="{StaticResource MenuOption}" Content="{l:Tr 'Другое'}" GroupName="TypeMenu"
                                              IsChecked="{Binding TypeFilter, Converter={StaticResource Equals}, ConverterParameter=Other}" />
-                                <RadioButton Style="{StaticResource MenuOption}" Content="Дома и семьи" GroupName="TypeMenu"
+                                <RadioButton Style="{StaticResource MenuOption}" Content="{l:Tr 'Дома и семьи'}" GroupName="TypeMenu"
                                              IsChecked="{Binding TypeFilter, Converter={StaticResource Equals}, ConverterParameter=Tray}" />
                             </StackPanel>
                         </Border>
@@ -98,30 +99,30 @@
                             <Border Background="{DynamicResource B.Popup}" BorderBrush="{DynamicResource B.Border}" BorderThickness="1"
                                     CornerRadius="8" Padding="4" MinWidth="190">
                                 <StackPanel>
-                                    <TextBlock Text="Сортировать" Style="{StaticResource T.Muted}" Margin="8,6,8,4" />
-                                    <RadioButton Style="{StaticResource MenuOption}" Content="По имени" GroupName="Sort"
+                                    <TextBlock Text="{l:Tr 'Сортировать'}" Style="{StaticResource T.Muted}" Margin="8,6,8,4" />
+                                    <RadioButton Style="{StaticResource MenuOption}" Content="{l:Tr 'По имени'}" GroupName="Sort"
                                                  IsChecked="{Binding SortBy, Converter={StaticResource Equals}, ConverterParameter=name, Mode=OneWay}"
                                                  Command="{Binding SetSortCommand}" CommandParameter="name" />
-                                    <RadioButton Style="{StaticResource MenuOption}" Content="По дате установки" GroupName="Sort"
+                                    <RadioButton Style="{StaticResource MenuOption}" Content="{l:Tr 'По дате установки'}" GroupName="Sort"
                                                  IsChecked="{Binding SortBy, Converter={StaticResource Equals}, ConverterParameter=date, Mode=OneWay}"
                                                  Command="{Binding SetSortCommand}" CommandParameter="date" />
-                                    <RadioButton Style="{StaticResource MenuOption}" Content="По размеру" GroupName="Sort"
+                                    <RadioButton Style="{StaticResource MenuOption}" Content="{l:Tr 'По размеру'}" GroupName="Sort"
                                                  IsChecked="{Binding SortBy, Converter={StaticResource Equals}, ConverterParameter=size, Mode=OneWay}"
                                                  Command="{Binding SetSortCommand}" CommandParameter="size" />
                                     <Border Height="1" Background="{DynamicResource B.Hover}" Margin="4" />
                                     <Button Style="{StaticResource Btn.Ghost}" HorizontalContentAlignment="Left" Height="30"
-                                            ctl:Btn.Icon="{StaticResource Icon.ArrowUp}" Content="Обратный порядок"
+                                            ctl:Btn.Icon="{StaticResource Icon.ArrowUp}" Content="{l:Tr 'Обратный порядок'}"
                                             Command="{Binding ToggleSortDirectionCommand}" Foreground="{DynamicResource B.Text}" FontWeight="Normal" />
                                 </StackPanel>
                             </Border>
                         </Popup>
                     </Grid>
                     <RadioButton Style="{StaticResource ViewToggle}" ctl:Btn.Icon="{StaticResource Icon.List}" GroupName="View" Margin="4,0,0,0"
-                                 ToolTip="Список" IsChecked="{Binding IsGridView, Converter={StaticResource InverseBool}}" />
+                                 ToolTip="{l:Tr 'Список'}" IsChecked="{Binding IsGridView, Converter={StaticResource InverseBool}}" />
                     <RadioButton Style="{StaticResource ViewToggle}" ctl:Btn.Icon="{StaticResource Icon.LayoutGrid}" GroupName="View" Margin="4,0,0,0"
-                                 ToolTip="Плитки" IsChecked="{Binding IsGridView}" />
+                                 ToolTip="{l:Tr 'Плитки'}" IsChecked="{Binding IsGridView}" />
                     <Button Style="{StaticResource Btn.Icon}" ctl:Btn.Icon="{StaticResource Icon.RefreshCw}" Margin="4,0,0,0"
-                            ToolTip="Обновить список" Command="{Binding RefreshCommand}" />
+                            ToolTip="{l:Tr 'Обновить список'}" Command="{Binding RefreshCommand}" />
                 </StackPanel>
             </Grid>
         </StackPanel>
@@ -145,11 +146,11 @@
                 </Grid.ColumnDefinitions>
                 <ctl:IconView Data="{StaticResource Icon.Upload}" Foreground="{DynamicResource B.Accent}"
                               b:Anim.Bob="{Binding IsMouseOver, ElementName=DropStrip}" />
-                <TextBlock Grid.Column="1" Text="Перетащите архивы сюда" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource B.Text}"
+                <TextBlock Grid.Column="1" Text="{l:Tr 'Перетащите архивы сюда'}" FontSize="12" FontWeight="SemiBold" Foreground="{DynamicResource B.Text}"
                            VerticalAlignment="Center" Margin="12,0,0,0" />
-                <TextBlock Grid.Column="2" Text="ZIP / RAR / 7z / .package / .ts4script / дома и семьи" FontSize="10" Foreground="{DynamicResource B.TextMuted}"
+                <TextBlock Grid.Column="2" Text="{l:Tr 'ZIP / RAR / 7z / .package / .ts4script / дома и семьи'}" FontSize="10" Foreground="{DynamicResource B.TextMuted}"
                            VerticalAlignment="Center" Margin="12,0,0,0" TextTrimming="CharacterEllipsis" />
-                <Button Grid.Column="3" Style="{StaticResource Btn.Secondary}" Content="Выбрать файлы" Command="{Binding BrowseFilesCommand}" />
+                <Button Grid.Column="3" Style="{StaticResource Btn.Secondary}" Content="{l:Tr 'Выбрать файлы'}" Command="{Binding BrowseFilesCommand}" />
             </Grid>
         </Grid>
 
@@ -171,7 +172,7 @@
                         <TextBlock Text="{Binding OptionsWarningDetail}" FontSize="11" Foreground="{DynamicResource B.Warning}" Margin="0,2,0,0"
                                    Visibility="{Binding HasOptionsWarningDetail, Converter={StaticResource BoolToVisibility}}" />
                     </StackPanel>
-                    <Button Grid.Column="2" Style="{StaticResource Btn.Primary}" Content="Включить моды" Command="{Binding FixOptionsCommand}" />
+                    <Button Grid.Column="2" Style="{StaticResource Btn.Primary}" Content="{l:Tr 'Включить моды'}" Command="{Binding FixOptionsCommand}" />
                 </Grid>
             </Border>
 
@@ -179,7 +180,7 @@
                     BorderThickness="1" CornerRadius="6" Padding="12,10" Margin="0,0,0,8">
                 <StackPanel Orientation="Horizontal">
                     <ctl:IconView Data="{StaticResource Icon.Info}" Foreground="{DynamicResource B.TextSecondary}" Margin="0,0,12,0" />
-                    <TextBlock Text="Игра запущена — изменения применятся после перезапуска" FontSize="12" Foreground="{DynamicResource B.Text}"
+                    <TextBlock Text="{l:Tr 'Игра запущена — изменения применятся после перезапуска'}" FontSize="12" Foreground="{DynamicResource B.Text}"
                                VerticalAlignment="Center" />
                 </StackPanel>
             </Border>
@@ -197,10 +198,10 @@
                     <TextBlock Grid.Column="1" Text="{Binding GameUpdateText}" FontSize="12" Foreground="{DynamicResource B.Text}" TextWrapping="Wrap"
                                VerticalAlignment="Center" />
                     <StackPanel Grid.Column="2" Orientation="Horizontal" Margin="12,0,0,0" VerticalAlignment="Center">
-                        <Button Style="{StaticResource Btn.Ghost}" Content="Какие?" Command="{Binding ShowOutdatedScriptsCommand}" />
-                        <Button Style="{StaticResource Btn.Secondary}" Content="Выключить их" Margin="6,0,0,0" Command="{Binding DisableOutdatedScriptsCommand}"
-                                ToolTip="Выключить скриптовые моды, пока авторы не выпустят обновления" />
-                        <Button Style="{StaticResource Btn.Secondary}" Content="Всё работает" Margin="6,0,0,0" Command="{Binding AcknowledgeGameUpdateCommand}" />
+                        <Button Style="{StaticResource Btn.Ghost}" Content="{l:Tr 'Какие?'}" Command="{Binding ShowOutdatedScriptsCommand}" />
+                        <Button Style="{StaticResource Btn.Secondary}" Content="{l:Tr 'Выключить их'}" Margin="6,0,0,0" Command="{Binding DisableOutdatedScriptsCommand}"
+                                ToolTip="{l:Tr 'Выключить скриптовые моды, пока авторы не выпустят обновления'}" />
+                        <Button Style="{StaticResource Btn.Secondary}" Content="{l:Tr 'Всё работает'}" Margin="6,0,0,0" Command="{Binding AcknowledgeGameUpdateCommand}" />
                     </StackPanel>
                 </Grid>
             </Border>
@@ -216,8 +217,8 @@
                     </Grid.ColumnDefinitions>
                     <ctl:IconView Data="{StaticResource Icon.ScanSearch}" Foreground="{DynamicResource B.Accent}" Margin="0,0,12,0" />
                     <TextBlock Grid.Column="1" FontSize="12" Foreground="{DynamicResource B.Text}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
-                               Text="{Binding BisectStepText, StringFormat='Идёт поиск мода, который мешает игре · {0}'}" />
-                    <Button Grid.Column="2" Style="{StaticResource Btn.Primary}" Content="Продолжить" Command="{Binding OpenHealthCommand}" />
+                               Text="{Binding BisectBannerText}" />
+                    <Button Grid.Column="2" Style="{StaticResource Btn.Primary}" Content="{l:Tr 'Продолжить'}" Command="{Binding OpenHealthCommand}" />
                 </Grid>
             </Border>
 
@@ -234,12 +235,12 @@
                     <TextBlock Grid.Column="1" Text="{Binding HealthBannerText}" FontSize="12" Foreground="{DynamicResource B.Text}" VerticalAlignment="Center"
                                TextTrimming="CharacterEllipsis" />
                     <StackPanel Grid.Column="2" Orientation="Horizontal">
-                        <Button Style="{StaticResource Btn.Primary}" Content="Исправить всё" Command="{Binding FixAllCommand}" Margin="0,0,8,0"
+                        <Button Style="{StaticResource Btn.Primary}" Content="{l:Tr 'Исправить всё'}" Command="{Binding FixAllCommand}" Margin="0,0,8,0"
                                 Visibility="{Binding CanFixAll, Converter={StaticResource BoolToVisibility}}" />
-                        <Button Style="{StaticResource Btn.Secondary}" Content="Посмотреть" Command="{Binding OpenHealthCommand}" />
-                        <Button Style="{StaticResource Btn.Secondary}" Content="Не напоминать" Margin="8,0,0,0" Command="{Binding DismissHealthIssuesCommand}"
-                                ToolTip="Об этих проблемах больше не напомню, о новых — напомню" />
-                        <Button Style="{StaticResource Btn.IconGhost}" ctl:Btn.Icon="{StaticResource Icon.X}" Margin="4,0,0,0" ToolTip="Скрыть до перезапуска"
+                        <Button Style="{StaticResource Btn.Secondary}" Content="{l:Tr 'Посмотреть'}" Command="{Binding OpenHealthCommand}" />
+                        <Button Style="{StaticResource Btn.Secondary}" Content="{l:Tr 'Не напоминать'}" Margin="8,0,0,0" Command="{Binding DismissHealthIssuesCommand}"
+                                ToolTip="{l:Tr 'Об этих проблемах больше не напомню, о новых — напомню'}" />
+                        <Button Style="{StaticResource Btn.IconGhost}" ctl:Btn.Icon="{StaticResource Icon.X}" Margin="4,0,0,0" ToolTip="{l:Tr 'Скрыть до перезапуска'}"
                                 Command="{Binding HideHealthBannerCommand}" />
                     </StackPanel>
                 </Grid>
@@ -256,7 +257,7 @@
                     <ctl:IconView Data="{StaticResource Icon.TriangleAlert}" Foreground="{DynamicResource B.Warning}" Margin="0,0,12,0" />
                     <TextBlock Grid.Column="1" Text="{Binding DuplicateText}" FontSize="12" Foreground="{DynamicResource B.Text}" VerticalAlignment="Center"
                                TextTrimming="CharacterEllipsis" />
-                    <Button Grid.Column="2" Style="{StaticResource Btn.Secondary}" Content="Показать" Command="{Binding ShowDuplicatesCommand}" />
+                    <Button Grid.Column="2" Style="{StaticResource Btn.Secondary}" Content="{l:Tr 'Показать'}" Command="{Binding ShowDuplicatesCommand}" />
                 </Grid>
             </Border>
 
@@ -272,8 +273,8 @@
                     </Grid.ColumnDefinitions>
                     <ctl:IconView Data="{StaticResource Icon.Files}" Foreground="{DynamicResource B.TextSecondary}" Margin="0,0,12,0" />
                     <TextBlock Grid.Column="1" FontSize="12" Foreground="{DynamicResource B.Text}" VerticalAlignment="Center" TextWrapping="Wrap"
-                               Text="Показаны моды с одинаковыми файлами. Наведите на ⚠, чтобы увидеть, с чем совпадает. Лишний мод можно выключить или удалить." />
-                    <Button Grid.Column="2" Style="{StaticResource Btn.Secondary}" Content="Показать все" Command="{Binding ResetFiltersCommand}" Margin="12,0,0,0" />
+                               Text="{l:Tr 'Показаны моды с одинаковыми файлами. Наведите на ⚠, чтобы увидеть, с чем совпадает. Лишний мод можно выключить или удалить.'}" />
+                    <Button Grid.Column="2" Style="{StaticResource Btn.Secondary}" Content="{l:Tr 'Показать все'}" Command="{Binding ResetFiltersCommand}" Margin="12,0,0,0" />
                 </Grid>
             </Border>
         </StackPanel>
@@ -284,7 +285,7 @@
                 <RowDefinition Height="24" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
-            <TextBlock Text="МОЯ БИБЛИОТЕКА" Style="{StaticResource T.Caption}" VerticalAlignment="Center" />
+            <TextBlock Text="{l:Tr 'МОЯ БИБЛИОТЕКА'}" Style="{StaticResource T.Caption}" VerticalAlignment="Center" />
             <TextBlock Text="{Binding ListHeaderText}" FontSize="10" Foreground="{DynamicResource B.TextMuted}" HorizontalAlignment="Right"
                        VerticalAlignment="Center" />
 
@@ -358,11 +359,11 @@
                         BorderThickness="1" HorizontalAlignment="Center">
                     <ctl:IconView Data="{StaticResource Icon.FolderPlus}" Foreground="{DynamicResource B.Accent}" />
                 </Border>
-                <TextBlock Text="Перетащите архивы с модами в это окно" Style="{StaticResource T.Section}" FontSize="20" TextAlignment="Center"
+                <TextBlock Text="{l:Tr 'Перетащите архивы с модами в это окно'}" Style="{StaticResource T.Section}" FontSize="20" TextAlignment="Center"
                            TextWrapping="Wrap" Margin="0,20,0,10" />
                 <TextBlock Style="{StaticResource T.Secondary}" TextAlignment="Center" TextWrapping="Wrap" LineHeight="18"
-                           Text="Моды попадут в Mods, а дома, комнаты и персонажи — в Tray. Поддерживаются ZIP, RAR, 7z, .package, .ts4script и файлы из галереи." />
-                <Button Style="{StaticResource Btn.Primary}" ctl:Btn.Icon="{StaticResource Icon.Plus}" Content="Выбрать файлы" Margin="0,18,0,0"
+                           Text="{l:Tr 'Моды попадут в Mods, а дома, комнаты и персонажи — в Tray. Поддерживаются ZIP, RAR, 7z, .package, .ts4script и файлы из галереи.'}" />
+                <Button Style="{StaticResource Btn.Primary}" ctl:Btn.Icon="{StaticResource Icon.Plus}" Content="{l:Tr 'Выбрать файлы'}" Margin="0,18,0,0"
                         HorizontalAlignment="Center" Command="{Binding BrowseFilesCommand}" />
             </StackPanel>
 
@@ -376,8 +377,8 @@
                 <TextBlock Text="{Binding NoResultsTitle}" Style="{StaticResource T.Section}" FontSize="20" TextAlignment="Center"
                            TextWrapping="Wrap" Margin="0,20,0,10" />
                 <TextBlock Style="{StaticResource T.Secondary}" TextAlignment="Center" TextWrapping="Wrap"
-                           Text="Попробуйте другое название или уберите ограничения по типу и состоянию." />
-                <Button Style="{StaticResource Btn.Primary}" ctl:Btn.Icon="{StaticResource Icon.RotateCcw}" Content="Сбросить фильтры" Margin="0,18,0,0"
+                           Text="{l:Tr 'Попробуйте другое название или уберите ограничения по типу и состоянию.'}" />
+                <Button Style="{StaticResource Btn.Primary}" ctl:Btn.Icon="{StaticResource Icon.RotateCcw}" Content="{l:Tr 'Сбросить фильтры'}" Margin="0,18,0,0"
                         HorizontalAlignment="Center" Command="{Binding ResetFiltersCommand}" />
             </StackPanel>
         </Grid>
@@ -390,12 +391,12 @@
             </Grid.RowDefinitions>
             <Grid Margin="0,0,0,16">
                 <StackPanel>
-                    <TextBlock Text="Последняя установка" Style="{StaticResource T.Section}" FontSize="20" />
+                    <TextBlock Text="{l:Tr 'Последняя установка'}" Style="{StaticResource T.Section}" FontSize="20" />
                     <TextBlock Text="{Binding ResultSummary}" Style="{StaticResource T.Muted}" Margin="0,4,0,0" />
                 </StackPanel>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                    <Button Style="{StaticResource Btn.Secondary}" Content="К библиотеке" Command="{Binding CloseResultsCommand}" />
-                    <Button Style="{StaticResource Btn.Primary}" ctl:Btn.Icon="{StaticResource Icon.Plus}" Content="Установить ещё" Margin="8,0,0,0"
+                    <Button Style="{StaticResource Btn.Secondary}" Content="{l:Tr 'К библиотеке'}" Command="{Binding CloseResultsCommand}" />
+                    <Button Style="{StaticResource Btn.Primary}" ctl:Btn.Icon="{StaticResource Icon.Plus}" Content="{l:Tr 'Установить ещё'}" Margin="8,0,0,0"
                             Command="{Binding BrowseFilesCommand}" />
                 </StackPanel>
             </Grid>

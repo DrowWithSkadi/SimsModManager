@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Threading;
 using Velopack;
+using SimsModManager.Core;
 
 namespace SimsModManager.App;
 
@@ -13,9 +14,13 @@ public partial class App : Application
         // при установке, обновлении и удалении (создание и удаление ярлыков).
         VelopackApp.Build().Run();
 
+        // Язык — до создания окон: разметка и тексты сразу берутся на нужном языке
+        var settings = Core.AppSettings.Load();
+        Core.L.SetLanguage(Core.L.Resolve(settings.Language));
+
         var app = new App();
         app.InitializeComponent();
-        Services.ThemeService.Apply(Core.AppSettings.Load().Theme);
+        Services.ThemeService.Apply(settings.Theme);
         app.Run();
     }
 
@@ -95,7 +100,7 @@ public partial class App : Application
     private void OnUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
     {
         // Вместо молчаливого вылета показываем ошибку — её текст удобно прислать для исправления.
-        MessageBox.Show(e.Exception.ToString(), "Непредвиденная ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+        MessageBox.Show(e.Exception.ToString(), L.T("Непредвиденная ошибка"), MessageBoxButton.OK, MessageBoxImage.Error);
         e.Handled = true;
     }
 }

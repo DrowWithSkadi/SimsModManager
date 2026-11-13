@@ -29,19 +29,19 @@ public sealed class SharpCompressExtractor : IArchiveExtractor
         }
         catch (CryptographicException ex)
         {
-            throw new ArchiveExtractionException("Архив защищён паролем.", ex);
+            throw new ArchiveExtractionException(L.T("Архив защищён паролем."), ex);
         }
         catch (InvalidFormatException ex)
         {
-            throw new ArchiveExtractionException("Не удалось открыть архив: он повреждён или имеет неизвестный формат.", ex);
+            throw new ArchiveExtractionException(L.T("Не удалось открыть архив: он повреждён или имеет неизвестный формат."), ex);
         }
         catch (ArchiveException ex)
         {
-            throw new ArchiveExtractionException("Ошибка при распаковке архива: " + ex.Message, ex);
+            throw new ArchiveExtractionException(L.T("Ошибка при распаковке архива: ") + ex.Message, ex);
         }
         catch (InvalidOperationException ex)
         {
-            throw new ArchiveExtractionException("Не удалось открыть архив: " + ex.Message, ex);
+            throw new ArchiveExtractionException(L.T("Не удалось открыть архив: ") + ex.Message, ex);
         }
     }
 }

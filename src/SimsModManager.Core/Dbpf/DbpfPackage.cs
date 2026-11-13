@@ -62,15 +62,15 @@ public sealed class DbpfPackage : IDisposable
     private static List<ResourceEntry> ReadIndex(Stream s)
     {
         Span<byte> header = stackalloc byte[HeaderSize];
-        if (s.Length < HeaderSize) throw new InvalidDataException("Файл слишком маленький для .package.");
+        if (s.Length < HeaderSize) throw new InvalidDataException(L.T("Файл слишком маленький для .package."));
         s.Position = 0;
         s.ReadExactly(header);
 
         if (header[0] != 'D' || header[1] != 'B' || header[2] != 'P' || header[3] != 'F')
-            throw new InvalidDataException("Это не файл .package (нет подписи DBPF).");
+            throw new InvalidDataException(L.T("Это не файл .package (нет подписи DBPF)."));
 
         var major = BinaryPrimitives.ReadInt32LittleEndian(header[4..]);
-        if (major != 2) throw new InvalidDataException($"Неподдерживаемая версия .package: {major}.");
+        if (major != 2) throw new InvalidDataException(L.F("Неподдерживаемая версия .package: {0}.", major));
 
         var count = BinaryPrimitives.ReadInt32LittleEndian(header[36..]);
         var indexSize = BinaryPrimitives.ReadInt32LittleEndian(header[44..]);
@@ -80,7 +80,7 @@ public sealed class DbpfPackage : IDisposable
         var entries = new List<ResourceEntry>(Math.Max(count, 0));
         if (count <= 0) return entries;
         if (indexPos <= 0 || indexPos + indexSize > s.Length || indexSize < 4)
-            throw new InvalidDataException("Оглавление .package повреждено.");
+            throw new InvalidDataException(L.T("Оглавление .package повреждено."));
 
         var index = new byte[indexSize];
         s.Position = indexPos;
@@ -120,7 +120,7 @@ public sealed class DbpfPackage : IDisposable
     public byte[] ReadRaw(ResourceEntry entry)
     {
         if (entry.Offset + (long)entry.StoredSize > _stream.Length)
-            throw new InvalidDataException("Ресурс выходит за границы файла.");
+            throw new InvalidDataException(L.T("Ресурс выходит за границы файла."));
         var data = new byte[entry.StoredSize];
         _stream.Position = entry.Offset;
         _stream.ReadExactly(data);
@@ -137,7 +137,7 @@ public sealed class DbpfPackage : IDisposable
             CompressionZlib => InflateZlib(raw, entry.MemorySize),
             CompressionRefPack => RefPack.Decompress(raw),
             CompressionDeleted => [],
-            _ => throw new InvalidDataException($"Неизвестное сжатие ресурса: 0x{entry.Compression:X4}."),
+            _ => throw new InvalidDataException(L.F("Неизвестное сжатие ресурса: 0x{0:X4}.", entry.Compression)),
         };
     }
 
@@ -160,7 +160,7 @@ public sealed class DbpfPackage : IDisposable
 
         public uint U32()
         {
-            if (_pos + 4 > _data.Length) throw new InvalidDataException("Оглавление .package обрывается.");
+            if (_pos + 4 > _data.Length) throw new InvalidDataException(L.T("Оглавление .package обрывается."));
             var v = BinaryPrimitives.ReadUInt32LittleEndian(_data[_pos..]);
             _pos += 4;
             return v;
@@ -168,7 +168,7 @@ public sealed class DbpfPackage : IDisposable
 
         public ushort U16()
         {
-            if (_pos + 2 > _data.Length) throw new InvalidDataException("Оглавление .package обрывается.");
+            if (_pos + 2 > _data.Length) throw new InvalidDataException(L.T("Оглавление .package обрывается."));
             var v = BinaryPrimitives.ReadUInt16LittleEndian(_data[_pos..]);
             _pos += 2;
             return v;

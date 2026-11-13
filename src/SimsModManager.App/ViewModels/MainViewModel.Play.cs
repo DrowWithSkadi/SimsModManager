@@ -60,7 +60,7 @@ public sealed partial class MainViewModel
         if (GameOptions.IsGameRunning())
         {
             IsGameRunning = true;
-            ShowToast("Игра уже запущена", Icons.Gamepad);
+            ShowToast(L.T("Игра уже запущена"), Icons.Gamepad);
             return;
         }
         var paths = _library.Paths;
@@ -68,18 +68,18 @@ public sealed partial class MainViewModel
         try
         {
             // 1. Проверка модов
-            Step("Проверяю моды", 0.15);
+            Step(L.T("Проверяю моды"), 0.15);
             await Task.Delay(350);
             if (mode is null && !await ConfirmModsBeforeLaunch(paths)) return;
 
             // 2. Кэш
-            Step("Чищу кэш", 0.38);
+            Step(L.T("Чищу кэш"), 0.38);
             try { GameOptions.ClearThumbnailCache(paths); }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException) { }
             await Task.Delay(300);
 
             // 3. Бэкап сохранений
-            Step("Делаю бэкап сохранений", 0.6);
+            Step(L.T("Делаю бэкап сохранений"), 0.6);
             try
             {
                 var started = DateTime.Now;
@@ -89,11 +89,11 @@ public sealed partial class MainViewModel
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException)
             {
-                ShowToast("Не получилось сделать бэкап сохранений", Icons.Alert);
+                ShowToast(L.T("Не получилось сделать бэкап сохранений"), Icons.Alert);
             }
 
             // 4. Запуск
-            Step("Запускаю игру", 0.85);
+            Step(L.T("Запускаю игру"), 0.85);
             var game = GameLauncher.Find(_settings.GameExe) ?? await AskForGameExe();
             if (game is null) return;
 
@@ -109,17 +109,17 @@ public sealed partial class MainViewModel
                 RestoreModSettingsIfGameClosed(force: true);
                 await ShowDialogAsync(new DialogViewModel
                 {
-                    Title = "Не получилось запустить игру",
+                    Title = L.T("Не получилось запустить игру"),
                     Icon = Icons.Error,
                     Message = ex.Message,
                     PathText = game.Exe,
-                    PrimaryText = "Понятно",
+                    PrimaryText = L.T("Понятно"),
                 });
                 return;
             }
 
             // Ждём, пока игра появится (EA app или Steam могут думать до минуты)
-            Step("Игра запускается…", 1);
+            Step(L.T("Игра запускается…"), 1);
             var until = DateTime.Now.AddSeconds(90);
             while (DateTime.Now < until && !GameOptions.IsGameRunning()) await Task.Delay(1000);
             IsGameRunning = GameOptions.IsGameRunning();
@@ -139,12 +139,12 @@ public sealed partial class MainViewModel
         {
             var answer = await ShowDialogAsync(new DialogViewModel
             {
-                Title = options.ModsEnabled ? "Скриптовые моды выключены в игре" : "Моды выключены в настройках игры",
+                Title = options.ModsEnabled ? L.T("Скриптовые моды выключены в игре") : L.T("Моды выключены в настройках игры"),
                 Icon = Icons.Alert,
-                Message = "Игра запустится без них. Включить перед запуском?",
-                PrimaryText = "Включить и играть",
-                ExtraText = "Играть так",
-                SecondaryText = "Отмена",
+                Message = L.T("Игра запустится без них. Включить перед запуском?"),
+                PrimaryText = L.T("Включить и играть"),
+                ExtraText = L.T("Играть так"),
+                SecondaryText = L.T("Отмена"),
             });
             if (answer == DialogResult.Cancel) return false;
             if (answer == DialogResult.Primary)
@@ -159,12 +159,12 @@ public sealed partial class MainViewModel
         {
             var answer = await ShowDialogAsync(new DialogViewModel
             {
-                Title = "Игра недавно обновилась",
+                Title = L.T("Игра недавно обновилась"),
                 Icon = Icons.Alert,
-                Message = GameUpdateText + " Они могут сломать игру — их лучше выключить, пока авторы не выпустят обновления.",
-                PrimaryText = "Выключить их и играть",
-                ExtraText = "Всё равно играть",
-                SecondaryText = "Отмена",
+                Message = GameUpdateText + L.T(" Они могут сломать игру — их лучше выключить, пока авторы не выпустят обновления."),
+                PrimaryText = L.T("Выключить их и играть"),
+                ExtraText = L.T("Всё равно играть"),
+                SecondaryText = L.T("Отмена"),
             });
             if (answer == DialogResult.Cancel) return false;
             if (answer == DialogResult.Primary) await DisableOutdatedScripts();
@@ -176,18 +176,18 @@ public sealed partial class MainViewModel
     {
         var answer = await ShowDialogAsync(new DialogViewModel
         {
-            Title = "Не нашёл, где установлена игра",
+            Title = L.T("Не нашёл, где установлена игра"),
             Icon = Icons.FolderSearch,
-            Message = "Покажите файл TS4_x64.exe — обычно он лежит в папке игры, в Game\\Bin. Запомню и больше не спрошу.",
-            PrimaryText = "Указать файл",
-            SecondaryText = "Отмена",
+            Message = L.T("Покажите файл TS4_x64.exe — обычно он лежит в папке игры, в Game\\Bin. Запомню и больше не спрошу."),
+            PrimaryText = L.T("Указать файл"),
+            SecondaryText = L.T("Отмена"),
         });
         if (answer != DialogResult.Primary) return null;
 
         var dialog = new Microsoft.Win32.OpenFileDialog
         {
-            Title = "Где лежит TS4_x64.exe?",
-            Filter = "The Sims 4|TS4_x64.exe;TS4.exe|Программы|*.exe",
+            Title = L.T("Где лежит TS4_x64.exe?"),
+            Filter = L.T("The Sims 4|TS4_x64.exe;TS4.exe|Программы|*.exe"),
         };
         if (dialog.ShowDialog() != true) return null;
         _settings.GameExe = dialog.FileName;

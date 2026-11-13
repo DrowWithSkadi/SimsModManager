@@ -143,9 +143,9 @@ public sealed class CheckpointStore(string folder)
 
     public static string DefaultName(CheckpointKind kind, DateTime at) => kind switch
     {
-        CheckpointKind.Auto => $"Автосохранение · {at:dd.MM HH:mm}",
-        CheckpointKind.BeforeRollback => $"Перед откатом · {at:dd.MM HH:mm}",
-        _ => $"Точка · {at:dd.MM HH:mm}",
+        CheckpointKind.Auto => L.F("Автосохранение · {0:dd.MM HH:mm}", at),
+        CheckpointKind.BeforeRollback => L.F("Перед откатом · {0:dd.MM HH:mm}", at),
+        _ => L.F("Точка · {0:dd.MM HH:mm}", at),
     };
 
     /// <summary>
@@ -168,13 +168,13 @@ public sealed class CheckpointStore(string folder)
     public byte[] ReadData(Checkpoint checkpoint)
     {
         using var zip = ZipFile.OpenRead(Path.Combine(checkpoint.Folder, DataFile));
-        var entry = zip.Entries.FirstOrDefault() ?? throw new InvalidSaveException($"Точка «{checkpoint.Name}» пустая");
+        var entry = zip.Entries.FirstOrDefault() ?? throw new InvalidSaveException(L.F("Точка «{0}» пустая", checkpoint.Name));
         using var stream = entry.Open();
         using var memory = new MemoryStream();
         stream.CopyTo(memory);
         var bytes = memory.ToArray();
         if (Convert.ToHexString(SHA256.HashData(bytes)) != checkpoint.Hash)
-            throw new InvalidSaveException($"Точка «{checkpoint.Name}» повреждена");
+            throw new InvalidSaveException(L.F("Точка «{0}» повреждена", checkpoint.Name));
         return bytes;
     }
 
@@ -225,7 +225,7 @@ public sealed class CheckpointStore(string folder)
     public static void EnsureValidSave(ReadOnlySpan<byte> bytes, string what)
     {
         if (bytes.Length < 96 || bytes[0] != 'D' || bytes[1] != 'B' || bytes[2] != 'P' || bytes[3] != 'F')
-            throw new InvalidSaveException($"«{what}» не похоже на сохранение Sims 4");
+            throw new InvalidSaveException(L.F("«{0}» не похоже на сохранение Sims 4", what));
     }
 
     private static byte[] ReadShared(string path)

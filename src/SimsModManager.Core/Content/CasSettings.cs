@@ -23,7 +23,7 @@ public static class OutfitTags
     public const uint HotWeather = 2053;
     public const uint ColdWeather = 2054;
 
-    /// <summary>Обычные категории одежды, которыми управляет менеджер.</summary>
+    /// <summary>Обычные категории одежды, которыми управляет менеджер. Названия по-русски — на экран через L.T.</summary>
     public static readonly IReadOnlyList<(uint Value, string Name)> Known =
     [
         (Everyday, "Повседневная"),
