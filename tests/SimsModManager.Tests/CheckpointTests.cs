@@ -323,6 +323,28 @@ public class CheckpointTests
         Assert.Equal(1, scene.SlotByte);
     }
 
+    /// <summary>Игра при выходе в меню пишет автосохранение, и «Продолжить» открывает его — там тоже должна быть точка.</summary>
+    [Fact]
+    public async Task RollbackAlsoReplacesGameAutosave()
+    {
+        using var scene = new MenuScene();
+        using var game = await scene.StartGameAsync();
+        FakeSave(scene.Paths.Saves, SaveSlots.AutosaveFile, 9);
+        await scene.Manager.MenuRollbackAsync(scene.Old);
+
+        Assert.Equal(1, scene.SlotByte);
+        Assert.Equal(1, File.ReadAllBytes(Path.Combine(scene.Paths.Saves, SaveSlots.AutosaveFile))[100]);
+    }
+
+    [Fact]
+    public async Task RollbackDoesNotCreateAutosaveWhenGameHasNone()
+    {
+        using var scene = new MenuScene();
+        using var game = await scene.StartGameAsync();
+        await scene.Manager.MenuRollbackAsync(scene.Old);
+        Assert.False(File.Exists(Path.Combine(scene.Paths.Saves, SaveSlots.AutosaveFile)));
+    }
+
     private sealed class SyncProgress<T>(Action<T> report) : IProgress<T>
     {
         public void Report(T value) => report(value);
