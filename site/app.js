@@ -318,4 +318,30 @@
     addEventListener('resize', draw);
     draw();
   }
+
+  // Фон меняется по ходу страницы: ночь (мята) → глубокий синий → сиреневые сумерки → тёплый рассвет у скачивания
+  {
+    const stops = [
+      { bg: [14, 25, 23], w: [[35, 112, 95], [43, 74, 114], [75, 74, 46]] },
+      { bg: [13, 21, 34], w: [[30, 78, 122], [58, 62, 134], [31, 92, 102]] },
+      { bg: [21, 17, 31], w: [[86, 56, 128], [44, 74, 128], [128, 66, 88]] },
+      { bg: [22, 19, 15], w: [[122, 84, 40], [47, 107, 92], [138, 90, 46]] },
+    ];
+    const root = document.documentElement.style;
+    const mix = (a, b, t) => a.map((v, i) => Math.round(v + (b[i] - v) * t));
+    const css = (c) => 'rgb(' + c.join(',') + ')';
+    let pending = false;
+    const paint = () => {
+      pending = false;
+      const max = Math.max(1, document.documentElement.scrollHeight - innerHeight);
+      const p = Math.min(1, Math.max(0, scrollY / max)) * (stops.length - 1);
+      const i = Math.min(stops.length - 2, Math.floor(p)), t = p - i;
+      const a = stops[i], b = stops[i + 1];
+      root.setProperty('--bg', css(mix(a.bg, b.bg, t)));
+      a.w.forEach((c, k) => root.setProperty('--w' + (k + 1), css(mix(c, b.w[k], t))));
+    };
+    addEventListener('scroll', () => { if (!pending) { pending = true; requestAnimationFrame(paint); } }, { passive: true });
+    addEventListener('resize', paint);
+    paint();
+  }
 })();

@@ -6,7 +6,8 @@
   Общий файл для русской и английской версии; страницы собираются из site/src (tools/build_site.py).
 */
 :root {
-  --bg: #0B1211;
+  --bg: #0E1917;
+  --w1: #23705F; --w2: #2B4A72; --w3: #4B4A2E;
   --glass: rgba(26, 34, 33, .58);
   --line: rgba(255, 255, 255, .08);
   --line-strong: rgba(255, 255, 255, .14);
@@ -21,7 +22,7 @@
 }
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
-body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font); font-size: 17px; line-height: 1.6; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+body { margin: 0; background: var(--bg); transition: background-color .4s linear; color: var(--text); font-family: var(--font); font-size: 17px; line-height: 1.6; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
 img { display: block; max-width: 100%; height: auto; }
 a { color: inherit; }
 h1, h2, h3 { margin: 0; font-weight: 650; letter-spacing: -0.035em; line-height: 1.04; text-wrap: balance; }
@@ -32,9 +33,9 @@ p { margin: 0; }
 /* «Обои» рабочего стола за стеклом программы, с лёгким зерном */
 .wallpaper { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
 .wallpaper i { position: absolute; border-radius: 50%; filter: blur(110px); }
-.wallpaper i:nth-child(1) { width: 60vw; height: 60vw; left: -18vw; top: -26vw; background: #1F5F52; opacity: .55; }
-.wallpaper i:nth-child(2) { width: 46vw; height: 46vw; right: -16vw; top: 6vh; background: #283E6A; opacity: .45; }
-.wallpaper i:nth-child(3) { width: 40vw; height: 40vw; left: 30vw; bottom: -30vw; background: #5A4128; opacity: .35; }
+.wallpaper i:nth-child(1) { width: 60vw; height: 60vw; left: -18vw; top: -26vw; background: var(--w1); opacity: .6; }
+.wallpaper i:nth-child(2) { width: 46vw; height: 46vw; right: -16vw; top: 6vh; background: var(--w2); opacity: .5; }
+.wallpaper i:nth-child(3) { width: 40vw; height: 40vw; left: 30vw; bottom: -30vw; background: var(--w3); opacity: .42; }
 .wallpaper::after { content: ""; position: absolute; inset: 0; opacity: .07; mix-blend-mode: overlay;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
 
@@ -426,3 +427,10 @@ body.no-buddy .box-buddy { transform: scale(0); opacity: 0; transition: transfor
   100% { opacity: 0; transform: translate(calc(var(--x) + var(--dx)), calc(var(--y) + var(--dy))) rotate(var(--a)) scaleX(1); }
 }
 @media (prefers-reduced-motion: reduce) { .sky { display: none; } }
+
+/* Финал: из-под блока скачивания поднимается мятное сияние — страница заканчивается светом */
+.download { position: relative; isolation: isolate; }
+.download::before { content: ""; position: absolute; left: 50%; bottom: -40px; width: min(1200px, 130vw); height: 460px; transform: translateX(-50%);
+  background: radial-gradient(50% 62% at 50% 100%, rgba(119,225,199,.30), rgba(119,225,199,.09) 55%, transparent 76%);
+  z-index: -1; pointer-events: none; animation: aurora 7s ease-in-out infinite alternate; }
+@keyframes aurora { from { opacity: .75; transform: translateX(-50%) scaleX(.94); } to { opacity: 1; transform: translateX(-50%) scaleX(1.04); } }
