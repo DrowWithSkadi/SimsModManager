@@ -42,6 +42,19 @@ public sealed class HelperBridge(string bridgeFolder)
 
     public HelperStatus ReadStatus(DateTime? nowUtc = null)
     {
+        // Помощник раз в секунду заменяет файл; если попали ровно в этот миг — читаем ещё раз,
+        // а не объявляем, что игры нет
+        for (var attempt = 0; ; attempt++)
+        {
+            var status = TryReadStatus(nowUtc, out var busy);
+            if (!busy || attempt >= 2) return status;
+            Thread.Sleep(20);
+        }
+    }
+
+    private HelperStatus TryReadStatus(DateTime? nowUtc, out bool busy)
+    {
+        busy = false;
         var path = Path.Combine(Folder, "status.json");
         try
         {
@@ -71,7 +84,8 @@ public sealed class HelperBridge(string bridgeFolder)
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException
                                        or InvalidOperationException or FormatException or NullReferenceException)
         {
-            // Файл как раз перезаписывается — в следующий раз прочитаем
+            // Файл как раз перезаписывается
+            busy = true;
             return HelperStatus.Offline;
         }
     }
