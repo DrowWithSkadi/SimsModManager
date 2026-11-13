@@ -437,3 +437,8 @@ body.no-buddy .box-buddy { transform: scale(0); opacity: 0; transition: transfor
   z-index: -1; pointer-events: none; animation: aurora 7s ease-in-out infinite alternate; }
 @keyframes aurora { from { opacity: .75; transform: translateX(-50%) scaleX(.94); } to { opacity: 1; transform: translateX(-50%) scaleX(1.04); } }
 
+
+/* Текст на странице не выделяется и не копируется (поля ввода — можно) */
+body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+input, textarea, [contenteditable] { -webkit-user-select: text; user-select: text; }
+img { -webkit-user-drag: none; }

@@ -345,4 +345,9 @@
     paint();
   }
 
+
+  // Копирование текста со страницы отключено; в полях ввода работает как обычно
+  const editable = (t) => t && t.closest && t.closest('input, textarea, [contenteditable]');
+  ['copy', 'cut'].forEach((type) => document.addEventListener(type, (e) => { if (!editable(e.target)) e.preventDefault(); }));
+  document.addEventListener('selectstart', (e) => { if (!editable(e.target)) e.preventDefault(); });
 })();
