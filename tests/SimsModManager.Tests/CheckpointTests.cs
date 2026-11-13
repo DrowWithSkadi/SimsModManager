@@ -136,16 +136,18 @@ public class CheckpointTests
         private volatile string? _dialog;
 
         /// <summary>Слушается ли игра команды «выйди в меню» без окна.</summary>
-        public bool ObeysToMenu { get; init; } = true;
+        public bool ObeysToMenu { get; }
         /// <summary>Что игрок отвечает в окне «Вернуться к точке?»: true — да, false — остаться.</summary>
-        public bool AcceptsDialog { get; init; } = true;
-        public int Version { get; init; } = 7;
+        public bool AcceptsDialog { get; }
+        public int Version { get; }
         /// <summary>status.json перестаёт обновляться — помощник «молчит».</summary>
         public volatile bool Silent;
         public List<string> Commands { get; } = [];
 
-        public FakeGame(HelperBridge bridge, Action saveGame)
+        public FakeGame(HelperBridge bridge, Action saveGame, int version = 7, bool obeysToMenu = true, bool acceptsDialog = true)
         {
+            // До первой записи status.json: иначе программа успеет прочитать чужую версию помощника
+            (Version, ObeysToMenu, AcceptsDialog) = (version, obeysToMenu, acceptsDialog);
             _folder = bridge.Folder;
             Directory.CreateDirectory(_folder);
             WriteStatus();
@@ -244,10 +246,7 @@ public class CheckpointTests
             Old = await Manager.MakeAsync("Старая");
             FakeSave(Paths.Saves, "Slot_00000002.save", 2);
             GameRunning = true;
-            return new FakeGame(Manager.Bridge, () => FakeSave(Paths.Saves, "Slot_00000002.save", 3))
-            {
-                Version = version, ObeysToMenu = obeysToMenu, AcceptsDialog = acceptsDialog,
-            };
+            return new FakeGame(Manager.Bridge, () => FakeSave(Paths.Saves, "Slot_00000002.save", 3), version, obeysToMenu, acceptsDialog);
         }
 
         public void Dispose() => _folder.Dispose();
