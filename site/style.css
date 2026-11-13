@@ -402,16 +402,27 @@ body.no-buddy .box-buddy { transform: scale(0); opacity: 0; transition: transfor
   .hero h1 { font-size: 38px; }
 }
 
-/* ── Искорки, как у кристалла в логотипе: изредка вспыхивают на фоне ── */
+/* ── Искорки, как у кристалла в логотипе: дальний слой фона ──
+   Уезжают вместе со страницей, но медленнее (параллакс), а при быстрой прокрутке изредка падает звезда. */
 .sky { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
-.sky .star { position: absolute; width: var(--s); height: var(--s); color: var(--mint); opacity: 0;
-  animation: twinkle var(--d) var(--delay) ease-in-out infinite; filter: drop-shadow(0 0 6px rgba(119,225,199,.7)); }
-.sky .star.white { color: #EAFBF6; filter: drop-shadow(0 0 6px rgba(255,255,255,.6)); }
-.sky .star svg { width: 100%; height: 100%; display: block; }
+.sky .star { position: absolute; top: 0; width: var(--s); height: var(--s); color: var(--mint); will-change: transform; }
+.sky .star.white { color: #EAFBF6; }
+.sky .star svg { width: 100%; height: 100%; display: block; opacity: 0;
+  animation: twinkle var(--d) var(--delay) ease-in-out infinite; filter: drop-shadow(0 0 6px currentColor); }
 @keyframes twinkle {
   0%, 62%, 100% { opacity: 0; transform: scale(.2) rotate(0deg); }
   72% { opacity: var(--o); transform: scale(1) rotate(20deg); }
   80% { opacity: calc(var(--o) * .55); transform: scale(.75) rotate(32deg); }
   88% { opacity: var(--o); transform: scale(.95) rotate(40deg); }
+}
+.sky .meteor { position: absolute; top: 0; left: 0; width: 150px; height: 2px; border-radius: 2px;
+  background: linear-gradient(90deg, rgba(119,225,199,0), rgba(119,225,199,.55) 70%, #EAFBF6);
+  transform-origin: 100% 50%; animation: fall 1s cubic-bezier(.3,.1,.6,1) forwards; }
+.sky .meteor::after { content: ""; position: absolute; right: -2px; top: -2px; width: 6px; height: 6px; border-radius: 50%;
+  background: #fff; box-shadow: 0 0 10px 2px rgba(119,225,199,.8); }
+@keyframes fall {
+  0% { opacity: 0; transform: translate(var(--x), var(--y)) rotate(var(--a)) scaleX(.2); }
+  15% { opacity: 1; }
+  100% { opacity: 0; transform: translate(calc(var(--x) + var(--dx)), calc(var(--y) + var(--dy))) rotate(var(--a)) scaleX(1); }
 }
 @media (prefers-reduced-motion: reduce) { .sky { display: none; } }

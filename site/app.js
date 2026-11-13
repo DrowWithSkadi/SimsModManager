@@ -261,15 +261,16 @@
   addEventListener('resize', frame);
   frame();
 
-  // Искорки на фоне: появляются в случайных местах и после каждой вспышки переезжают
+  // Искорки на фоне — дальний слой: уезжают со страницей медленнее неё и появляются снова снизу.
+  // При быстрой прокрутке изредка падает звезда с тонким хвостом.
   const sky = document.getElementById('sky');
   if (sky && !reduce) {
     const path = 'M12 0C12.8 7.2 16.8 11.2 24 12C16.8 12.8 12.8 16.8 12 24C11.2 16.8 7.2 12.8 0 12C7.2 11.2 11.2 7.2 12 0Z';
-    const count = innerWidth < 700 ? 9 : 18;
-    const place = (el) => {
-      el.style.left = (3 + Math.random() * 94) + '%';
-      el.style.top = (3 + Math.random() * 94) + '%';
-    };
+    const DEPTH = 0.35;          // во сколько раз медленнее страницы
+    const stars = [];
+    const count = innerWidth < 700 ? 10 : 20;
+    const span = () => innerHeight * 1.3;   // высота «неба», по которой звёзды ходят по кругу
+    const place = (st) => { st.x = 2 + Math.random() * 96; st.y = Math.random(); st.el.style.left = st.x + '%'; };
     for (let i = 0; i < count; i++) {
       const el = document.createElement('span');
       el.className = 'star' + (Math.random() < 0.3 ? ' white' : '');
@@ -278,9 +279,43 @@
       el.style.setProperty('--o', (0.55 + Math.random() * 0.4).toFixed(2));
       el.style.setProperty('--d', (4 + Math.random() * 5).toFixed(1) + 's');
       el.style.setProperty('--delay', (-Math.random() * 9).toFixed(1) + 's');
-      place(el);
-      el.addEventListener('animationiteration', () => place(el));
+      const st = { el, x: 0, y: 0 };
+      place(st);
+      el.firstChild.addEventListener('animationiteration', () => { place(st); draw(); });
       sky.appendChild(el);
+      stars.push(st);
     }
+    const draw = () => {
+      const h = span(), shift = scrollY * DEPTH;
+      for (const st of stars) {
+        const y = ((st.y * h - shift) % h + h) % h - innerHeight * 0.15;
+        st.el.style.transform = 'translate3d(0,' + y.toFixed(1) + 'px,0)';
+      }
+    };
+    let queued = false, lastY = scrollY, lastT = performance.now(), lastMeteor = -1e9;
+    const meteor = () => {
+      const m = document.createElement('span');
+      m.className = 'meteor';
+      const fromLeft = Math.random() < 0.5;
+      const len = 260 + Math.random() * 220;
+      const angle = 22 + Math.random() * 18;                 // градусы вниз от горизонтали
+      const rad = angle * Math.PI / 180;
+      m.style.setProperty('--x', (fromLeft ? innerWidth * (0.05 + Math.random() * 0.4) : innerWidth * (0.55 + Math.random() * 0.4)) + 'px');
+      m.style.setProperty('--y', (innerHeight * (0.05 + Math.random() * 0.35)) + 'px');
+      m.style.setProperty('--dx', ((fromLeft ? 1 : -1) * Math.cos(rad) * len).toFixed(0) + 'px');
+      m.style.setProperty('--dy', (Math.sin(rad) * len).toFixed(0) + 'px');
+      m.style.setProperty('--a', (fromLeft ? angle : 180 - angle) + 'deg');
+      m.addEventListener('animationend', () => m.remove());
+      sky.appendChild(m);
+    };
+    addEventListener('scroll', () => {
+      const now = performance.now();
+      const speed = Math.abs(scrollY - lastY) / Math.max(16, now - lastT);   // пикселей в мс
+      lastY = scrollY; lastT = now;
+      if (speed > 1.8 && now - lastMeteor > 3500 && Math.random() < 0.6) { lastMeteor = now; meteor(); }
+      if (!queued) { queued = true; requestAnimationFrame(() => { queued = false; draw(); }); }
+    }, { passive: true });
+    addEventListener('resize', draw);
+    draw();
   }
 })();
