@@ -93,6 +93,8 @@ public sealed partial class OverlayViewModel : ObservableObject
     public void Closed()
     {
         _statusTimer.Stop();
+        _closeAfterMenu = false;
+        _sawMenu = false;
         foreach (var item in Checkpoints)
         {
             item.ConfirmRollback = false;
@@ -105,6 +107,24 @@ public sealed partial class OverlayViewModel : ObservableObject
         }
     }
 
+    /// <summary>После отката панель показывает «нажми Продолжить»; как только игра начала грузиться — прячем её.</summary>
+    private bool _closeAfterMenu;
+    private bool _sawMenu;
+
+    private void CloseWhenGameResumes(HelperState state)
+    {
+        if (!_closeAfterMenu) return;
+        if (state == HelperState.Menu)
+        {
+            _sawMenu = true;
+        }
+        else if (_sawMenu)
+        {
+            _closeAfterMenu = false;
+            _close();
+        }
+    }
+
     private void RefreshStatus()
     {
         var manager = _manager();
@@ -114,6 +134,7 @@ public sealed partial class OverlayViewModel : ObservableObject
             return;
         }
         var status = manager.Bridge.ReadStatus();
+        CloseWhenGameResumes(status.State);
         (StatusText, StatusOk) = status.State switch
         {
             HelperState.Live => (status.SlotName is { Length: > 0 } n ? L.F("В игре · {0}", n) : L.T("В игре"), true),
@@ -228,6 +249,7 @@ public sealed partial class OverlayViewModel : ObservableObject
             RollbackStep.SavingCurrent => L.T("Сохраняю текущую игру, чтобы к ней можно было вернуться…"),
             RollbackStep.WaitingForMenu => L.T("Теперь выйди в главное меню: Esc → «Выйти» → «Выйти в главное меню». Сохранять не нужно — копия уже сделана."),
             RollbackStep.Restoring => L.T("Возвращаю сохранение…"),
+            RollbackStep.LeavingToMenu => L.T("Игра выходит в главное меню…"),
             RollbackStep.WaitingForConfirm => L.T("Подтверди откат в окне игры."),
             RollbackStep.ClosingGame => L.T("Закрываю игру — открытое сохранение подменить нельзя…"),
             RollbackStep.Launching => L.T("Запускаю игру. В главном меню нажми «Продолжить» — откроется точка."),
@@ -252,6 +274,9 @@ public sealed partial class OverlayViewModel : ObservableObject
                 await manager.MenuRollbackAsync(item.Checkpoint, menuProgress);
                 RefreshList();
                 Say(L.F("Готово! Нажми «Продолжить» — откроется «{0}». Прежняя игра сохранена точкой «Перед откатом».", item.Name));
+                // Панель остаётся с подсказкой, а когда игрок нажмёт «Продолжить» — уберётся сама
+                _closeAfterMenu = true;
+                _sawMenu = false;
             }
             else if (manager.Bridge.ReadStatus().State == HelperState.Live)
             {

@@ -13,6 +13,8 @@ public enum RollbackStep
     SavingCurrent,
     /// <summary>Ждём, пока игрок выйдет в главное меню (или закроет игру).</summary>
     WaitingForMenu,
+    /// <summary>Игра сама выходит в главное меню — от игрока ничего не нужно.</summary>
+    LeavingToMenu,
     /// <summary>В игре показано окно «Вернуться к точке?» — ждём ответа игрока.</summary>
     WaitingForConfirm,
     /// <summary>Кладём точку на место сохранения.</summary>
@@ -73,7 +75,7 @@ public sealed class CheckpointManager(SimsPaths paths, CheckpointStore store, He
         return checkpoint;
     }
 
-    /// <summary>Помощник умеет выводить игру в главное меню через окно игры (версия 6+).</summary>
+    /// <summary>Помощник умеет выводить игру в главное меню (версия 6+ — через окно игры, 7+ — сам).</summary>
     public bool CanRollbackViaMenu
     {
         get
@@ -84,18 +86,79 @@ public sealed class CheckpointManager(SimsPaths paths, CheckpointStore store, He
     }
 
     /// <summary>
-    /// Откат без перезапуска игры: текущая игра сохраняется точкой «Перед откатом», затем в самой игре
-    /// появляется окно «Вернуться к точке?». Кнопка в нём выводит игру в главное меню без сохранения —
-    /// в эту же секунду менеджер кладёт на место файл точки, и «Продолжить» откроет уже её.
+    /// Откат без перезапуска игры: текущая игра сохраняется точкой «Перед откатом», игра выходит
+    /// в главное меню без сохранения, и файл сохранения возвращается к точке. Остаётся нажать «Продолжить».
+    /// Помощник 7+ отправляет игру в меню сам; если игра не послушалась — показываем окно с кнопкой (как в версии 6).
     /// </summary>
     public async Task MenuRollbackAsync(Checkpoint checkpoint, IProgress<RollbackStep>? progress = null, CancellationToken cancellation = default)
     {
         if (!CanRollbackViaMenu)
             throw new CheckpointException(L.T("Помощник не отвечает — нельзя безопасно сохранить игру перед откатом"));
+        var canLeaveByItself = bridge.ReadStatus().Version >= 7;
 
         progress?.Report(RollbackStep.SavingCurrent);
         await MakeAsync("", CheckpointKind.BeforeRollback, cancellation);
 
+        if (!canLeaveByItself || !await LeaveToMenuAsync(progress, cancellation))
+            await LeaveToMenuViaDialogAsync(checkpoint, progress, cancellation);
+
+        progress?.Report(RollbackStep.Restoring);
+        await Task.Run(() => store.Restore(checkpoint, paths.Saves), cancellation);
+        progress?.Report(RollbackStep.Done);
+    }
+
+    /// <summary>Сколько ждём, что игра начнёт выходить в меню, прежде чем показать окно с кнопкой.</summary>
+    public TimeSpan LeaveStartTimeout { get; set; } = TimeSpan.FromSeconds(8);
+
+    /// <summary>
+    /// Просим игру выйти в главное меню без окна. true — игра в меню (или закрыта), сохранение можно подменять;
+    /// false — игра не отреагировала и осталась в участке.
+    /// </summary>
+    private async Task<bool> LeaveToMenuAsync(IProgress<RollbackStep>? progress, CancellationToken cancellation)
+    {
+        var response = await bridge.SendAsync("to_menu", TimeSpan.FromSeconds(5), cancellation: cancellation);
+        if (!response.Ok) return false;
+
+        progress?.Report(RollbackStep.LeavingToMenu);
+        var started = DateTime.UtcNow;
+        // Всё ещё в участке спустя время — выход так и не начался
+        return await WaitForMenuAsync(s => s.State == HelperState.Live && DateTime.UtcNow - started > LeaveStartTimeout, cancellation);
+    }
+
+    /// <summary>Сколько помощник может молчать при живой игре (например, на долгом экране загрузки), прежде чем откат остановится.</summary>
+    public TimeSpan HelperSilenceTimeout { get; set; } = TimeSpan.FromMinutes(3);
+
+    /// <summary>
+    /// Ждёт, пока сохранение освободится: игра вышла в главное меню или закрыта. Возвращает false,
+    /// если <paramref name="giveUp"/> решил больше не ждать. «Помощник молчит» само по себе ничего не значит:
+    /// на экране загрузки он может молчать несколько секунд — поэтому закрытой игру считаем, только когда нет её процесса.
+    /// Иначе точка легла бы на место сохранения, пока игра ещё открыта.
+    /// </summary>
+    private async Task<bool> WaitForMenuAsync(Func<HelperStatus, bool> giveUp, CancellationToken cancellation)
+    {
+        DateTime? silentSince = null;
+        while (true)
+        {
+            var status = bridge.ReadStatus();
+            if (status.State == HelperState.Menu) return true;
+            if (status.State == HelperState.Offline)
+            {
+                if (!_isGameRunning()) return true;
+                silentSince ??= DateTime.UtcNow;
+                if (DateTime.UtcNow - silentSince > HelperSilenceTimeout)
+                    throw new CheckpointException(L.T("Игра перестала отвечать — откат остановлен, сохранение не тронуто. Текущая игра есть в точке «Перед откатом»."));
+            }
+            else
+            {
+                silentSince = null;
+                if (giveUp(status)) return false;
+            }
+            await Task.Delay(200, cancellation);
+        }
+    }
+
+    private async Task LeaveToMenuViaDialogAsync(Checkpoint checkpoint, IProgress<RollbackStep>? progress, CancellationToken cancellation)
+    {
         var response = await bridge.SendAsync("menu_dialog", TimeSpan.FromSeconds(10), new Dictionary<string, object?>
         {
             ["title"] = "Sims Mod Manager",
@@ -103,22 +166,21 @@ public sealed class CheckpointManager(SimsPaths paths, CheckpointStore store, He
             ["ok"] = L.T("Вернуться к точке"),
             ["cancel"] = L.T("Остаться"),
         }, cancellation);
-        if (!response.Ok) throw new CheckpointException(L.F("Игра не показала окно: {0}", response.Error));
-
-        progress?.Report(RollbackStep.WaitingForConfirm);
-        while (true)
+        if (!response.Ok)
         {
-            var status = bridge.ReadStatus();
-            if (status.Dialog == "cancelled" && status.State == HelperState.Live)
-                throw new RollbackCancelledException();
-            // В меню (или игру закрыли) — сохранение больше не открыто, его можно подменить
-            if (status.State is HelperState.Menu or HelperState.Offline) break;
-            await Task.Delay(200, cancellation);
+            // Помощник молчит, потому что игра уже выгружает участок (выход в меню всё-таки начался) —
+            // тогда окно не нужно, просто дожидаемся меню
+            if (bridge.ReadStatus().State == HelperState.Live)
+                throw new CheckpointException(L.F("Игра не показала окно: {0}", response.Error));
+            progress?.Report(RollbackStep.LeavingToMenu);
+        }
+        else
+        {
+            progress?.Report(RollbackStep.WaitingForConfirm);
         }
 
-        progress?.Report(RollbackStep.Restoring);
-        await Task.Run(() => store.Restore(checkpoint, paths.Saves), cancellation);
-        progress?.Report(RollbackStep.Done);
+        if (!await WaitForMenuAsync(s => s.Dialog == "cancelled" && s.State == HelperState.Live, cancellation))
+            throw new RollbackCancelledException();
     }
 
     /// <summary>Запуск игры (задаёт программа: Steam, EA app или exe). true — запуск начат.</summary>
@@ -198,8 +260,7 @@ public sealed class CheckpointManager(SimsPaths paths, CheckpointStore store, He
             await MakeAsync("", CheckpointKind.BeforeRollback, cancellation);
 
             progress?.Report(RollbackStep.WaitingForMenu);
-            while (bridge.ReadStatus().State is HelperState.Live or HelperState.Starting)
-                await Task.Delay(300, cancellation);
+            await WaitForMenuAsync(_ => false, cancellation);
         }
         else
         {

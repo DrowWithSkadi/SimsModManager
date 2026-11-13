@@ -21,7 +21,7 @@ import sims4.commands
 from clock import ClockSpeedMode, GameSpeedChangeSource
 from sims4.commands import CommandType
 
-VERSION = 6
+VERSION = 7
 PAUSE_REASON = 'SimsModManager'
 POLL_SECONDS = 0.25
 
@@ -162,11 +162,26 @@ def _save(on_done):
     persistence.save_using(save_gen)
 
 
-# ---------- выход в главное меню через окно игры ----------
+# ---------- выход в главное меню ----------
 #
-# Скрипты не могут сами выйти в главное меню, но у окон игры есть кнопки с «действием интерфейса».
-# Одно из них — TRANSITION_TO_MAIN_MENU_NO_SAVE: игра выходит в меню без сохранения (мы уже
-# сохранили её и сделали копию). Кнопку нажимает игрок — это и есть подтверждение отката.
+# Загрузить сохранение из скриптов нельзя, но можно попросить интерфейс игры выйти в главное меню.
+# У игры есть команда «отправить интерфейсу сообщение по имени» (distributor.ops.SendUIMessage) —
+# так она сама сообщает, например, InventorySellItemsComplete. Сообщение TransitionToMainMenu слушает
+# корневой слой интерфейса: игра уходит в меню без сохранения (мы уже сохранили её и сделали копию).
+# Это тот же путь, что у кнопки в окне ниже, только без окна и без клика.
+
+def _to_main_menu():
+    from distributor.ops import SendUIMessage
+    from distributor.system import Distributor
+    distributor = Distributor.instance()
+    if distributor is None or distributor.client is None:
+        raise RuntimeError('нет связи с интерфейсом игры')
+    distributor.add_op_with_no_owner(SendUIMessage('TransitionToMainMenu'))
+    _log('Откат: попросил игру выйти в главное меню')
+
+
+# Запасной путь — окно игры. У его кнопки есть «действие интерфейса» TRANSITION_TO_MAIN_MENU_NO_SAVE:
+# по нажатию интерфейс отправляет себе то же сообщение TransitionToMainMenu.
 
 def _show_menu_dialog(title, text, ok_text, cancel_text):
     from sims4.localization import LocalizationHelperTuning
@@ -227,6 +242,9 @@ def _handle(command):
         _respond(command_id, True)
     elif name == 'save':
         _save(lambda ok, details: _respond(command_id, ok, details if ok else None, None if ok else str(details)))
+    elif name == 'to_menu':
+        _to_main_menu()
+        _respond(command_id, True)
     elif name == 'menu_dialog':
         _show_menu_dialog(command.get('title', ''), command.get('text', ''),
                           command.get('ok', 'OK'), command.get('cancel', 'Отмена'))
@@ -293,6 +311,19 @@ def _on_zone_ready():
         _log('Не удалось запустить опрос: %s' % e)
 
 
+def _on_leaving():
+    # Участок выгружается: выход в меню, переезд или смена семьи. Команды до новой загрузки не выполняются.
+    with _lock:
+        already = _state['state'] == 'leaving'
+        _state['state'] = 'leaving'
+    try:
+        _write_status()
+        if not already:
+            _log('Участок выгружается')
+    except Exception:
+        pass
+
+
 def _on_main_menu():
     global _alarm
     _alarm = None
@@ -301,6 +332,7 @@ def _on_main_menu():
         _state['paused_by_us'] = False
     try:
         _write_status()
+        _log('Игра в главном меню')
     except Exception:
         pass
 
@@ -328,6 +360,36 @@ def _install():
         _wrap(zone.Zone, 'on_loading_screen_animation_finished', _on_zone_ready)
     except Exception as e:
         _log('Не удалось подключиться к загрузке участка: %s' % e)
+    try:
+        import zone
+        original_teardown = zone.Zone.on_teardown
+
+        def on_teardown(self, *args, **kwargs):
+            try:
+                _on_leaving()
+            except Exception as e:
+                _log('Ошибка в on_teardown: %s' % e)
+            return original_teardown(self, *args, **kwargs)
+
+        zone.Zone.on_teardown = on_teardown
+    except Exception as e:
+        _log('Не удалось подключиться к выгрузке участка: %s' % e)
+    try:
+        from services.persistence_service import PersistenceService
+        original_scratch = PersistenceService.save_to_scratch_slot_gen
+
+        def save_to_scratch_slot_gen(self, *args, **kwargs):
+            # Игра сохраняет рабочую копию перед тем, как выгрузить участок, — выход уже начался
+            try:
+                _on_leaving()
+            except Exception as e:
+                _log('Ошибка в save_to_scratch_slot_gen: %s' % e)
+            result = yield from original_scratch(self, *args, **kwargs)
+            return result
+
+        PersistenceService.save_to_scratch_slot_gen = save_to_scratch_slot_gen
+    except Exception as e:
+        _log('Не удалось подключиться к выходу из участка: %s' % e)
     try:
         from services.persistence_service import PersistenceService
         original_build = PersistenceService.build_caches

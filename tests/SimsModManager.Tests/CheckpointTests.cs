@@ -126,6 +126,203 @@ public class CheckpointTests
         await Assert.ThrowsAsync<CheckpointException>(() => manager.MakeAsync("x"));
     }
 
+    /// <summary>Игра с помощником «понарошку»: отвечает на команды и меняет состояние, как настоящая.</summary>
+    private sealed class FakeGame : IDisposable
+    {
+        private readonly string _folder;
+        private readonly CancellationTokenSource _stop = new();
+        private readonly Task _loop;
+        private volatile string _state = "live";
+        private volatile string? _dialog;
+
+        /// <summary>Слушается ли игра команды «выйди в меню» без окна.</summary>
+        public bool ObeysToMenu { get; init; } = true;
+        /// <summary>Что игрок отвечает в окне «Вернуться к точке?»: true — да, false — остаться.</summary>
+        public bool AcceptsDialog { get; init; } = true;
+        public int Version { get; init; } = 7;
+        /// <summary>status.json перестаёт обновляться — помощник «молчит».</summary>
+        public volatile bool Silent;
+        public List<string> Commands { get; } = [];
+
+        public FakeGame(HelperBridge bridge, Action saveGame)
+        {
+            _folder = bridge.Folder;
+            Directory.CreateDirectory(_folder);
+            WriteStatus();
+            _loop = Task.Run(async () =>
+            {
+                while (!_stop.IsCancellationRequested)
+                {
+                    foreach (var cmd in Directory.GetFiles(_folder, "cmd-*.json"))
+                    {
+                        JsonElement json;
+                        try { json = JsonDocument.Parse(File.ReadAllText(cmd)).RootElement; File.Delete(cmd); }
+                        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException) { continue; }
+                        var id = json.GetProperty("id").GetString();
+                        var name = json.GetProperty("command").GetString()!;
+                        lock (Commands) Commands.Add(name);
+                        object? result = null;
+                        switch (name)
+                        {
+                            case "save":
+                                saveGame();
+                                result = new { slot_id = 2, slot_name = "Гот" };
+                                break;
+                            case "to_menu" when ObeysToMenu:
+                                _ = LeaveAsync();
+                                break;
+                            case "menu_dialog":
+                                _dialog = AcceptsDialog ? "accepted" : "cancelled";
+                                if (AcceptsDialog) _ = LeaveAsync();
+                                break;
+                        }
+                        var res = Path.Combine(_folder, $"res-{id}.json");
+                        File.WriteAllText(res + ".tmp", JsonSerializer.Serialize(new { id, ok = true, result }));
+                        File.Move(res + ".tmp", res, overwrite: true);
+                    }
+                    if (!Silent) WriteStatus();
+                    await Task.Delay(20);
+                }
+            });
+        }
+
+        private async Task LeaveAsync()
+        {
+            await Task.Delay(60);
+            _state = "leaving";
+            await Task.Delay(120);
+            _state = "menu";
+        }
+
+        private void WriteStatus()
+        {
+            var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() / 1000.0;
+            var temp = Path.Combine(_folder, "status.json.tmp");
+            try
+            {
+                File.WriteAllText(temp, JsonSerializer.Serialize(new { state = _state, slot_id = 2, slot_name = "Гот", version = Version, time = now, dialog = _dialog }));
+                File.Move(temp, Path.Combine(_folder, "status.json"), overwrite: true);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                // Программа как раз читает файл — запишем на следующем круге, как настоящий помощник
+            }
+        }
+
+        public void Dispose()
+        {
+            _stop.Cancel();
+            try { _loop.Wait(TimeSpan.FromSeconds(2)); } catch (AggregateException) { }
+        }
+    }
+
+    /// <summary>Откат через главное меню: точка «Старая» (байт 1), в игре сейчас байт 2, сохранение из игры пишет 3.</summary>
+    private sealed class MenuScene : IDisposable
+    {
+        private readonly TestFolder _folder = new();
+        public bool GameRunning;
+        public SimsPaths Paths { get; }
+        public CheckpointStore Store { get; }
+        public CheckpointManager Manager { get; }
+        public Checkpoint Old { get; private set; } = null!;
+        public string Slot => Path.Combine(Paths.Saves, "Slot_00000002.save");
+        public byte SlotByte => File.ReadAllBytes(Slot)[100];
+
+        public MenuScene()
+        {
+            Paths = new SimsPaths(_folder.Sims);
+            Store = new CheckpointStore(Path.Combine(_folder.Root, "cp"));
+            Manager = new CheckpointManager(Paths, Store, new HelperBridge(Path.Combine(_folder.Root, "bridge")), () => GameRunning)
+            {
+                LeaveStartTimeout = TimeSpan.FromMilliseconds(600),
+            };
+        }
+
+        public async Task<FakeGame> StartGameAsync(int version = 7, bool obeysToMenu = true, bool acceptsDialog = true)
+        {
+            FakeSave(Paths.Saves, "Slot_00000002.save", 1);
+            Old = await Manager.MakeAsync("Старая");
+            FakeSave(Paths.Saves, "Slot_00000002.save", 2);
+            GameRunning = true;
+            return new FakeGame(Manager.Bridge, () => FakeSave(Paths.Saves, "Slot_00000002.save", 3))
+            {
+                Version = version, ObeysToMenu = obeysToMenu, AcceptsDialog = acceptsDialog,
+            };
+        }
+
+        public void Dispose() => _folder.Dispose();
+    }
+
+    [Fact]
+    public async Task MenuRollbackLeavesWithoutDialog()
+    {
+        using var scene = new MenuScene();
+        using var game = await scene.StartGameAsync();
+        var steps = new List<RollbackStep>();
+        await scene.Manager.MenuRollbackAsync(scene.Old, new SyncProgress<RollbackStep>(steps.Add));
+
+        Assert.Equal(1, scene.SlotByte);
+        Assert.Contains(RollbackStep.LeavingToMenu, steps);
+        Assert.DoesNotContain(RollbackStep.WaitingForConfirm, steps); // окно игры не понадобилось
+        Assert.DoesNotContain("menu_dialog", game.Commands);
+        Assert.Equal(RollbackStep.Done, steps[^1]);
+        // Текущая игра (сохранённая перед откатом) осталась точкой
+        var before = Assert.Single(scene.Store.List(), c => c.Kind == CheckpointKind.BeforeRollback);
+        Assert.Equal(3, scene.Store.ReadData(before)[100]);
+    }
+
+    [Fact]
+    public async Task MenuRollbackFallsBackToDialogWhenGameIgnoresRequest()
+    {
+        using var scene = new MenuScene();
+        using var game = await scene.StartGameAsync(obeysToMenu: false);
+        var steps = new List<RollbackStep>();
+        await scene.Manager.MenuRollbackAsync(scene.Old, new SyncProgress<RollbackStep>(steps.Add));
+
+        Assert.Equal(new[] { "save", "to_menu", "menu_dialog" }, game.Commands);
+        Assert.Contains(RollbackStep.WaitingForConfirm, steps);
+        Assert.Equal(1, scene.SlotByte);
+    }
+
+    [Fact]
+    public async Task MenuRollbackWithOldHelperUsesDialogAndCanBeCancelled()
+    {
+        using var scene = new MenuScene();
+        using var game = await scene.StartGameAsync(version: 6, acceptsDialog: false);
+        await Assert.ThrowsAsync<RollbackCancelledException>(() => scene.Manager.MenuRollbackAsync(scene.Old));
+
+        Assert.DoesNotContain("to_menu", game.Commands); // старый помощник такой команды не знает
+        Assert.Equal(3, scene.SlotByte); // игра не тронута
+    }
+
+    /// <summary>Помощник замолчал, а игра всё ещё открыта (долгая загрузка, зависание) — сохранение трогать нельзя.</summary>
+    [Fact]
+    public async Task SilentHelperWithRunningGameDoesNotTouchSave()
+    {
+        using var scene = new MenuScene();
+        using var game = await scene.StartGameAsync(obeysToMenu: false, acceptsDialog: false);
+        scene.Manager.HelperSilenceTimeout = TimeSpan.FromMilliseconds(500);
+        game.Silent = true; // на команды отвечает, но status.json больше не обновляет — как на экране загрузки
+
+        // Помощник «живой» ещё 4 секунды (окно свежести), затем считается молчащим
+        await Assert.ThrowsAsync<CheckpointException>(() => scene.Manager.MenuRollbackAsync(scene.Old));
+        Assert.Equal(3, scene.SlotByte); // точка не легла на место открытого сохранения
+    }
+
+    /// <summary>Игру закрыли посреди отката — сохранение свободно, точка возвращается.</summary>
+    [Fact]
+    public async Task ClosedGameCountsAsFreeSave()
+    {
+        using var scene = new MenuScene();
+        using var game = await scene.StartGameAsync(obeysToMenu: false, acceptsDialog: false);
+        game.Silent = true;
+        var rollback = scene.Manager.MenuRollbackAsync(scene.Old);
+        await Task.Delay(300);
+        scene.GameRunning = false;
+        await rollback;
+        Assert.Equal(1, scene.SlotByte);
+    }
+
     private sealed class SyncProgress<T>(Action<T> report) : IProgress<T>
     {
         public void Report(T value) => report(value);
