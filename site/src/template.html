@@ -5,8 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{meta.title}}</title>
 <meta name="description" content="{{meta.description}}">
-<meta name="theme-color" content="#0B1211">
-<link rel="icon" href="{{root}}logo.png">
+<meta name="theme-color" content="#0D1020">
+<link rel="icon" href="{{root}}img/mark.svg" type="image/svg+xml">
+<link rel="icon" href="{{root}}logo.png" type="image/png">
 <link rel="alternate" hreflang="ru" href="https://drowwithskadi.github.io/SimsModManager/">
 <link rel="alternate" hreflang="en" href="https://drowwithskadi.github.io/SimsModManager/en/">
 <link rel="alternate" hreflang="x-default" href="https://drowwithskadi.github.io/SimsModManager/en/">
@@ -26,6 +27,8 @@
 <body>
 <div class="wallpaper" aria-hidden="true"><i></i><i></i><i></i></div>
 <div class="sky" id="sky" aria-hidden="true"></div>
+
+<template id="sakura-svg"><svg viewBox="0 0 120 120" class="mk sk idle on" aria-hidden="true"><defs><linearGradient id="g__ID__" gradientUnits="userSpaceOnUse" x1="14" y1="106" x2="106" y2="14"><stop offset="0" stop-color="#77E1C7"/><stop offset=".4" stop-color="#9CC9FF"/><stop offset=".72" stop-color="#D4AEFF"/><stop offset="1" stop-color="#FFC4B0"/><animateTransform attributeName="gradientTransform" type="rotate" values="0 60 60;360 60 60" dur="30s" repeatCount="indefinite"/></linearGradient><radialGradient id="c__ID__" gradientUnits="userSpaceOnUse" cx="60" cy="60" r="17"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset=".45" stop-color="#fff" stop-opacity=".25"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient></defs><mask id="pm__ID__" maskUnits="userSpaceOnUse" x="0" y="0" width="120" height="120"><g class="rot"><g transform="rotate(-2 60 60)"><g class="pe pe0" style="animation-delay:0.0s"><path transform="translate(60 60)" d="M0 -5 C-15.00 -14.00 -22.00 -33.00 -11.00 -47.00 Q-5.00 -48.00 0 -41.00 Q5.00 -48.00 11.00 -47.00 C22.00 -33.00 15.00 -14.00 0 -5Z" fill="#fff"/></g></g><g transform="rotate(75 60 60)"><g class="pe pe1" style="animation-delay:-1.1s"><path transform="translate(60 60)" d="M0 -5 C-13.95 -13.02 -20.46 -30.69 -10.23 -43.71 Q-4.65 -44.64 0 -38.13 Q4.65 -44.64 10.23 -43.71 C20.46 -30.69 13.95 -13.02 0 -5Z" fill="#fff"/></g></g><g transform="rotate(143 60 60)"><g class="pe pe2" style="animation-delay:-2.2s"><path transform="translate(60 60)" d="M0 -5 C-14.55 -13.58 -21.34 -32.01 -10.67 -45.59 Q-4.85 -46.56 0 -39.77 Q4.85 -46.56 10.67 -45.59 C21.34 -32.01 14.55 -13.58 0 -5Z" fill="#fff"/></g></g><g transform="rotate(218 60 60)"><g class="pe pe3" style="animation-delay:-3.3s"><path transform="translate(60 60)" d="M0 -5 C-13.50 -12.60 -19.80 -29.70 -9.90 -42.30 Q-4.50 -43.20 0 -36.90 Q4.50 -43.20 9.90 -42.30 C19.80 -29.70 13.50 -12.60 0 -5Z" fill="#fff"/></g></g><g transform="rotate(285 60 60)"><g class="pe pe4" style="animation-delay:-4.4s"><path transform="translate(60 60)" d="M0 -5 C-14.40 -13.44 -21.12 -31.68 -10.56 -45.12 Q-4.80 -46.08 0 -39.36 Q4.80 -46.08 10.56 -45.12 C21.12 -31.68 14.40 -13.44 0 -5Z" fill="#fff"/></g></g></g></mask><g class="fl"><rect x="0" y="0" width="120" height="120" fill="url(#g__ID__)" mask="url(#pm__ID__)"/><g mask="url(#pm__ID__)"><circle cx="60" cy="60" r="17" fill="url(#c__ID__)"/></g><path class="cs" d="M60 51.5 Q61.36 58.64 68.5 60 Q61.36 61.36 60 68.5 Q58.64 61.36 51.5 60 Q58.64 58.64 60 51.5Z" fill="#FFFFFF"/></g><g class="fall"><path transform="translate(96 30) rotate(30) scale(.28)" d="M0 -5 C-15.00 -14.00 -22.00 -33.00 -11.00 -47.00 Q-5.00 -48.00 0 -41.00 Q5.00 -48.00 11.00 -47.00 C22.00 -33.00 15.00 -14.00 0 -5Z" fill="url(#g__ID__)"/></g></svg></template>
 
 <template id="buddy-svg">
   <svg viewBox="0 -4 120 66" aria-hidden="true">
@@ -48,7 +51,7 @@
 </template>
 
 <nav class="nav" aria-label="{{nav.label}}">
-  <a class="brand" href="#top"><img src="{{root}}logo.png" alt=""><span>Sims Mod Manager</span></a>
+  <a class="brand" href="#top"><img src="{{root}}img/mark.svg" alt=""><span>Ancora</span></a>
   <a class="link" href="#ingame">{{nav.ingame}}</a>
   <a class="link" href="#features">{{nav.features}}</a>
   <a class="link" href="#tune">{{nav.tune}}</a>
@@ -60,7 +63,7 @@
 <main id="top">
   <section class="hero">
     <div class="wrap intro">
-      <div class="app-icon"><img src="{{root}}img/mark.webp" width="256" height="256" alt=""></div>
+      <div class="app-icon" data-sakura><img src="{{root}}img/mark.svg" width="256" height="256" alt=""></div>
       <h1><span>{{hero.h1a}}</span> <span>{{hero.h1b}}</span></h1>
       <p class="lead">{{hero.lead}}</p>
       <div class="actions">
@@ -135,7 +138,7 @@
           <span class="ripple" id="ripple" aria-hidden="true"></span>
           <div class="dim" aria-hidden="true"></div>
           <div class="sims-dialog" aria-hidden="true">
-            <h4>Sims Mod Manager</h4>
+            <h4>Ancora</h4>
             <p>{{ingame.dialog}}</p>
             <div class="btns"><span>{{ingame.back}}</span><span>{{ingame.stay}}</span></div>
           </div>
@@ -244,7 +247,7 @@
   <section class="download" id="download" aria-labelledby="dl-h">
     <div class="wrap">
       <div class="scene">
-        <div class="crystal" id="crystal"><img src="{{root}}img/mark.webp" width="256" height="256" alt=""></div>
+        <div class="crystal" id="crystal" data-sakura><img src="{{root}}img/mark.svg" width="256" height="256" alt=""></div>
         <div class="box-buddy" data-buddy><span class="bubble">{{buddy.wait}}</span></div>
       </div>
       <h2 id="dl-h">{{end.h2}}</h2>

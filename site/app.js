@@ -252,8 +252,18 @@
       el.append(fmt(T.release, { v, when: ago(setup.updated_at) }) + (total >= 100 ? fmt(T.downloads, { n: total }) : ''));
     }).catch(() => {});
   // ── Кристалл крутится, когда доходишь до скачивания ──
-  const crystal = document.getElementById('crystal');
-  if (!reduce) new IntersectionObserver(([e]) => { if (e.isIntersecting) restart(crystal, 'spin'); }, { threshold: 0.8 }).observe(crystal);
+  // Живая сакура: вместо картинки-заглушки вставляем анимированный знак (у каждого свои id градиентов и масок)
+  const sakuraTpl = document.getElementById('sakura-svg');
+  let sakuraN = 0;
+  document.querySelectorAll('[data-sakura]').forEach((box) => {
+    if (reduce || !sakuraTpl) return;
+    const id = 's' + (++sakuraN);
+    box.innerHTML = sakuraTpl.innerHTML.replaceAll('__ID__', id);
+    const svg = box.querySelector('svg');
+    const bloom = () => restart(svg, 'bloom');
+    box.addEventListener('click', bloom);
+    new IntersectionObserver(([e]) => { if (e.isIntersecting) bloom(); }, { threshold: 0.8 }).observe(box);
+  });
 
   let ticking = false;
   const frame = () => { ticking = false; tilt(); timeline(); };
@@ -319,13 +329,13 @@
     draw();
   }
 
-  // Фон меняется по ходу страницы: ночь (мята) → глубокий синий → сиреневые сумерки → тёплый рассвет у скачивания
+  // Фон меняется по ходу страницы: пастельная ночь → глубокий синий → сиреневые сумерки → розовый рассвет у скачивания
   {
     const stops = [
-      { bg: [14, 25, 23], w: [[35, 112, 95], [38, 66, 96], [60, 62, 44]] },
-      { bg: [14, 21, 30], w: [[30, 70, 100], [48, 56, 104], [30, 80, 86]] },
-      { bg: [19, 18, 28], w: [[70, 56, 104], [40, 62, 100], [96, 64, 80]] },
-      { bg: [21, 19, 16], w: [[110, 80, 44], [92, 66, 50], [116, 82, 48]] },
+      { bg: [13, 16, 32], w: [[58, 74, 154], [106, 76, 156], [46, 111, 120]] },
+      { bg: [15, 15, 34], w: [[70, 60, 150], [60, 90, 160], [40, 100, 130]] },
+      { bg: [20, 15, 33], w: [[110, 70, 150], [70, 80, 160], [150, 80, 130]] },
+      { bg: [26, 17, 28], w: [[170, 100, 120], [120, 80, 140], [190, 120, 100]] },
     ];
     const root = document.documentElement.style;
     const mix = (a, b, t) => a.map((v, i) => Math.round(v + (b[i] - v) * t));

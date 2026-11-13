@@ -3,15 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sims Mod Manager — a client for The Sims 4</title>
+<title>Ancora — a client for The Sims 4</title>
 <meta name="description" content="A free client for The Sims 4: installs mods from archives, finds the mod that crashed your game and rolls back saves right from inside the game.">
-<meta name="theme-color" content="#0B1211">
-<link rel="icon" href="../logo.png">
+<meta name="theme-color" content="#0D1020">
+<link rel="icon" href="../img/mark.svg" type="image/svg+xml">
+<link rel="icon" href="../logo.png" type="image/png">
 <link rel="alternate" hreflang="ru" href="https://drowwithskadi.github.io/SimsModManager/">
 <link rel="alternate" hreflang="en" href="https://drowwithskadi.github.io/SimsModManager/en/">
 <link rel="alternate" hreflang="x-default" href="https://drowwithskadi.github.io/SimsModManager/en/">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Sims Mod Manager — a client for The Sims 4">
+<meta property="og:title" content="Ancora — a client for The Sims 4">
 <meta property="og:description" content="A free client for The Sims 4: installs mods from archives, finds the mod that crashed your game and rolls back saves right from inside the game.">
 <meta property="og:image" content="https://drowwithskadi.github.io/SimsModManager/og-en.jpg">
 <meta property="og:image:width" content="1200">
@@ -26,6 +27,8 @@
 <body>
 <div class="wallpaper" aria-hidden="true"><i></i><i></i><i></i></div>
 <div class="sky" id="sky" aria-hidden="true"></div>
+
+<template id="sakura-svg"><svg viewBox="0 0 120 120" class="mk sk idle on" aria-hidden="true"><defs><linearGradient id="g__ID__" gradientUnits="userSpaceOnUse" x1="14" y1="106" x2="106" y2="14"><stop offset="0" stop-color="#77E1C7"/><stop offset=".4" stop-color="#9CC9FF"/><stop offset=".72" stop-color="#D4AEFF"/><stop offset="1" stop-color="#FFC4B0"/><animateTransform attributeName="gradientTransform" type="rotate" values="0 60 60;360 60 60" dur="30s" repeatCount="indefinite"/></linearGradient><radialGradient id="c__ID__" gradientUnits="userSpaceOnUse" cx="60" cy="60" r="17"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset=".45" stop-color="#fff" stop-opacity=".25"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient></defs><mask id="pm__ID__" maskUnits="userSpaceOnUse" x="0" y="0" width="120" height="120"><g class="rot"><g transform="rotate(-2 60 60)"><g class="pe pe0" style="animation-delay:0.0s"><path transform="translate(60 60)" d="M0 -5 C-15.00 -14.00 -22.00 -33.00 -11.00 -47.00 Q-5.00 -48.00 0 -41.00 Q5.00 -48.00 11.00 -47.00 C22.00 -33.00 15.00 -14.00 0 -5Z" fill="#fff"/></g></g><g transform="rotate(75 60 60)"><g class="pe pe1" style="animation-delay:-1.1s"><path transform="translate(60 60)" d="M0 -5 C-13.95 -13.02 -20.46 -30.69 -10.23 -43.71 Q-4.65 -44.64 0 -38.13 Q4.65 -44.64 10.23 -43.71 C20.46 -30.69 13.95 -13.02 0 -5Z" fill="#fff"/></g></g><g transform="rotate(143 60 60)"><g class="pe pe2" style="animation-delay:-2.2s"><path transform="translate(60 60)" d="M0 -5 C-14.55 -13.58 -21.34 -32.01 -10.67 -45.59 Q-4.85 -46.56 0 -39.77 Q4.85 -46.56 10.67 -45.59 C21.34 -32.01 14.55 -13.58 0 -5Z" fill="#fff"/></g></g><g transform="rotate(218 60 60)"><g class="pe pe3" style="animation-delay:-3.3s"><path transform="translate(60 60)" d="M0 -5 C-13.50 -12.60 -19.80 -29.70 -9.90 -42.30 Q-4.50 -43.20 0 -36.90 Q4.50 -43.20 9.90 -42.30 C19.80 -29.70 13.50 -12.60 0 -5Z" fill="#fff"/></g></g><g transform="rotate(285 60 60)"><g class="pe pe4" style="animation-delay:-4.4s"><path transform="translate(60 60)" d="M0 -5 C-14.40 -13.44 -21.12 -31.68 -10.56 -45.12 Q-4.80 -46.08 0 -39.36 Q4.80 -46.08 10.56 -45.12 C21.12 -31.68 14.40 -13.44 0 -5Z" fill="#fff"/></g></g></g></mask><g class="fl"><rect x="0" y="0" width="120" height="120" fill="url(#g__ID__)" mask="url(#pm__ID__)"/><g mask="url(#pm__ID__)"><circle cx="60" cy="60" r="17" fill="url(#c__ID__)"/></g><path class="cs" d="M60 51.5 Q61.36 58.64 68.5 60 Q61.36 61.36 60 68.5 Q58.64 61.36 51.5 60 Q58.64 58.64 60 51.5Z" fill="#FFFFFF"/></g><g class="fall"><path transform="translate(96 30) rotate(30) scale(.28)" d="M0 -5 C-15.00 -14.00 -22.00 -33.00 -11.00 -47.00 Q-5.00 -48.00 0 -41.00 Q5.00 -48.00 11.00 -47.00 C22.00 -33.00 15.00 -14.00 0 -5Z" fill="url(#g__ID__)"/></g></svg></template>
 
 <template id="buddy-svg">
   <svg viewBox="0 -4 120 66" aria-hidden="true">
@@ -48,7 +51,7 @@
 </template>
 
 <nav class="nav" aria-label="Sections">
-  <a class="brand" href="#top"><img src="../logo.png" alt=""><span>Sims Mod Manager</span></a>
+  <a class="brand" href="#top"><img src="../img/mark.svg" alt=""><span>Ancora</span></a>
   <a class="link" href="#ingame">In game</a>
   <a class="link" href="#features">Why it&#x27;s different</a>
   <a class="link" href="#tune">Settings</a>
@@ -60,7 +63,7 @@
 <main id="top">
   <section class="hero">
     <div class="wrap intro">
-      <div class="app-icon"><img src="../img/mark.webp" width="256" height="256" alt=""></div>
+      <div class="app-icon" data-sakura><img src="../img/mark.svg" width="256" height="256" alt=""></div>
       <h1><span>The Sims 4 client</span> <span>that keeps your game safe</span></h1>
       <p class="lead">Installs mods from any archive, finds what crashed your game and rolls back your save right inside the game. Everything else is yours to tune.</p>
       <div class="actions">
@@ -75,7 +78,7 @@
 
     <div class="showcase" id="showcase">
       <div class="window" id="window">
-        <img src="../img/library.webp" width="1373" height="903" alt="Sims Mod Manager window: a mod library with cards, type filters and a drop zone for archives">
+        <img src="../img/library.webp" width="1373" height="903" alt="Ancora window: a mod library with cards, type filters and a drop zone for archives">
         <div class="dropzone" aria-hidden="true"></div>
         <div class="box-buddy" data-buddy id="hero-buddy"><span class="bubble">Pet me</span></div>
         <div class="toast" id="toast" role="status"><b>✓</b>Installed 3 mods from “summer-dresses.zip”</div>
@@ -103,7 +106,7 @@
         <p>Hundreds of cryptic file names, duplicates, old versions and archives nobody unpacked. Drag the slider to compare.</p>
       </div>
       <div class="compare" id="compare" role="slider" tabindex="0" aria-label="Comparison: the Mods folder in File Explorer and the library in the app" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
-        <div class="after"><img src="../img/library.webp" width="1373" height="903" loading="lazy" alt="The same Mods folder in Sims Mod Manager: cards with previews, types and toggles"></div>
+        <div class="after"><img src="../img/library.webp" width="1373" height="903" loading="lazy" alt="The same Mods folder in Ancora: cards with previews, types and toggles"></div>
         <div class="before" aria-hidden="true">
           <div class="explorer">
             <div class="tb"><span>📁</span><span>Mods</span><span class="ctl">— ▢ ✕</span></div>
@@ -129,7 +132,7 @@
           </div>
         </div>
         <span class="tag l">File Explorer</span>
-        <span class="tag r">Sims Mod Manager</span>
+        <span class="tag r">Ancora</span>
         <div class="handle" aria-hidden="true"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l-6 6 6 6M15 6l6 6-6 6"/></svg></span></div>
       </div>
     </div>
@@ -144,12 +147,12 @@
 
       <div class="ingame" id="ingame-demo" data-phase="0">
         <figure>
-          <img src="../img/ingame.webp" width="1544" height="1029" loading="lazy" alt="The Sims 4 with the Sims Mod Manager panel open on the left: a list of save points with Roll back buttons">
+          <img src="../img/ingame.webp" width="1544" height="1029" loading="lazy" alt="The Sims 4 with the Ancora panel open on the left: a list of save points with Roll back buttons">
           <span class="focus-ring" aria-hidden="true"></span>
           <span class="ripple" id="ripple" aria-hidden="true"></span>
           <div class="dim" aria-hidden="true"></div>
           <div class="sims-dialog" aria-hidden="true">
-            <h4>Sims Mod Manager</h4>
+            <h4>Ancora</h4>
             <p>Go back to the save point? Your current game is already saved as a separate point. The game will exit to the main menu — press Continue there.</p>
             <div class="btns"><span>Go back</span><span>Stay</span></div>
           </div>
@@ -185,7 +188,7 @@
     <div class="wrap">
       <div class="sec-head">
         <h2 id="features-h">How it differs from a regular mod manager</h2>
-        <p>A regular manager just sorts files. Sims Mod Manager also works inside the game, watches your mods and protects your saves.</p>
+        <p>A regular manager just sorts files. Ancora also works inside the game, watches your mods and protects your saves.</p>
       </div>
       <div class="features">
         <div class="f-list">
@@ -269,7 +272,7 @@
   <section class="download" id="download" aria-labelledby="dl-h">
     <div class="wrap">
       <div class="scene">
-        <div class="crystal" id="crystal"><img src="../img/mark.webp" width="256" height="256" alt=""></div>
+        <div class="crystal" id="crystal" data-sakura><img src="../img/mark.svg" width="256" height="256" alt=""></div>
         <div class="box-buddy" data-buddy><span class="bubble">Waiting for you!</span></div>
       </div>
       <h2 id="dl-h">Grab it — it&#x27;s free</h2>
@@ -285,7 +288,7 @@
         </a>
       </div>
       <div class="to-pc">
-        <p>Sims Mod Manager runs on Windows PCs. Copy the link and open it on your computer.</p>
+        <p>Ancora runs on Windows PCs. Copy the link and open it on your computer.</p>
         <div class="row"><input id="pc-link" readonly value="https://drowwithskadi.github.io/SimsModManager/en/" aria-label="Site link"><button type="button" id="pc-copy">Copy</button></div>
       </div>
       <p class="release" id="release"></p>

@@ -1,21 +1,24 @@
 /*
-  Сайт — продолжение самой программы: тёмное стекло поверх «обоев», мятный кристалл, Inter.
+  Сайт — продолжение самой программы: тёмное стекло поверх «обоев», живая сакура Ancora, Inter.
+  Палитра — пастельная ночь, которая к концу страницы светлеет до рассвета.
   Вместо карточек и списков — живые моменты из программы:
   архив можно бросить в окно, Коробок следит за курсором, откат показан на шкале времени игры,
   настройки можно потрогать прямо на странице.
   Общий файл для русской и английской версии; страницы собираются из site/src (tools/build_site.py).
 */
 :root {
-  --bg: #0E1917;
-  --w1: #23705F; --w2: #2B4A72; --w3: #4B4A2E;
-  --glass: rgba(26, 34, 33, .58);
+  --bg: #0D1020;
+  --w1: #3A4A9A; --w2: #6A4C9C; --w3: #2E6F78;
+  --glass: rgba(24, 26, 44, .58);
   --line: rgba(255, 255, 255, .08);
   --line-strong: rgba(255, 255, 255, .14);
-  --text: #EEF3F1;
-  --muted: #95A29E;
-  --faint: #6F7C78;
+  --text: #EEF0F7;
+  --muted: #A2A6BC;
+  --faint: #737891;
   --mint: #77E1C7;
   --on-mint: #0D2B23;
+  --lilac: #C6A8FF;
+  --glow: 198, 168, 255;   /* сиреневое свечение вокруг сакуры */
   --font: "Inter", "Segoe UI", system-ui, sans-serif;
   --ease: cubic-bezier(.2, .8, .2, 1);
   color-scheme: dark;
@@ -42,7 +45,7 @@ p { margin: 0; }
 /* ── Шапка-капсула, как боковая панель программы ── */
 .nav { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); z-index: 50; width: max-content; max-width: calc(100% - 24px);
   display: flex; align-items: center; gap: 4px; padding: 6px 6px 6px 14px; border-radius: 999px;
-  background: rgba(13, 18, 17, .72); border: 1px solid var(--line); backdrop-filter: blur(18px) saturate(1.3); -webkit-backdrop-filter: blur(18px) saturate(1.3); white-space: nowrap; }
+  background: rgba(14, 16, 30, .72); border: 1px solid var(--line); backdrop-filter: blur(18px) saturate(1.3); -webkit-backdrop-filter: blur(18px) saturate(1.3); white-space: nowrap; }
 .nav .brand { display: flex; align-items: center; gap: 8px; text-decoration: none; font-weight: 600; font-size: 15px; margin-right: 10px; }
 .nav .brand img { width: 22px; height: 22px; }
 .nav a.link { text-decoration: none; color: var(--muted); font-size: 14.5px; padding: 8px 12px; border-radius: 999px; transition: color .2s, background .2s; }
@@ -60,9 +63,10 @@ p { margin: 0; }
 /* ── Первый экран ── */
 .hero { padding: 132px 0 0; text-align: center; position: relative; }
 .app-icon { width: 124px; margin: 0 auto -10px; perspective: 500px; position: relative; }
-.app-icon::before { content: ""; position: absolute; inset: 10% 18%; border-radius: 50%; background: radial-gradient(closest-side, rgba(119,225,199,.38), transparent); filter: blur(18px); z-index: -1; }
-.app-icon img { width: 100%; display: block; filter: drop-shadow(0 10px 24px rgba(119,225,199,.35)); animation: icon-in 1.4s .1s var(--ease) both; }
-@keyframes icon-in { from { opacity: 0; transform: rotateY(-200deg) scale(.6); } to { opacity: 1; transform: none; } }
+.app-icon::before { content: ""; position: absolute; inset: 10% 18%; border-radius: 50%; background: radial-gradient(closest-side, rgba(var(--glow),.38), transparent); filter: blur(18px); z-index: -1; }
+.app-icon > * { width: 100%; height: auto; display: block; filter: drop-shadow(0 10px 24px rgba(var(--glow),.35)); }
+.app-icon > img { animation: icon-in 1.4s .1s var(--ease) both; }
+@keyframes icon-in { from { opacity: 0; transform: scale(.6) rotate(-40deg); } to { opacity: 1; transform: none; } }
 .hero h1 { margin: 28px auto 0; font-size: clamp(40px, 6.2vw, 86px); text-wrap: balance; }
 @media (min-width: 640px) { .hero h1 span { display: block; } }
 .hero .lead { margin: 22px auto 0; max-width: 40ch; color: var(--muted); font-size: clamp(17px, 1.5vw, 20px); }
@@ -238,10 +242,8 @@ section { position: relative; }
 .download { padding: 170px 0 120px; text-align: center; }
 .download .scene { position: relative; width: 150px; margin: 0 auto 30px; }
 .download .crystal { width: 150px; margin: 0 auto; perspective: 600px; position: relative; }
-.download .crystal::before { content: ""; position: absolute; inset: 8% 16%; border-radius: 50%; background: radial-gradient(closest-side, rgba(119,225,199,.42), transparent); filter: blur(22px); z-index: -1; }
-.download .crystal img { width: 100%; display: block; filter: drop-shadow(0 14px 30px rgba(119,225,199,.4)); }
-.download .crystal.spin img { animation: spin 1.3s var(--ease); }
-@keyframes spin { from { transform: rotateY(0); } to { transform: rotateY(360deg); } }
+.download .crystal::before { content: ""; position: absolute; inset: 8% 16%; border-radius: 50%; background: radial-gradient(closest-side, rgba(var(--glow),.42), transparent); filter: blur(22px); z-index: -1; }
+.download .crystal > * { width: 100%; height: auto; display: block; filter: drop-shadow(0 14px 30px rgba(var(--glow),.4)); }
 .download .scene .box-buddy { width: 76px; left: 122px; bottom: 6px; }
 .download h2 { font-size: clamp(40px, 5.6vw, 76px); }
 .download p { margin: 18px auto 0; color: var(--muted); max-width: 44ch; font-size: 18px; }
@@ -405,11 +407,11 @@ body.no-buddy .box-buddy { transform: scale(0); opacity: 0; transition: transfor
   .hero h1 { font-size: 38px; }
 }
 
-/* ── Искорки, как у кристалла в логотипе: дальний слой фона ──
+/* ── Искорки, как звезда в центре сакуры: дальний слой фона ──
    Уезжают вместе со страницей, но медленнее (параллакс), а при быстрой прокрутке изредка падает звезда. */
 .sky { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
-.sky .star { position: absolute; top: 0; width: var(--s); height: var(--s); color: var(--mint); will-change: transform; }
-.sky .star.white { color: #EAFBF6; }
+.sky .star { position: absolute; top: 0; width: var(--s); height: var(--s); color: var(--lilac); will-change: transform; }
+.sky .star.white { color: #F3F0FF; }
 .sky .star svg { width: 100%; height: 100%; display: block; opacity: 0;
   animation: twinkle var(--d) var(--delay) ease-in-out infinite; filter: drop-shadow(0 0 6px currentColor); }
 @keyframes twinkle {
@@ -419,10 +421,10 @@ body.no-buddy .box-buddy { transform: scale(0); opacity: 0; transition: transfor
   88% { opacity: var(--o); transform: scale(.95) rotate(40deg); }
 }
 .sky .meteor { position: absolute; top: 0; left: 0; width: 150px; height: 2px; border-radius: 2px;
-  background: linear-gradient(90deg, rgba(119,225,199,0), rgba(119,225,199,.55) 70%, #EAFBF6);
+  background: linear-gradient(90deg, rgba(var(--glow),0), rgba(var(--glow),.55) 70%, #F3F0FF);
   transform-origin: 100% 50%; animation: fall 1s cubic-bezier(.3,.1,.6,1) forwards; }
 .sky .meteor::after { content: ""; position: absolute; right: -2px; top: -2px; width: 6px; height: 6px; border-radius: 50%;
-  background: #fff; box-shadow: 0 0 10px 2px rgba(119,225,199,.8); }
+  background: #fff; box-shadow: 0 0 10px 2px rgba(var(--glow),.8); }
 @keyframes fall {
   0% { opacity: 0; transform: translate(var(--x), var(--y)) rotate(var(--a)) scaleX(.2); }
   15% { opacity: 1; }
@@ -430,10 +432,10 @@ body.no-buddy .box-buddy { transform: scale(0); opacity: 0; transition: transfor
 }
 @media (prefers-reduced-motion: reduce) { .sky { display: none; } }
 
-/* Финал: из-под блока скачивания поднимается мятное сияние — страница заканчивается светом */
+/* Финал: из-под блока скачивания поднимается рассветное сияние — страница заканчивается светом */
 .download { position: relative; isolation: isolate; }
 .download::before { content: ""; position: absolute; left: 50%; top: 38%; width: min(1100px, 120vw); height: 70%; transform: translateX(-50%);
-  background: radial-gradient(closest-side, rgba(119,225,199,.20), rgba(119,225,199,.06) 60%, transparent);
+  background: radial-gradient(closest-side, rgba(255,196,176,.20), rgba(var(--glow),.08) 60%, transparent);
   z-index: -1; pointer-events: none; animation: aurora 7s ease-in-out infinite alternate; }
 @keyframes aurora { from { opacity: .75; transform: translateX(-50%) scaleX(.94); } to { opacity: 1; transform: translateX(-50%) scaleX(1.04); } }
 
@@ -442,3 +444,26 @@ body.no-buddy .box-buddy { transform: scale(0); opacity: 0; transition: transfor
 body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
 input, textarea, [contenteditable] { -webkit-user-select: text; user-select: text; }
 img { -webkit-user-drag: none; }
+
+/* ── Живая сакура Ancora: лепестки дышат каждый в своём ритме, цветок очень медленно вращается,
+   цвет переливается, иногда падает лепесток. Клик или появление на экране — короткая вспышка. ── */
+.sk *{transform-box:view-box}
+.sk .pe,.sk .rot,.sk .fl{transform-origin:60px 60px}
+.sk.on .pe0{animation:pe-in 1.5s var(--ease) 0s both,pe-br 6.5s ease-in-out 1.6s infinite}
+.sk.on .pe1{animation:pe-in 1.5s var(--ease) .09s both,pe-br 6.5s ease-in-out 2.15s infinite}
+.sk.on .pe2{animation:pe-in 1.5s var(--ease) .18s both,pe-br 6.5s ease-in-out 2.7s infinite}
+.sk.on .pe3{animation:pe-in 1.5s var(--ease) .27s both,pe-br 6.5s ease-in-out 3.25s infinite}
+.sk.on .pe4{animation:pe-in 1.5s var(--ease) .36s both,pe-br 6.5s ease-in-out 3.8s infinite}
+@keyframes pe-in{from{opacity:0;transform:scale(.2) rotate(-40deg)}to{opacity:1;transform:none}}
+@keyframes pe-br{0%,100%{transform:none}50%{transform:scale(1.045) rotate(2.5deg)}}
+.sk.on .rot{animation:sk-rot 70s linear infinite}
+@keyframes sk-rot{to{transform:rotate(360deg)}}
+.sk.on .cs{transform-origin:60px 60px;animation:cs-in .8s var(--ease) .9s both,cs-tw 4.5s ease-in-out 1.8s infinite}
+@keyframes cs-in{from{transform:scale(0) rotate(-90deg)}to{transform:none}}
+@keyframes cs-tw{0%,100%{transform:none}50%{transform:scale(.72) rotate(45deg)}}
+.sk.on .fall{animation:sk-fall 9s ease-in-out 2.5s infinite both}
+@keyframes sk-fall{0%{opacity:0;transform:none}6%{opacity:1}40%{opacity:.9;transform:translate(-30px,46px) rotate(-70deg)}55%,100%{opacity:0;transform:translate(-44px,70px) rotate(-120deg)}}
+.sk.bloom .fl{animation:sk-bloom 1.1s var(--ease)}
+@keyframes sk-bloom{0%{transform:none;filter:none}25%{transform:scale(1.16);filter:brightness(1.35)}60%{transform:scale(.98)}100%{transform:none;filter:none}}
+[data-sakura]{cursor:pointer}
+@media (prefers-reduced-motion: reduce){.sk *{animation:none!important}.sk .fall{display:none}}
