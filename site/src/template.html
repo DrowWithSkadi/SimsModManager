@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="{{lang}}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{meta.title}}</title>
+<meta name="description" content="{{meta.description}}">
+<meta name="theme-color" content="#0B1211">
+<link rel="icon" href="{{root}}logo.png">
+<link rel="alternate" hreflang="ru" href="https://drowwithskadi.github.io/SimsModManager/">
+<link rel="alternate" hreflang="en" href="https://drowwithskadi.github.io/SimsModManager/en/">
+<link rel="alternate" hreflang="x-default" href="https://drowwithskadi.github.io/SimsModManager/en/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="{{meta.title}}">
+<meta property="og:description" content="{{meta.description}}">
+<meta property="og:image" content="https://drowwithskadi.github.io/SimsModManager/{{og}}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..700&display=swap" rel="stylesheet">
+<link rel="preload" as="image" href="{{root}}img/library.webp">
+<link rel="stylesheet" href="{{root}}style.css">
+</head>
+<body>
+<div class="wallpaper" aria-hidden="true"><i></i><i></i><i></i></div>
+
+<template id="buddy-svg">
+  <svg viewBox="0 -4 120 66" aria-hidden="true">
+    <rect x="34" y="44" width="11" height="13" rx="4" fill="#4A5654"/>
+    <rect x="75" y="44" width="11" height="13" rx="4" fill="#4A5654"/>
+    <g class="body">
+      <polygon class="flap-l" points="18,14 3,27 5,35 18,26" fill="#B07D46"/>
+      <polygon class="flap-r" points="102,14 117,27 115,35 102,26" fill="#B07D46"/>
+      <rect x="16" y="6" width="88" height="42" rx="6" fill="#C9935A"/>
+      <rect x="16" y="42" width="88" height="6" rx="3" fill="#B5824B"/>
+      <rect x="56" y="6" width="8" height="42" fill="#9E6D3A"/>
+      <g class="eyes">
+        <ellipse cx="40" cy="24" rx="7" ry="8" fill="#141817"/><circle class="pupil" cx="40" cy="24" r="3" fill="#F2F2EE"/>
+        <ellipse cx="80" cy="24" rx="7" ry="8" fill="#141817"/><circle class="pupil" cx="80" cy="24" r="3" fill="#F2F2EE"/>
+      </g>
+      <path class="happy" d="M34,27 Q40,19 46,27 M74,27 Q80,19 86,27" stroke="#141817" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+      <g class="blush"><ellipse cx="29" cy="33" rx="5" ry="2.5" fill="#F08FA6"/><ellipse cx="91" cy="33" rx="5" ry="2.5" fill="#F08FA6"/></g>
+    </g>
+  </svg>
+</template>
+
+<nav class="nav" aria-label="{{nav.label}}">
+  <a class="brand" href="#top"><img src="{{root}}logo.png" alt=""><span>Sims Mod Manager</span></a>
+  <a class="link" href="#ingame">{{nav.ingame}}</a>
+  <a class="link" href="#features">{{nav.features}}</a>
+  <a class="link" href="#tune">{{nav.tune}}</a>
+  <a class="link" href="#faq">{{nav.faq}}</a>
+  <span class="lang"><a href="{{ruHref}}" hreflang="ru" data-lang="ru" aria-current="{{isRu}}">RU</a><a href="{{enHref}}" hreflang="en" data-lang="en" aria-current="{{isEn}}">EN</a></span>
+  <a class="btn btn-mint" href="#download">{{nav.download}}</a>
+</nav>
+
+<main id="top">
+  <section class="hero">
+    <div class="wrap intro">
+      <div class="app-icon"><img src="{{root}}img/logo-512.webp" width="512" height="512" alt=""></div>
+      <h1><span>{{hero.h1a}}</span> <span>{{hero.h1b}}</span></h1>
+      <p class="lead">{{hero.lead}}</p>
+      <div class="actions">
+        <a class="dl is-desktop-only" href="https://github.com/DrowWithSkadi/SimsModManager/releases/download/dev/SimsModManager-win-Setup.exe">
+          <span class="ic"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2v10m0 0l-4-4m4 4l4-4M3 16h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <span><b>{{dl.main}}</b><small>{{dl.mainNote}}</small></span>
+        </a>
+        <a class="btn btn-glass" href="#ingame">{{hero.secondary}}</a>
+      </div>
+      <p class="meta">{{hero.meta}}</p>
+    </div>
+
+    <div class="showcase" id="showcase">
+      <div class="window" id="window">
+        <img src="{{root}}img/library.webp" width="1373" height="903" alt="{{hero.alt}}">
+        <div class="dropzone" aria-hidden="true"></div>
+        <div class="box-buddy" data-buddy id="hero-buddy"><span class="bubble">{{buddy.pet}}</span></div>
+        <div class="toast" id="toast" role="status"><b>✓</b>{{hero.toast}}</div>
+      </div>
+      <button class="zip is-desktop-only" id="zip" type="button" aria-label="{{zip.label}}">
+        <span class="hint">{{zip.hint}}
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 4c6 1 10 6 11 14m0 0l3-4m-3 4l-4-2"/></svg>
+        </span>
+        <svg class="file" viewBox="0 0 64 80" aria-hidden="true">
+          <path d="M6 2h36l18 18v54a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V6a4 4 0 0 1 4-4z" fill="#F1E8D6"/>
+          <path d="M42 2v14a4 4 0 0 0 4 4h14" fill="#D9CDB4"/>
+          <path d="M25 2h8v4h-8zm0 8h8v4h-8zm0 8h8v4h-8zm0 8h8v4h-8z" fill="#8F7A55"/>
+          <rect x="22" y="34" width="14" height="16" rx="3" fill="#8F7A55"/><rect x="26" y="40" width="6" height="4" rx="1" fill="#F1E8D6"/>
+          <text x="32" y="68" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" font-weight="700" fill="#6B5B3E">ZIP</text>
+        </svg>
+        <span class="name">{{zip.name}}</span>
+      </button>
+    </div>
+  </section>
+
+  <section class="sec" id="mess" aria-labelledby="mess-h">
+    <div class="wrap">
+      <div class="sec-head center">
+        <h2 id="mess-h">{{mess.h2}}</h2>
+        <p>{{mess.p}}</p>
+      </div>
+      <div class="compare" id="compare" role="slider" tabindex="0" aria-label="{{mess.slider}}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
+        <div class="after"><img src="{{root}}img/library.webp" width="1373" height="903" loading="lazy" alt="{{mess.afterAlt}}"></div>
+        <div class="before" aria-hidden="true">
+          <div class="explorer">
+            <div class="tb"><span>📁</span><span>Mods</span><span class="ctl">— ▢ ✕</span></div>
+            <div class="addr"><i>›</i> {{mess.path}}</div>
+            <div class="files">
+              <div class="hdr"><span>{{mess.colName}}</span><span>{{mess.colDate}}</span><span>{{mess.colType}}</span><span>{{mess.colSize}}</span></div>
+              {{mess.files}}
+            </div>
+          </div>
+        </div>
+        <span class="tag l">{{mess.before}}</span>
+        <span class="tag r">{{mess.after}}</span>
+        <div class="handle" aria-hidden="true"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l-6 6 6 6M15 6l6 6-6 6"/></svg></span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="ingame" aria-labelledby="ingame-h">
+    <div class="wrap">
+      <div class="sec-head center">
+        <h2 id="ingame-h">{{ingame.h2}}</h2>
+        <p>{{ingame.p}}</p>
+      </div>
+
+      <div class="ingame" id="ingame-demo" data-phase="0">
+        <figure>
+          <img src="{{root}}img/ingame.webp" width="1544" height="1029" loading="lazy" alt="{{ingame.alt}}">
+          <span class="focus-ring" aria-hidden="true"></span>
+          <span class="ripple" id="ripple" aria-hidden="true"></span>
+          <div class="dim" aria-hidden="true"></div>
+          <div class="sims-dialog" aria-hidden="true">
+            <h4>Sims Mod Manager</h4>
+            <p>{{ingame.dialog}}</p>
+            <div class="btns"><span>{{ingame.back}}</span><span>{{ingame.stay}}</span></div>
+          </div>
+          <svg class="cursor" id="cursor" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 2l16 9.5-7 1.6 3.9 7.4-3 1.5-3.8-7.5L4 19z" fill="#fff" stroke="#111" stroke-width="1.2" stroke-linejoin="round"/></svg>
+        </figure>
+        <span class="keycap" id="keycap" aria-hidden="true">F9</span>
+      </div>
+
+      <div class="timeline" id="timeline" aria-label="{{tl.label}}">
+        <div class="track">
+          <div class="ghost"></div>
+          <div class="fill"></div>
+          <span class="rewind-tip" aria-hidden="true"></span>
+          <span class="mark" data-at="0" style="left:0%"></span>
+          <span class="mark" data-at="1" style="left:45%"></span>
+          <span class="mark" data-at="2" style="left:100%"></span>
+          <svg class="rewind-arc" viewBox="0 0 600 74" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M596 70 C 480 -6, 120 -6, 4 66" fill="none" stroke="#77E1C7" stroke-width="2" vector-effect="non-scaling-stroke"/>
+          </svg>
+          <span class="rewind-label">{{tl.rewind}}</span>
+          <span class="head" aria-hidden="true"><svg viewBox="0 0 14 14"><path d="M3 1.5l9 5.5-9 5.5z" fill="currentColor"/></svg></span>
+        </div>
+        <div class="moments">
+          <div class="moment first" data-m="0" style="left:0%"><span class="when">{{tl.when0}}</span><h3>{{tl.h0}}</h3><p>{{tl.p0}}</p></div>
+          <div class="moment" data-m="1" style="left:45%"><span class="when">{{tl.when1}}</span><h3>{{tl.h1}}</h3><p>{{tl.p1}}</p></div>
+          <div class="moment last" data-m="2" style="left:100%"><span class="when">{{tl.when2}}</span><h3>{{tl.h2}}</h3><p>{{tl.p2}}</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="features" aria-labelledby="features-h">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2 id="features-h">{{feat.h2}}</h2>
+        <p>{{feat.p}}</p>
+      </div>
+      <div class="features">
+        <div class="f-list">
+          <article class="f-item on" data-f="0"><h3>{{feat.h0}}</h3><p>{{feat.p0}}</p><img class="f-shot" src="{{root}}img/ingame.webp" width="1544" height="1029" loading="lazy" alt=""></article>
+          <article class="f-item" data-f="1"><h3>{{feat.h1}}</h3><p>{{feat.p1}}</p><img class="f-shot" src="{{root}}img/toolbar.webp" width="1485" height="572" loading="lazy" alt=""></article>
+          <article class="f-item" data-f="2"><h3>{{feat.h2i}}</h3><p>{{feat.p2}}</p><img class="f-shot tall" src="{{root}}img/sidebar.webp" width="344" height="1030" loading="lazy" alt=""></article>
+          <article class="f-item" data-f="3"><h3>{{feat.h3}}</h3><p>{{feat.p3}}</p><img class="f-shot" src="{{root}}img/game-switches.webp" width="812" height="250" loading="lazy" alt=""></article>
+        </div>
+        <div class="f-stage" aria-hidden="true">
+          <figure class="wide on" data-f="0"><img src="{{root}}img/ingame.webp" width="1544" height="1029" loading="lazy" alt=""></figure>
+          <figure class="wide" data-f="1"><img src="{{root}}img/toolbar.webp" width="1485" height="572" loading="lazy" alt=""></figure>
+          <figure class="tall" data-f="2"><img src="{{root}}img/sidebar.webp" width="344" height="1030" loading="lazy" alt=""></figure>
+          <figure class="wide" data-f="3"><img src="{{root}}img/game-switches.webp" width="812" height="250" loading="lazy" alt=""></figure>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="tune" aria-labelledby="tune-h">
+    <div class="wrap">
+      <div class="sec-head center">
+        <h2 id="tune-h">{{tune.h2}}</h2>
+        <p>{{tune.p}}</p>
+      </div>
+      <div class="tune">
+        <div class="panel">
+          <h3>{{tune.overlay}}</h3>
+          <div class="opt">
+            <span class="lbl"><b>{{tune.key}}</b><small>{{tune.keyNote}}</small></span>
+            <button class="key-pick" id="key-pick" type="button">F9</button>
+          </div>
+          <div class="opt">
+            <span class="lbl"><b>{{tune.pause}}</b><small>{{tune.pauseNote}}</small></span>
+            <button class="switch" role="switch" aria-checked="true" aria-label="{{tune.pause}}"></button>
+          </div>
+          <div class="opt">
+            <span class="lbl"><b>{{tune.stream}}</b><small>{{tune.streamNote}}</small></span>
+            <button class="switch" role="switch" aria-checked="false" aria-label="{{tune.stream}}"></button>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>{{tune.general}}</h3>
+          <div class="opt">
+            <span class="lbl"><b>{{tune.keep}}</b><small>{{tune.keepNote}}</small></span>
+            <span class="range"><input type="range" id="keep" min="7" max="98" step="7" value="98" aria-label="{{tune.keep}}"><output id="keep-out">{{tune.forever}}</output></span>
+          </div>
+          <div class="opt">
+            <span class="lbl"><b>{{tune.theme}}</b><small>{{tune.themeNote}}</small></span>
+            <span class="seg" role="group" aria-label="{{tune.theme}}"><button type="button" aria-pressed="false">{{tune.dark}}</button><button type="button" aria-pressed="false">{{tune.light}}</button><button type="button" aria-pressed="true">{{tune.glass}}</button></span>
+          </div>
+          <div class="opt">
+            <span class="lbl"><b>{{tune.buddy}}</b><small>{{tune.buddyNote}}</small></span>
+            <button class="switch" role="switch" aria-checked="true" id="buddy-switch" aria-label="{{tune.buddy}}"></button>
+          </div>
+        </div>
+      </div>
+      <p class="tune-note center-text">{{tune.note}}</p>
+    </div>
+  </section>
+
+  <section class="sec" id="faq" aria-labelledby="faq-h">
+    <div class="wrap faq-wrap">
+      <h2 id="faq-h">{{faq.h2}}</h2>
+      <div class="faq">
+        {{faq.items}}
+      </div>
+    </div>
+  </section>
+
+  <section class="download" id="download" aria-labelledby="dl-h">
+    <div class="wrap">
+      <div class="scene">
+        <div class="crystal" id="crystal"><img src="{{root}}img/logo-512.webp" width="512" height="512" alt=""></div>
+        <div class="box-buddy" data-buddy><span class="bubble">{{buddy.wait}}</span></div>
+      </div>
+      <h2 id="dl-h">{{end.h2}}</h2>
+      <p>{{end.p}}</p>
+      <div class="actions is-desktop-only">
+        <a class="dl" href="https://github.com/DrowWithSkadi/SimsModManager/releases/download/dev/SimsModManager-win-Setup.exe">
+          <span class="ic"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2v10m0 0l-4-4m4 4l4-4M3 16h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <span><b>{{dl.main}}</b><small>{{dl.mainNote}}</small></span>
+        </a>
+        <a class="dl-alt" href="https://github.com/DrowWithSkadi/SimsModManager/releases/download/dev/SimsModManager-win-Portable.zip">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 2h7l4 4v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zM9 2v2m0 2v2m0 2v2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span><b>{{dl.alt}}</b><small>{{dl.altNote}}</small></span>
+        </a>
+      </div>
+      <div class="to-pc">
+        <p>{{pc.p}}</p>
+        <div class="row"><input id="pc-link" readonly value="https://drowwithskadi.github.io/SimsModManager/{{pcPath}}" aria-label="{{pc.label}}"><button type="button" id="pc-copy">{{pc.copy}}</button></div>
+      </div>
+      <p class="release" id="release"></p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>{{footer.note}}</span>
+    <a href="https://github.com/DrowWithSkadi/SimsModManager">{{footer.code}}</a>
+  </div>
+</footer>
+
+<script id="i18n" type="application/json">{{js}}</script>
+<script src="{{root}}app.js"></script>
+</body>
+</html>
