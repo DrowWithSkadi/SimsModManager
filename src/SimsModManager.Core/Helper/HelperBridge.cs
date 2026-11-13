@@ -59,7 +59,7 @@ public sealed class HelperBridge(string bridgeFolder)
         try
         {
             if (!File.Exists(path)) return HelperStatus.Offline;
-            var json = JsonNode.Parse(File.ReadAllText(path));
+            var json = JsonNode.Parse(ReadShared(path));
             if (json is null) return HelperStatus.Offline;
 
             var updated = DateTimeOffset.FromUnixTimeMilliseconds((long)(json["time"]!.GetValue<double>() * 1000)).UtcDateTime;
@@ -143,18 +143,26 @@ public sealed class HelperBridge(string bridgeFolder)
         }
     }
 
+    /// <summary>Читает файл, не мешая помощнику в ту же секунду заменить или удалить его.</summary>
+    private static string ReadShared(string path)
+    {
+        using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+        using var reader = new StreamReader(stream);
+        return reader.ReadToEnd();
+    }
+
     private static HelperResponse? TryReadResponse(string path)
     {
         try
         {
-            var json = JsonNode.Parse(File.ReadAllText(path));
+            var json = JsonNode.Parse(ReadShared(path));
             if (json is null) return null;
             return new HelperResponse(
                 json["ok"]?.GetValue<bool>() ?? false,
                 json["result"]?.DeepClone(),
                 (string?)json["error"]);
         }
-        catch (Exception ex) when (ex is IOException or JsonException or InvalidOperationException)
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException or InvalidOperationException)
         {
             return null;
         }

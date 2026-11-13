@@ -157,7 +157,7 @@ public class CheckpointTests
                     {
                         JsonElement json;
                         try { json = JsonDocument.Parse(File.ReadAllText(cmd)).RootElement; File.Delete(cmd); }
-                        catch (Exception ex) when (ex is IOException or JsonException) { continue; }
+                        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException) { continue; }
                         var id = json.GetProperty("id").GetString();
                         var name = json.GetProperty("command").GetString()!;
                         lock (Commands) Commands.Add(name);
@@ -176,7 +176,9 @@ public class CheckpointTests
                                 if (AcceptsDialog) _ = LeaveAsync();
                                 break;
                         }
-                        File.WriteAllText(Path.Combine(_folder, $"res-{id}.json"), JsonSerializer.Serialize(new { id, ok = true, result }));
+                        var res = Path.Combine(_folder, $"res-{id}.json");
+                        File.WriteAllText(res + ".tmp", JsonSerializer.Serialize(new { id, ok = true, result }));
+                        File.Move(res + ".tmp", res, overwrite: true);
                     }
                     if (!Silent) WriteStatus();
                     await Task.Delay(20);
@@ -201,7 +203,10 @@ public class CheckpointTests
                 File.WriteAllText(temp, JsonSerializer.Serialize(new { state = _state, slot_id = 2, slot_name = "Гот", version = Version, time = now, dialog = _dialog }));
                 File.Move(temp, Path.Combine(_folder, "status.json"), overwrite: true);
             }
-            catch (IOException) { }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                // Программа как раз читает файл — запишем на следующем круге, как настоящий помощник
+            }
         }
 
         public void Dispose()
