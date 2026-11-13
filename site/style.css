@@ -435,14 +435,3 @@ body.no-buddy .box-buddy { transform: scale(0); opacity: 0; transition: transfor
   z-index: -1; pointer-events: none; animation: aurora 7s ease-in-out infinite alternate; }
 @keyframes aurora { from { opacity: .75; transform: translateX(-50%) scaleX(.94); } to { opacity: 1; transform: translateX(-50%) scaleX(1.04); } }
 
-/* Коробок-путешественник: падает по странице при прокрутке, цепляется за блоки, бьётся о края */
-.faller { position: fixed; left: 0; top: 0; width: 60px; z-index: 40; pointer-events: none; opacity: 0;
-  transition: opacity .35s; will-change: transform; }
-.faller.show { opacity: 1; }
-.faller .inner { transform-origin: 50% 100%; transition: transform .12s; }
-.faller.squash .inner { transform: scale(1.18, .78); }
-.faller .flap-l, .faller .flap-r { transition: transform .18s; }
-.faller.falling .flap-l { transform: rotate(-38deg); }
-.faller.falling .flap-r { transform: rotate(38deg); }
-body.no-buddy .faller { display: none; }
-@media (max-width: 900px), (prefers-reduced-motion: reduce) { .faller { display: none; } }
