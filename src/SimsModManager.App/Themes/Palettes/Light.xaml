@@ -34,7 +34,7 @@
     <SolidColorBrush x:Key="B.Thumb" Color="#CFCFD5" />
     <SolidColorBrush x:Key="B.ThumbHover" Color="#B6B6BE" />
     <SolidColorBrush x:Key="B.ThumbDrag" Color="#9C9DA6" />
-    <!-- Боковая панель — тёмная карточка в любой теме; кнопка «Играть» всегда тёмная -->
+    <!-- Боковая панель — тёмная карточка в любой теме; кнопка «Играть» — молочная на ней -->
     <SolidColorBrush x:Key="B.Success" Color="#2B9C82" />
     <SolidColorBrush x:Key="B.Side" Color="#1E1F23" />
     <SolidColorBrush x:Key="B.SideBorder" Color="#0FFFFFFF" />
@@ -42,10 +42,10 @@
     <SolidColorBrush x:Key="B.SideMuted" Color="#8A8B93" />
     <SolidColorBrush x:Key="B.SideSelected" Color="#14FFFFFF" />
     <SolidColorBrush x:Key="B.SideAccent" Color="#F2F2F4" />
-    <SolidColorBrush x:Key="B.PlayFace" Color="#26272C" />
-    <SolidColorBrush x:Key="B.OnPlay" Color="#F2F2F4" />
+    <SolidColorBrush x:Key="B.PlayFace" Color="#ECECF0" />
+    <SolidColorBrush x:Key="B.OnPlay" Color="#17181B" />
     <SolidColorBrush x:Key="B.PlayRun" Color="#F21E1F23" />
-    <!-- Рамка кнопки «Играть» — градиент цветка сакуры: мятный → голубой → сиреневый → персиковый. Сама кнопка тёмная (B.PlayFace) -->
+    <!-- Цветная тень под кнопкой «Играть» — градиент цветка сакуры: мятный → голубой → сиреневый → персиковый -->
     <LinearGradientBrush x:Key="B.Play" StartPoint="0,0.5" EndPoint="1,0.5">
         <GradientStop Color="#77E1C7" Offset="0" />
         <GradientStop Color="#8CC8FF" Offset="0.35" />
