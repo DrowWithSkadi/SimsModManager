@@ -5,6 +5,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SimsModManager.Core.Helper;
 using SimsModManager.Core.Saves;
+using SimsModManager.Core;
 
 namespace SimsModManager.App.Overlay;
 
@@ -19,18 +20,18 @@ public sealed partial class CheckpointItem(Checkpoint checkpoint) : ObservableOb
     {
         get
         {
-            var when = Checkpoint.CreatedAt.Date == DateTime.Today ? $"сегодня, {Checkpoint.CreatedAt:HH:mm}"
-                : Checkpoint.CreatedAt.Date == DateTime.Today.AddDays(-1) ? $"вчера, {Checkpoint.CreatedAt:HH:mm}"
+            var when = Checkpoint.CreatedAt.Date == DateTime.Today ? L.F("сегодня, {0:HH:mm}", Checkpoint.CreatedAt)
+                : Checkpoint.CreatedAt.Date == DateTime.Today.AddDays(-1) ? L.F("вчера, {0:HH:mm}", Checkpoint.CreatedAt)
                 : Checkpoint.CreatedAt.ToString("d MMMM, HH:mm");
-            var size = $"{Checkpoint.SizeBytes / 1024.0 / 1024.0:0.#} МБ";
+            var size = L.F("{0:0.#} МБ", Checkpoint.SizeBytes / 1024.0 / 1024.0);
             return Checkpoint.GameSaveName is { Length: > 0 } game ? $"{when} · {game} · {size}" : $"{when} · {size}";
         }
     }
 
     public string KindLabel => Checkpoint.Kind switch
     {
-        CheckpointKind.Auto => "авто",
-        CheckpointKind.BeforeRollback => "до отката",
+        CheckpointKind.Auto => L.T("авто"),
+        CheckpointKind.BeforeRollback => L.T("до отката"),
         _ => "",
     };
 
@@ -92,6 +93,8 @@ public sealed partial class OverlayViewModel : ObservableObject
     public void Closed()
     {
         _statusTimer.Stop();
+        _closeAfterMenu = false;
+        _sawMenu = false;
         foreach (var item in Checkpoints)
         {
             item.ConfirmRollback = false;
@@ -104,21 +107,40 @@ public sealed partial class OverlayViewModel : ObservableObject
         }
     }
 
+    /// <summary>После отката панель показывает, как загрузить точку; как только игра начала грузиться — прячем её.</summary>
+    private bool _closeAfterMenu;
+    private bool _sawMenu;
+
+    private void CloseWhenGameResumes(HelperState state)
+    {
+        if (!_closeAfterMenu) return;
+        if (state == HelperState.Menu)
+        {
+            _sawMenu = true;
+        }
+        else if (_sawMenu)
+        {
+            _closeAfterMenu = false;
+            _close();
+        }
+    }
+
     private void RefreshStatus()
     {
         var manager = _manager();
         if (manager is null)
         {
-            (StatusText, StatusOk) = ("Папка игры не найдена", false);
+            (StatusText, StatusOk) = (L.T("Папка игры не найдена"), false);
             return;
         }
         var status = manager.Bridge.ReadStatus();
+        CloseWhenGameResumes(status.State);
         (StatusText, StatusOk) = status.State switch
         {
-            HelperState.Live => (status.SlotName is { Length: > 0 } n ? $"В игре · {n}" : "В игре", true),
-            HelperState.Menu => ("Главное меню", true),
-            HelperState.Starting => ("Игра загружается", true),
-            _ => ("Помощник не отвечает", false),
+            HelperState.Live => (status.SlotName is { Length: > 0 } n ? L.F("В игре · {0}", n) : L.T("В игре"), true),
+            HelperState.Menu => (L.T("Главное меню"), true),
+            HelperState.Starting => (L.T("Игра загружается"), true),
+            _ => (L.T("Помощник не отвечает"), false),
         };
     }
 
@@ -131,16 +153,9 @@ public sealed partial class OverlayViewModel : ObservableObject
         foreach (var c in all) Checkpoints.Add(new CheckpointItem(c));
         IsEmpty = Checkpoints.Count == 0;
         var total = all.Sum(c => c.SizeBytes) / 1024.0 / 1024.0;
-        StorageText = all.Count == 0 ? "" : $"{all.Count} {Plural(all.Count, "точка", "точки", "точек")} · {total:0.#} МБ";
+        StorageText = all.Count == 0 ? "" : L.F("{0} · {1:0.#} МБ", L.P(all.Count, "точка|точки|точек"), total);
     }
 
-    private static string Plural(int n, string one, string few, string many) =>
-        (n % 10, n % 100) switch
-        {
-            (1, not 11) => one,
-            (>= 2 and <= 4, < 12 or > 14) => few,
-            _ => many,
-        };
 
     private void Say(string? text, bool error = false) => (Message, MessageIsError) = (text, error);
 
@@ -156,14 +171,14 @@ public sealed partial class OverlayViewModel : ObservableObject
         var manager = _manager();
         if (manager is null) return;
         IsBusy = true;
-        BusyText = manager.Bridge.ReadStatus().State == HelperState.Live ? "Игра сохраняется…" : "Копирую сохранение…";
+        BusyText = manager.Bridge.ReadStatus().State == HelperState.Live ? L.T("Игра сохраняется…") : L.T("Копирую сохранение…");
         Say(null);
         try
         {
             var checkpoint = await manager.MakeAsync(NewName);
             NewName = "";
             RefreshList();
-            Say($"Точка «{checkpoint.Name}» готова");
+            Say(L.F("Точка «{0}» готова", checkpoint.Name));
         }
         catch (Exception ex) when (ex is CheckpointException or InvalidSaveException or IOException or UnauthorizedAccessException)
         {
@@ -231,12 +246,13 @@ public sealed partial class OverlayViewModel : ObservableObject
         Say(null);
         var progress = new Progress<RollbackStep>(step => BusyText = step switch
         {
-            RollbackStep.SavingCurrent => "Сохраняю текущую игру, чтобы к ней можно было вернуться…",
-            RollbackStep.WaitingForMenu => "Теперь выйди в главное меню: Esc → «Выйти» → «Выйти в главное меню». Сохранять не нужно — копия уже сделана.",
-            RollbackStep.Restoring => "Возвращаю сохранение…",
-            RollbackStep.WaitingForConfirm => "Подтверди откат в окне игры.",
-            RollbackStep.ClosingGame => "Закрываю игру — открытое сохранение подменить нельзя…",
-            RollbackStep.Launching => "Запускаю игру. В главном меню нажми «Продолжить» — откроется точка.",
+            RollbackStep.SavingCurrent => L.T("Сохраняю текущую игру, чтобы к ней можно было вернуться…"),
+            RollbackStep.WaitingForMenu => L.T("Теперь выйди в главное меню: Esc → «Выйти» → «Выйти в главное меню». Сохранять не нужно — копия уже сделана."),
+            RollbackStep.Restoring => L.T("Возвращаю сохранение…"),
+            RollbackStep.LeavingToMenu => L.T("Игра выходит в главное меню…"),
+            RollbackStep.WaitingForConfirm => L.T("Подтверди откат в окне игры."),
+            RollbackStep.ClosingGame => L.T("Закрываю игру — открытое сохранение подменить нельзя…"),
+            RollbackStep.Launching => L.T("Запускаю игру. В главном меню нажми «Продолжить» — откроется точка."),
             _ => null,
         });
         try
@@ -247,30 +263,20 @@ public sealed partial class OverlayViewModel : ObservableObject
                 _pausedByUs = false;
                 await manager.Bridge.SendAsync("resume", TimeSpan.FromSeconds(2));
             }
-            if (manager.CanRollbackViaMenu)
-            {
-                // Без перезапуска: подтверждение — в окне самой игры, поэтому панель убираем
-                var menuProgress = new Progress<RollbackStep>(step =>
-                {
-                    ((IProgress<RollbackStep>)progress).Report(step);
-                    if (step == RollbackStep.WaitingForConfirm) _close();
-                });
-                await manager.MenuRollbackAsync(item.Checkpoint, menuProgress);
-                RefreshList();
-                Say($"Готово! Нажми «Продолжить» — откроется «{item.Name}». Прежняя игра сохранена точкой «Перед откатом».");
-            }
-            else if (manager.Bridge.ReadStatus().State == HelperState.Live)
+            // Игра читает сохранение с диска только при запуске или через «Загрузить игру»
+            // («Продолжить» в той же сессии берёт игру из памяти), поэтому из игры откатываем перезапуском.
+            if (manager.Bridge.ReadStatus().State == HelperState.Live)
             {
                 // Игра открыта: сохраняем, закрываем, подменяем, запускаем снова
                 await manager.RestartRollbackAsync(item.Checkpoint, progress);
                 RefreshList();
-                Say($"Игра запускается. В главном меню нажми «Продолжить» — откроется «{item.Name}». Прежняя игра сохранена точкой «Перед откатом».");
+                Say(L.F("Игра запускается. В главном меню нажми «Продолжить» — откроется «{0}». Прежняя игра сохранена точкой «Перед откатом».", item.Name));
             }
             else
             {
                 await manager.RollbackAsync(item.Checkpoint, progress);
                 RefreshList();
-                Say($"Готово! Нажми «Продолжить» в главном меню — откроется «{item.Name}». Прежняя игра сохранена точкой «Перед откатом».");
+                Say(L.F("Готово! В главном меню нажми «Загрузить игру», затем «Играть» у своего сохранения и выбери семью — откроется «{0}». Кнопка «Продолжить» не подойдёт: она вернёт игру без отката. Прежняя игра сохранена точкой «Перед откатом».", item.Name));
             }
         }
         catch (RollbackCancelledException ex)

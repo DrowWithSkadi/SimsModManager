@@ -2,6 +2,7 @@ using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SimsModManager.Core.Content;
+using SimsModManager.Core;
 
 namespace SimsModManager.App.ViewModels;
 
@@ -49,27 +50,27 @@ public sealed partial class MainViewModel
         var mod = Card.Mod;
         var dialog = new DialogViewModel
         {
-            Title = "Дайте моду понятное имя",
+            Title = L.T("Дайте моду понятное имя"),
             Icon = (System.Windows.Media.Geometry)System.Windows.Application.Current.FindResource("Icon.Pencil"),
-            Message = $"Имя «{mod.Name}» изменится в библиотеке и у папки мода. На игру это не влияет.",
-            InputLabel = "Название мода",
-            InputHint = "Исходное имя: " + mod.Name,
+            Message = L.F("Имя «{0}» изменится в библиотеке и у папки мода. На игру это не влияет.", mod.Name),
+            InputLabel = L.T("Название мода"),
+            InputHint = L.T("Исходное имя: ") + mod.Name,
             InputText = mod.Name,
-            PrimaryText = "Сохранить",
-            SecondaryText = "Отмена",
+            PrimaryText = L.T("Сохранить"),
+            SecondaryText = L.T("Отмена"),
         };
         if (await ShowDialogAsync(dialog) != DialogResult.Primary) return;
         var newName = dialog.InputText.Trim();
         if (newName.Length == 0 || newName == mod.Name) return;
-        if (!mod.Model.IsTray && !await EnsureGameClosedAsync("переименовать мод")) return;
+        if (!mod.Model.IsTray && !await EnsureGameClosedAsync(L.T("переименовать мод"))) return;
 
         try
         {
             var oldName = mod.Name;
             var renamed = _library.Rename(mod.Model, newName);
             _originals.Rename(oldName, renamed.Name);
-            ShowToast($"Мод переименован в «{renamed.Name}»", Icons.Check);
-            SetLastAction("мод переименован");
+            ShowToast(L.F("Мод переименован в «{0}»", renamed.Name), Icons.Check);
+            SetLastAction(L.T("мод переименован"));
             await RefreshAsync();
             var fresh = Mods.FirstOrDefault(m => string.Equals(m.Model.Path, renamed.Path, StringComparison.OrdinalIgnoreCase)
                                                  && m.Name == renamed.Name);
@@ -80,10 +81,10 @@ public sealed partial class MainViewModel
         {
             await ShowDialogAsync(new DialogViewModel
             {
-                Title = "Не удалось переименовать",
+                Title = L.T("Не удалось переименовать"),
                 Icon = Icons.Files,
                 Message = ex.Message,
-                PrimaryText = "Понятно",
+                PrimaryText = L.T("Понятно"),
             });
         }
     }
@@ -96,20 +97,20 @@ public sealed partial class MainViewModel
         var mods = Editor.TargetMods.Where(m => m.IsModified).ToList();
         if (mods.Count == 0)
         {
-            ShowToast("Эти вещи ещё не менялись — они и так как у автора", Icons.Info);
+            ShowToast(L.T("Эти вещи ещё не менялись — они и так как у автора"), Icons.Info);
             return;
         }
         var answer = await ShowDialogAsync(new DialogViewModel
         {
-            Title = "Вернуть как было у автора?",
+            Title = L.T("Вернуть как было у автора?"),
             Icon = (System.Windows.Media.Geometry)System.Windows.Application.Current.FindResource("Icon.RotateCcw"),
             Message = mods.Count == 1
-                ? $"Все изменения настроек «{mods[0].Name}» будут отменены."
-                : $"Будут отменены изменения в {Text.Plural(mods.Count, "моде", "модах", "модах")}.",
-            PrimaryText = "Вернуть",
-            SecondaryText = "Отмена",
+                ? L.F("Все изменения настроек «{0}» будут отменены.", mods[0].Name)
+                : L.F("Будут отменены изменения в {0}.", L.P(mods.Count, "моде|модах|модах")),
+            PrimaryText = L.T("Вернуть"),
+            SecondaryText = L.T("Отмена"),
         });
-        if (answer != DialogResult.Primary || !await EnsureGameClosedAsync("изменить моды")) return;
+        if (answer != DialogResult.Primary || !await EnsureGameClosedAsync(L.T("изменить моды"))) return;
 
         try
         {
@@ -118,15 +119,15 @@ public sealed partial class MainViewModel
                 foreach (var m in mods) _originals.Restore(m.Name, m.Model.Files);
             });
             foreach (var m in mods) m.IsModified = false;
-            ShowToast("Авторские настройки восстановлены", Icons.Check);
-            SetLastAction("восстановлены авторские настройки");
+            ShowToast(L.T("Авторские настройки восстановлены"), Icons.Check);
+            SetLastAction(L.T("восстановлены авторские настройки"));
             Editor = null;
             if (_editorFromCard && Card is not null) await OpenCard(Card.Mod);
             else Page = AppPage.Library;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            await ShowErrorAsync("Не удалось вернуть оригинал", "Файлы мода заняты другой программой.", ex);
+            await ShowErrorAsync(L.T("Не удалось вернуть оригинал"), L.T("Файлы мода заняты другой программой."), ex);
         }
     }
 
@@ -137,26 +138,26 @@ public sealed partial class MainViewModel
         var mod = Card.Mod;
         var answer = await ShowDialogAsync(new DialogViewModel
         {
-            Title = "Вернуть оригинал?",
+            Title = L.T("Вернуть оригинал?"),
             Icon = (System.Windows.Media.Geometry)System.Windows.Application.Current.FindResource("Icon.RotateCcw"),
-            Message = $"Все изменения настроек «{mod.Name}» будут отменены — файлы станут такими, как их сделал автор.",
-            PrimaryText = "Вернуть",
-            SecondaryText = "Отмена",
+            Message = L.F("Все изменения настроек «{0}» будут отменены — файлы станут такими, как их сделал автор.", mod.Name),
+            PrimaryText = L.T("Вернуть"),
+            SecondaryText = L.T("Отмена"),
         });
-        if (answer != DialogResult.Primary || !await EnsureGameClosedAsync("изменить моды")) return;
+        if (answer != DialogResult.Primary || !await EnsureGameClosedAsync(L.T("изменить моды"))) return;
 
         try
         {
             var files = mod.Model.Files;
             var restored = await Task.Run(() => _originals.Restore(mod.Name, files));
             mod.IsModified = false;
-            ShowToast(restored > 0 ? "Оригинал восстановлен" : "Копия оригинала не найдена", Icons.Check);
-            SetLastAction("восстановлен оригинал мода");
+            ShowToast(restored > 0 ? L.T("Оригинал восстановлен") : L.T("Копия оригинала не найдена"), Icons.Check);
+            SetLastAction(L.T("восстановлен оригинал мода"));
             await OpenCard(mod);
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            await ShowErrorAsync("Не удалось вернуть оригинал", "Файлы мода заняты другой программой.", ex);
+            await ShowErrorAsync(L.T("Не удалось вернуть оригинал"), L.T("Файлы мода заняты другой программой."), ex);
         }
     }
 
@@ -198,7 +199,7 @@ public sealed partial class MainViewModel
 
         if (targets.Count == 0)
         {
-            ShowToast("Среди выбранных модов нет одежды, причёсок или макияжа", Icons.Info);
+            ShowToast(L.T("Среди выбранных модов нет одежды, причёсок или макияжа"), Icons.Info);
             return;
         }
         foreach (var t in targets.Take(2)) await t.LoadSwatchesAsync(); // превью для левой колонки
@@ -214,11 +215,11 @@ public sealed partial class MainViewModel
         {
             var answer = await ShowDialogAsync(new DialogViewModel
             {
-                Title = "Выйти без сохранения?",
+                Title = L.T("Выйти без сохранения?"),
                 Icon = Icons.Info,
-                Message = "Изменения настроек не сохранены и пропадут.",
-                PrimaryText = "Выйти",
-                SecondaryText = "Остаться",
+                Message = L.T("Изменения настроек не сохранены и пропадут."),
+                PrimaryText = L.T("Выйти"),
+                SecondaryText = L.T("Остаться"),
             });
             if (answer != DialogResult.Primary) return;
         }
@@ -236,15 +237,15 @@ public sealed partial class MainViewModel
         {
             var go = await ShowDialogAsync(new DialogViewModel
             {
-                Title = "Проверьте настройки",
+                Title = L.T("Проверьте настройки"),
                 Icon = Icons.Alert,
                 Message = warning,
-                PrimaryText = "Всё равно сохранить",
-                SecondaryText = "Исправить",
+                PrimaryText = L.T("Всё равно сохранить"),
+                SecondaryText = L.T("Исправить"),
             });
             if (go != DialogResult.Primary) return;
         }
-        if (!await EnsureGameClosedAsync("изменить моды")) return;
+        if (!await EnsureGameClosedAsync(L.T("изменить моды"))) return;
 
         var work = Editor.BuildChanges();
         if (work.Count == 0)
@@ -269,8 +270,8 @@ public sealed partial class MainViewModel
             });
 
             foreach (var mod in work.Select(w => w.Target.Mod).Distinct()) mod.IsModified = true;
-            ShowToast($"Сохранено: {Text.Plural(changed, "расцветка", "расцветки", "расцветок")}. Оригинал сохранён.", Icons.Check);
-            SetLastAction("изменены настройки одежды");
+            ShowToast(L.F("Сохранено: {0}. Оригинал сохранён.", L.P(changed, "расцветка|расцветки|расцветок")), Icons.Check);
+            SetLastAction(L.T("изменены настройки одежды"));
 
             Editor = null;
             if (_editorFromCard && Card is not null) await OpenCard(Card.Mod);
@@ -278,7 +279,7 @@ public sealed partial class MainViewModel
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidDataException)
         {
-            await ShowErrorAsync("Не удалось сохранить", "Файл мода занят или повреждён. Исходный файл не изменён.", ex);
+            await ShowErrorAsync(L.T("Не удалось сохранить"), L.T("Файл мода занят или повреждён. Исходный файл не изменён."), ex);
         }
         finally
         {

@@ -13,6 +13,9 @@ namespace SimsModManager.App.ViewModels;
 /// <summary>Карточка мода: картинка, сведения, вещи внутри, файлы. Для больших наборов — вид «Сборник».</summary>
 public sealed partial class ModCardViewModel : ObservableObject
 {
+    /// <summary>Перечитать подписи после смены языка.</summary>
+    public void RefreshTexts() => OnPropertyChanged(string.Empty);
+
     /// <summary>С какого числа вещей мод показывается как сборник (сетка с поиском).</summary>
     private const int CollectionThreshold = 4;
 
@@ -36,8 +39,8 @@ public sealed partial class ModCardViewModel : ObservableObject
 
     public ModItemViewModel Mod { get; }
 
-    public string Breadcrumb => "Библиотека / " + (string.IsNullOrEmpty(Mod.CategoryLabel) ? "Мод" : Mod.CategoryLabel)
-                                + (IsCollection ? " / Сборник" : "");
+    public string Breadcrumb => L.T("Библиотека / ") + (string.IsNullOrEmpty(Mod.CategoryLabel) ? L.T("Мод") : Mod.CategoryLabel)
+                                + (IsCollection ? L.T(" / Сборник") : "");
     public string LocationText { get; }
     public string InstalledText => Mod.InstalledAt.ToString("dd.MM.yyyy");
     public string SizeText => Text.Size(Mod.SizeBytes);
@@ -47,7 +50,7 @@ public sealed partial class ModCardViewModel : ObservableObject
         get
         {
             var m = Mod.Model;
-            if (m.IsTray) return Text.Plural(m.Files.Count, "файл", "файла", "файлов") + " в Tray";
+            if (m.IsTray) return L.P(m.Files.Count, "файл|файла|файлов") + L.T(" в Tray");
             var parts = new List<string>();
             if (m.PackageCount > 0) parts.Add($"{m.PackageCount} .package");
             if (m.ScriptCount > 0) parts.Add($"{m.ScriptCount} .ts4script");
@@ -55,8 +58,8 @@ public sealed partial class ModCardViewModel : ObservableObject
         }
     }
 
-    public string FilesHeader => Text.Plural(Files.Count, "файл", "файла", "файлов");
-    public string ContentText => Text.Plural(Items.Count, "вещь", "вещи", "вещей") + " · " + FilesHeader;
+    public string FilesHeader => L.P(Files.Count, "файл|файла|файлов");
+    public string ContentText => L.P(Items.Count, "вещь|вещи|вещей") + " · " + FilesHeader;
 
     public ObservableCollection<FileRow> Files { get; } = [];
     public ObservableCollection<CasItemViewModel> Items { get; } = [];
@@ -93,25 +96,25 @@ public sealed partial class ModCardViewModel : ObservableObject
     public bool ShowNoItems => !IsLoadingItems && Items.Count == 0;
     public CasItemViewModel? FirstItem => Items.FirstOrDefault();
 
-    public string EditAllText => "Настроить " + Text.Plural(Items.Count, "вещь", "вещи", "вещей");
+    public string EditAllText => L.T("Настроить ") + L.P(Items.Count, "вещь|вещи|вещей");
 
     public string ItemsSummary => Items.Count == 0
         ? ""
-        : Text.Plural(Items.Count, "вещь", "вещи", "вещей") + " · " +
-          Text.Plural(Items.Sum(i => i.SwatchCount), "расцветка", "расцветки", "расцветок");
+        : L.P(Items.Count, "вещь|вещи|вещей") + " · " +
+          L.P(Items.Sum(i => i.SwatchCount), "расцветка|расцветки|расцветок");
 
     public string NoItemsText => Mod.Model.IsTray
-        ? "Это участок, комната или семья из галереи. Они хранятся в папке Tray и появляются в игре в «Библиотеке»."
+        ? L.T("Это участок, комната или семья из галереи. Они хранятся в папке Tray и появляются в игре в «Библиотеке».")
         : Mod.HasScripts && Mod.Model.PackageCount == 0
-            ? "Скриптовый мод: в нём нет одежды или предметов, которые можно настроить. Включается и выключается целиком."
-            : "В этом моде нет одежды, причёсок или макияжа, поэтому настраивать пол и категории не нужно.";
+            ? L.T("Скриптовый мод: в нём нет одежды или предметов, которые можно настроить. Включается и выключается целиком.")
+            : L.T("В этом моде нет одежды, причёсок или макияжа, поэтому настраивать пол и категории не нужно.");
 
     private void UpdateCounts()
     {
         var shown = ItemsView.Cast<object>().Count();
         ItemsCountText = shown == Items.Count
-            ? Text.Plural(Items.Count, "вещь", "вещи", "вещей")
-            : $"{Text.Plural(Items.Count, "вещь", "вещи", "вещей")} · показано {shown}";
+            ? L.P(Items.Count, "вещь|вещи|вещей")
+            : L.F("{0} · показано {1}", L.P(Items.Count, "вещь|вещи|вещей"), shown);
     }
 
     /// <summary>Читает вещи из файлов в фоне — у больших сборников это занимает время.</summary>
@@ -176,7 +179,7 @@ public sealed partial class CasItemViewModel : ObservableObject
     public ModItemViewModel Mod { get; }
     public string Name { get; }
     public int SwatchCount => Item.Swatches.Count;
-    public string SwatchCountText => Text.Plural(SwatchCount, "цвет", "цвета", "цветов");
+    public string SwatchCountText => L.P(SwatchCount, "цвет|цвета|цветов");
 
     public string Summary
     {
@@ -192,9 +195,9 @@ public sealed partial class CasItemViewModel : ObservableObject
         get
         {
             var s = Item.Swatches[0].Settings;
-            var names = OutfitTags.Known.Concat(OutfitTags.Weather).Where(k => s.Outfits.Contains(k.Value)).Select(k => k.Name.ToLowerInvariant()).ToList();
-            var outfits = names.Count == 0 ? "категории не указаны" : string.Join(", ", names);
-            return outfits + (s.AllowRandom ? " · для случайных симов" : " · не для случайных симов");
+            var names = OutfitTags.Known.Concat(OutfitTags.Weather).Where(k => s.Outfits.Contains(k.Value)).Select(k => L.T(k.Name).ToLowerInvariant()).ToList();
+            var outfits = names.Count == 0 ? L.T("категории не указаны") : string.Join(", ", names);
+            return outfits + (s.AllowRandom ? L.T(" · для случайных симов") : L.T(" · не для случайных симов"));
         }
     }
 
@@ -207,7 +210,7 @@ public sealed partial class CasItemViewModel : ObservableObject
 
     public bool HasPreview => Preview is not null;
 
-    public string MoreSwatchesText => SwatchCount > 8 ? "+" + Text.Plural(SwatchCount - 8, "расцветка", "расцветки", "расцветок") : "";
+    public string MoreSwatchesText => SwatchCount > 8 ? "+" + L.P(SwatchCount - 8, "расцветка|расцветки|расцветок") : "";
 
     /// <summary>Все загруженные миниатюры по номеру расцветки — нужны редактору.</summary>
     public Dictionary<ulong, ImageSource> ThumbsByInstance { get; } = [];
@@ -241,29 +244,29 @@ public sealed partial class CasItemViewModel : ObservableObject
 /// <summary>Подписи для пола и возраста.</summary>
 public static class Describe
 {
-    public static readonly IReadOnlyList<(AgeGender Age, string Name)> AgeNames =
+    public static IReadOnlyList<(AgeGender Age, string Name)> AgeNames =>
     [
-        (AgeGender.Infant, "Младенцы"),
-        (AgeGender.Toddler, "Тоддлеры"),
-        (AgeGender.Child, "Дети"),
-        (AgeGender.Teen, "Подростки"),
-        (AgeGender.YoungAdult, "Молодые"),
-        (AgeGender.Adult, "Взрослые"),
-        (AgeGender.Elder, "Пожилые"),
+        (AgeGender.Infant, L.T("Младенцы")),
+        (AgeGender.Toddler, L.T("Тоддлеры")),
+        (AgeGender.Child, L.T("Дети")),
+        (AgeGender.Teen, L.T("Подростки")),
+        (AgeGender.YoungAdult, L.T("Молодые")),
+        (AgeGender.Adult, L.T("Взрослые")),
+        (AgeGender.Elder, L.T("Пожилые")),
     ];
 
     public static string Gender(bool female, bool male) => (female, male) switch
     {
-        (true, false) => "Женщины",
-        (false, true) => "Мужчины",
-        (true, true) => "Все",
-        _ => "Пол не указан",
+        (true, false) => L.T("Женщины"),
+        (false, true) => L.T("Мужчины"),
+        (true, true) => L.T("Все"),
+        _ => L.T("Пол не указан"),
     };
 
     public static string Ages(AgeGender ages)
     {
         var set = AgeNames.Where(a => ages.HasFlag(a.Age)).ToList();
-        if (set.Count == 0) return "возраст не указан";
+        if (set.Count == 0) return L.T("возраст не указан");
         if (set.Count == 1) return set[0].Name;
         var all = AgeNames.ToList();
         var idx = set.Select(a => all.IndexOf(a)).ToList();

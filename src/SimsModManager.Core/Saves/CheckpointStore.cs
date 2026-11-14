@@ -43,7 +43,7 @@ public sealed record RetentionRules(int? MaxAgeDays = null, int? MaxCount = null
 public sealed class InvalidSaveException(string message) : Exception(message);
 
 /// <summary>
-/// Хранилище точек сохранения: %AppData%\SimsModManager\Checkpoints\&lt;id&gt;\ (checkpoint.json + save.zip).
+/// Хранилище точек сохранения: %AppData%\Ancora\Checkpoints\&lt;id&gt;\ (checkpoint.json + save.zip).
 /// Игра их не видит — в папку saves попадает только та точка, к которой откатываются.
 /// </summary>
 public sealed class CheckpointStore(string folder)
@@ -56,8 +56,7 @@ public sealed class CheckpointStore(string folder)
         Converters = { new JsonStringEnumConverter() },
     };
 
-    public static string DefaultFolder => Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "SimsModManager", "Checkpoints");
+    public static string DefaultFolder => AppIdentity.Roaming("Checkpoints");
 
     public string Folder { get; } = folder;
 
@@ -143,38 +142,51 @@ public sealed class CheckpointStore(string folder)
 
     public static string DefaultName(CheckpointKind kind, DateTime at) => kind switch
     {
-        CheckpointKind.Auto => $"Автосохранение · {at:dd.MM HH:mm}",
-        CheckpointKind.BeforeRollback => $"Перед откатом · {at:dd.MM HH:mm}",
-        _ => $"Точка · {at:dd.MM HH:mm}",
+        CheckpointKind.Auto => L.F("Автосохранение · {0:dd.MM HH:mm}", at),
+        CheckpointKind.BeforeRollback => L.F("Перед откатом · {0:dd.MM HH:mm}", at),
+        _ => L.F("Точка · {0:dd.MM HH:mm}", at),
     };
 
     /// <summary>
     /// Кладёт точку в папку saves вместо текущего файла того же сохранения.
     /// Пишется во временный файл, проверяется и только потом подменяет — сохранение не может остаться наполовину записанным.
     /// </summary>
-    public string Restore(Checkpoint checkpoint, string savesFolder)
+    /// <param name="alsoAutosave">
+    /// Положить точку и на место автосохранения игры (если оно есть). Нужно перед запуском игры:
+    /// «Продолжить» открывает то сохранение, в которое игра писала последним, а это часто автосохранение.
+    /// </param>
+    public string Restore(Checkpoint checkpoint, string savesFolder, bool alsoAutosave = false)
     {
         var bytes = ReadData(checkpoint);
         EnsureValidSave(bytes, checkpoint.Name);
         Directory.CreateDirectory(savesFolder);
         var target = Path.Combine(savesFolder, checkpoint.SlotFile);
+        Replace(target, bytes);
+
+        var autosave = Path.Combine(savesFolder, SaveSlots.AutosaveFile);
+        if (alsoAutosave && File.Exists(autosave) && !string.Equals(checkpoint.SlotFile, SaveSlots.AutosaveFile, StringComparison.OrdinalIgnoreCase))
+            Replace(autosave, bytes);
+        return target;
+    }
+
+    private static void Replace(string target, byte[] bytes)
+    {
         var temp = target + ".smm-tmp";
         File.WriteAllBytes(temp, bytes);
         File.Move(temp, target, overwrite: true);
         File.SetLastWriteTime(target, DateTime.Now);
-        return target;
     }
 
     public byte[] ReadData(Checkpoint checkpoint)
     {
         using var zip = ZipFile.OpenRead(Path.Combine(checkpoint.Folder, DataFile));
-        var entry = zip.Entries.FirstOrDefault() ?? throw new InvalidSaveException($"Точка «{checkpoint.Name}» пустая");
+        var entry = zip.Entries.FirstOrDefault() ?? throw new InvalidSaveException(L.F("Точка «{0}» пустая", checkpoint.Name));
         using var stream = entry.Open();
         using var memory = new MemoryStream();
         stream.CopyTo(memory);
         var bytes = memory.ToArray();
         if (Convert.ToHexString(SHA256.HashData(bytes)) != checkpoint.Hash)
-            throw new InvalidSaveException($"Точка «{checkpoint.Name}» повреждена");
+            throw new InvalidSaveException(L.F("Точка «{0}» повреждена", checkpoint.Name));
         return bytes;
     }
 
@@ -225,7 +237,7 @@ public sealed class CheckpointStore(string folder)
     public static void EnsureValidSave(ReadOnlySpan<byte> bytes, string what)
     {
         if (bytes.Length < 96 || bytes[0] != 'D' || bytes[1] != 'B' || bytes[2] != 'P' || bytes[3] != 'F')
-            throw new InvalidSaveException($"«{what}» не похоже на сохранение Sims 4");
+            throw new InvalidSaveException(L.F("«{0}» не похоже на сохранение Sims 4", what));
     }
 
     private static byte[] ReadShared(string path)
@@ -242,6 +254,9 @@ public sealed class CheckpointStore(string folder)
 public static class SaveSlots
 {
     public static string FileName(long slotId) => $"Slot_{slotId:x8}.save";
+
+    /// <summary>Автосохранение игры: один общий слот, который она перезаписывает сама.</summary>
+    public const string AutosaveFile = "Slot_ffffffff.save";
 
     /// <summary>Самое недавно записанное сохранение (без резервных .verN).</summary>
     public static string? MostRecent(string savesFolder) =>

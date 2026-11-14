@@ -51,17 +51,17 @@ public sealed class ModInstaller(SimsPaths paths, IArchiveExtractor extractor)
     {
         var isDir = Directory.Exists(source);
         if (!isDir && !File.Exists(source))
-            return new(source, null, InstallStatus.Failed, 0, "Файл не найден.");
+            return new(source, null, InstallStatus.Failed, 0, L.T("Файл не найден."));
 
         if (!isDir && !ModFiles.IsArchive(source) && !ModFiles.IsModFile(source) && !ModFiles.IsTrayFile(source))
             return new(source, null, InstallStatus.Skipped, 0,
-                "Это не мод и не архив (поддерживаются .zip, .rar, .7z, .package, .ts4script и файлы участков/семей).");
+                L.T("Это не мод и не архив (поддерживаются .zip, .rar, .7z, .package, .ts4script и файлы участков/семей)."));
 
         var modName = ModFiles.SanitizeName(isDir
             ? new DirectoryInfo(source).Name
             : Path.GetFileNameWithoutExtension(source));
 
-        var workDir = Path.Combine(Path.GetTempPath(), "SimsModManager", Guid.NewGuid().ToString("N"));
+        var workDir = AppIdentity.NewTempFolder();
         try
         {
             var files = new List<string>();
@@ -81,7 +81,7 @@ public sealed class ModInstaller(SimsPaths paths, IArchiveExtractor extractor)
 
             if (files.Count == 0 && trayFiles.Count == 0)
                 return new(source, modName, InstallStatus.Failed, 0,
-                    "Внутри нет ни модов (.package, .ts4script), ни участков или персонажей для «Библиотеки».");
+                    L.T("Внутри нет ни модов (.package, .ts4script), ни участков или персонажей для «Библиотеки»."));
 
             // Моды — в Mods\Название\, участки/комнаты/семьи — прямо в Tray.
             var updated = false;
@@ -106,7 +106,7 @@ public sealed class ModInstaller(SimsPaths paths, IArchiveExtractor extractor)
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             return new(source, modName, InstallStatus.Failed, 0,
-                "Не удалось записать файлы. Возможно, игра запущена и держит их открытыми. " + ex.Message);
+                L.T("Не удалось записать файлы. Возможно, игра запущена и держит их открытыми. ") + ex.Message);
         }
         finally
         {

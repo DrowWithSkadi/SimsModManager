@@ -161,13 +161,12 @@ public static class CasPackageEditor
 }
 
 /// <summary>
-/// Копии оригинальных файлов до первого изменения. Хранятся в %LocalAppData%\SimsModManager\originals,
+/// Копии оригинальных файлов до первого изменения. Хранятся в %LocalAppData%\Ancora\originals,
 /// ключ — «название мода / имя файла», поэтому переживают включение и выключение мода.
 /// </summary>
 public sealed class OriginalsStore(string? folder = null)
 {
-    private readonly string _folder = folder ?? Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "SimsModManager", "originals");
+    private readonly string _folder = folder ?? AppIdentity.Local("originals");
 
     private string PathFor(string modName, string fileName) =>
         Path.Combine(_folder, ModFiles.SanitizeName(modName), fileName);

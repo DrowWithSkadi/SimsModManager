@@ -1,5 +1,6 @@
 <UserControl x:Class="SimsModManager.App.Views.CardPage"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:l="clr-namespace:SimsModManager.App.Localization"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:ctl="clr-namespace:SimsModManager.App.Controls"
              xmlns:b="clr-namespace:SimsModManager.App.Behaviors">
@@ -39,7 +40,7 @@
                                             </ctl:IconView.RenderTransform>
                                         </ctl:IconView>
                                         <ctl:IconView Data="{StaticResource Icon.Files}" Width="14" Height="14" Foreground="{DynamicResource B.TextSecondary}" Margin="10,0,10,0" />
-                                        <TextBlock Text="Файлы мода" Style="{StaticResource T.Body}" VerticalAlignment="Center" />
+                                        <TextBlock Text="{l:Tr 'Файлы мода'}" Style="{StaticResource T.Body}" VerticalAlignment="Center" />
                                     </StackPanel>
                                     <TextBlock Text="{Binding FilesHeader}" Style="{StaticResource T.Muted}" HorizontalAlignment="Right" VerticalAlignment="Center" />
                                 </Grid>
@@ -91,13 +92,13 @@
 
         <!-- Заголовок: у сборника — название мода, у обычного мода — «Карточка мода» -->
         <StackPanel Orientation="Horizontal" Margin="0,0,0,18">
-            <Button Style="{StaticResource Btn.Icon}" ctl:Btn.Icon="{StaticResource Icon.ArrowLeft}" ToolTip="Назад (Esc)" VerticalAlignment="Top" Margin="0,4,16,0"
+            <Button Style="{StaticResource Btn.Icon}" ctl:Btn.Icon="{StaticResource Icon.ArrowLeft}" ToolTip="{l:Tr 'Назад (Esc)'}" VerticalAlignment="Top" Margin="0,4,16,0"
                     Command="{Binding DataContext.CloseCardCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" />
             <StackPanel>
                 <TextBlock>
                     <TextBlock.Style>
                         <Style TargetType="TextBlock" BasedOn="{StaticResource T.Page}">
-                            <Setter Property="Text" Value="Карточка мода" />
+                            <Setter Property="Text" Value="{l:Tr 'Карточка мода'}" />
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding IsCollection}" Value="True">
                                     <Setter Property="Text" Value="{Binding Mod.Name}" />
@@ -152,7 +153,7 @@
                         <TextBlock Text="{Binding Mod.Name}" FontSize="22" FontWeight="SemiBold" Foreground="{DynamicResource B.Text}"
                                    TextWrapping="Wrap" Margin="0,0,56,0" />
                         <CheckBox Style="{StaticResource Switch}" IsChecked="{Binding Mod.IsEnabled}" HorizontalAlignment="Right" VerticalAlignment="Top"
-                                  Margin="0,6,0,0" ToolTip="Включить / выключить мод" />
+                                  Margin="0,6,0,0" ToolTip="{l:Tr 'Включить / выключить мод'}" />
                     </Grid>
 
                     <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
@@ -161,36 +162,36 @@
                         </Border>
                         <Border Style="{StaticResource Tag}" Background="{DynamicResource B.AccentSubtle}" Margin="0,0,6,0"
                                 Visibility="{Binding IsModified, Converter={StaticResource BoolToVisibility}}">
-                            <TextBlock Style="{StaticResource TagText}" Text="Изменён" Foreground="{DynamicResource B.Accent}" />
+                            <TextBlock Style="{StaticResource TagText}" Text="{l:Tr 'Изменён'}" Foreground="{DynamicResource B.Accent}" />
                         </Border>
                         <Border Style="{StaticResource Tag}" Background="{DynamicResource B.AccentSubtle}" Margin="0,0,6,0"
                                 Visibility="{Binding Mod.ShowScriptBadge, Converter={StaticResource BoolToVisibility}}">
-                            <TextBlock Style="{StaticResource TagText}" Text="Скрипт" Foreground="{DynamicResource B.Accent}" />
+                            <TextBlock Style="{StaticResource TagText}" Text="{l:Tr 'Скрипт'}" Foreground="{DynamicResource B.Accent}" />
                         </Border>
                         <Border Style="{StaticResource Tag}" Background="{DynamicResource B.SuccessTag}" Visibility="{Binding Mod.IsEnabled, Converter={StaticResource BoolToVisibility}}">
-                            <TextBlock Style="{StaticResource TagText}" Text="Включён" Foreground="{DynamicResource B.Accent}" />
+                            <TextBlock Style="{StaticResource TagText}" Text="{l:Tr 'Включён'}" Foreground="{DynamicResource B.Accent}" />
                         </Border>
                         <Border Style="{StaticResource Tag}" Visibility="{Binding Mod.IsEnabled, Converter={StaticResource InverseBoolToVisibility}}">
-                            <TextBlock Style="{StaticResource TagText}" Text="Выключен" Foreground="{DynamicResource B.TextMuted}" />
+                            <TextBlock Style="{StaticResource TagText}" Text="{l:Tr 'Выключен'}" Foreground="{DynamicResource B.TextMuted}" />
                         </Border>
                     </StackPanel>
 
                     <!-- Установлен · Размер · Файлы · Автор -->
                     <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
                         <StackPanel Margin="0,0,32,0">
-                            <TextBlock Text="Установлен" Style="{StaticResource T.Muted}" />
+                            <TextBlock Text="{l:Tr 'Установлен'}" Style="{StaticResource T.Muted}" />
                             <TextBlock Text="{Binding InstalledText}" Style="{StaticResource T.Body}" Margin="0,6,0,0" />
                         </StackPanel>
                         <StackPanel Margin="0,0,32,0">
-                            <TextBlock Text="Размер" Style="{StaticResource T.Muted}" />
+                            <TextBlock Text="{l:Tr 'Размер'}" Style="{StaticResource T.Muted}" />
                             <TextBlock Text="{Binding SizeText}" Style="{StaticResource T.Body}" Margin="0,6,0,0" />
                         </StackPanel>
                         <StackPanel Margin="0,0,32,0">
-                            <TextBlock Text="Файлы" Style="{StaticResource T.Muted}" />
+                            <TextBlock Text="{l:Tr 'Файлы'}" Style="{StaticResource T.Muted}" />
                             <TextBlock Text="{Binding FilesSummary}" Style="{StaticResource T.Body}" Margin="0,6,0,0" />
                         </StackPanel>
                         <StackPanel Visibility="{Binding HasAuthor, Converter={StaticResource BoolToVisibility}}">
-                            <TextBlock Text="Автор" Style="{StaticResource T.Muted}" />
+                            <TextBlock Text="{l:Tr 'Автор'}" Style="{StaticResource T.Muted}" />
                             <TextBlock Text="{Binding Author}" Style="{StaticResource T.Body}" Margin="0,6,0,0" />
                         </StackPanel>
                     </StackPanel>
@@ -200,7 +201,7 @@
                         <TextBlock Text="{Binding LocationText}" Style="{StaticResource T.Secondary}" FontSize="11" TextTrimming="CharacterEllipsis" />
                     </StackPanel>
 
-                    <TextBlock Text="Читаю вещи из файлов…" Style="{StaticResource T.Muted}" Margin="0,18,0,0"
+                    <TextBlock Text="{l:Tr 'Читаю вещи из файлов…'}" Style="{StaticResource T.Muted}" Margin="0,18,0,0"
                                Visibility="{Binding IsLoadingItems, Converter={StaticResource BoolToVisibility}}" />
 
                     <!-- Вещи (1–3) -->
@@ -220,7 +221,7 @@
                                             <ContentPresenter Content="{Binding SwatchImages}" ContentTemplate="{StaticResource SwatchStrip}" Margin="0,10,0,0" />
                                         </StackPanel>
                                         <StackPanel Grid.Column="1" Margin="12,0,0,0">
-                                            <Button Style="{StaticResource Btn.Primary}" ctl:Btn.Icon="{StaticResource Icon.SlidersHorizontal}" Content="Настроить"
+                                            <Button Style="{StaticResource Btn.Primary}" ctl:Btn.Icon="{StaticResource Icon.SlidersHorizontal}" Content="{l:Tr 'Настроить'}"
                                                     Command="{Binding DataContext.EditItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                                     CommandParameter="{Binding}" />
                                             <TextBlock Text="{Binding MoreSwatchesText}" Style="{StaticResource T.Muted}" HorizontalAlignment="Right" Margin="0,28,0,0" />
@@ -252,10 +253,10 @@
                             </Grid.ColumnDefinitions>
                             <ctl:IconView Data="{StaticResource Icon.TriangleAlert}" Foreground="{DynamicResource B.Warning}" VerticalAlignment="Top" Margin="0,1,12,0" />
                             <StackPanel Grid.Column="1">
-                                <TextBlock Text="Есть проблемы" Style="{StaticResource T.Strong}" FontSize="12" />
+                                <TextBlock Text="{l:Tr 'Есть проблемы'}" Style="{StaticResource T.Strong}" FontSize="12" />
                                 <TextBlock Text="{Binding Mod.ProblemsText}" Style="{StaticResource T.Secondary}" TextWrapping="Wrap" Margin="0,4,0,0" />
                             </StackPanel>
-                            <Button Grid.Column="2" Style="{StaticResource Btn.Secondary}" Content="Показать дубликаты" VerticalAlignment="Center" Margin="12,0,0,0"
+                            <Button Grid.Column="2" Style="{StaticResource Btn.Secondary}" Content="{l:Tr 'Показать дубликаты'}" VerticalAlignment="Center" Margin="12,0,0,0"
                                     Command="{Binding DataContext.ShowDuplicatesCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                     Visibility="{Binding Mod.IsDuplicate, Converter={StaticResource BoolToVisibility}}" />
                         </Grid>
@@ -277,22 +278,22 @@
                 <StackPanel>
                     <Grid>
                         <Border Style="{StaticResource Tag}" Background="{DynamicResource B.AccentSubtle}" HorizontalAlignment="Left" Height="22">
-                            <TextBlock Style="{StaticResource TagText}" Text="Сборник" Foreground="{DynamicResource B.Accent}" FontSize="11" />
+                            <TextBlock Style="{StaticResource TagText}" Text="{l:Tr 'Сборник'}" Foreground="{DynamicResource B.Accent}" FontSize="11" />
                         </Border>
                         <CheckBox Style="{StaticResource Switch}" IsChecked="{Binding Mod.IsEnabled}" HorizontalAlignment="Right" />
                     </Grid>
                     <TextBlock Style="{StaticResource T.Secondary}" FontSize="13" TextWrapping="Wrap" LineHeight="19" Margin="0,14,0,0"
-                               Text="Один мод — целый гардероб. Настраивайте вещи по отдельности или вместе." />
+                               Text="{l:Tr 'Один мод — целый гардероб. Настраивайте вещи по отдельности или вместе.'}" />
                     <Border Height="1" Background="{DynamicResource B.Hover}" Margin="0,16" />
                     <StackPanel Visibility="{Binding HasAuthor, Converter={StaticResource BoolToVisibility}}" Margin="0,0,0,14">
-                        <TextBlock Text="Автор" Style="{StaticResource T.Muted}" FontSize="12" />
+                        <TextBlock Text="{l:Tr 'Автор'}" Style="{StaticResource T.Muted}" FontSize="12" />
                         <TextBlock Text="{Binding Author}" Style="{StaticResource T.Body}" FontSize="14" Margin="0,4,0,0" />
                     </StackPanel>
-                    <TextBlock Text="Установлен" Style="{StaticResource T.Muted}" FontSize="12" />
+                    <TextBlock Text="{l:Tr 'Установлен'}" Style="{StaticResource T.Muted}" FontSize="12" />
                     <TextBlock Text="{Binding InstalledText}" Style="{StaticResource T.Body}" FontSize="14" Margin="0,4,0,14" />
-                    <TextBlock Text="Размер" Style="{StaticResource T.Muted}" FontSize="12" />
+                    <TextBlock Text="{l:Tr 'Размер'}" Style="{StaticResource T.Muted}" FontSize="12" />
                     <TextBlock Text="{Binding SizeText}" Style="{StaticResource T.Body}" FontSize="14" Margin="0,4,0,14" />
-                    <TextBlock Text="Содержимое" Style="{StaticResource T.Muted}" FontSize="12" />
+                    <TextBlock Text="{l:Tr 'Содержимое'}" Style="{StaticResource T.Muted}" FontSize="12" />
                     <TextBlock Text="{Binding ContentText}" Style="{StaticResource T.Body}" FontSize="14" Margin="0,4,0,16" />
                     <Button Style="{StaticResource Btn.Primary}" Content="{Binding EditAllText}" HorizontalAlignment="Left" Height="36" FontSize="13"
                             Command="{Binding DataContext.EditAllItemsCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" />
@@ -311,7 +312,7 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <ctl:SearchBox Placeholder="Найти вещь по названию…" Height="36"
+                    <ctl:SearchBox Placeholder="{l:Tr 'Найти вещь по названию…'}" Height="36"
                                    Text="{Binding ItemSearch, UpdateSourceTrigger=PropertyChanged, Delay=120}" />
                     <TextBlock Grid.Column="1" Text="{Binding ItemsCountText}" Style="{StaticResource T.Secondary}" FontSize="13" VerticalAlignment="Center" Margin="14,0,0,0" />
                 </Grid>
@@ -352,7 +353,7 @@
                                                           MaxWidth="200" />
                                         <TextBlock Text="{Binding SwatchCountText}" Style="{StaticResource T.Muted}" HorizontalAlignment="Right" VerticalAlignment="Center" />
                                     </Grid>
-                                    <Button Style="{StaticResource Btn.Secondary}" Content="Настроить" HorizontalAlignment="Stretch" Height="34" FontSize="13"
+                                    <Button Style="{StaticResource Btn.Secondary}" Content="{l:Tr 'Настроить'}" HorizontalAlignment="Stretch" Height="34" FontSize="13"
                                             Command="{Binding DataContext.EditItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                             CommandParameter="{Binding}" />
                                 </StackPanel>
@@ -366,17 +367,17 @@
         <!-- Действия -->
         <Grid Grid.Row="2" Margin="0,16,0,0">
             <StackPanel Orientation="Horizontal">
-                <Button Style="{StaticResource Btn.Secondary}" ctl:Btn.Icon="{StaticResource Icon.FolderOpen}" Content="Показать в проводнике"
+                <Button Style="{StaticResource Btn.Secondary}" ctl:Btn.Icon="{StaticResource Icon.FolderOpen}" Content="{l:Tr 'Показать в проводнике'}"
                         Command="{Binding DataContext.OpenModLocationCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                         CommandParameter="{Binding Mod}" />
-                <Button Style="{StaticResource Btn.Secondary}" ctl:Btn.Icon="{StaticResource Icon.Pencil}" Content="Переименовать" Margin="8,0,0,0"
+                <Button Style="{StaticResource Btn.Secondary}" ctl:Btn.Icon="{StaticResource Icon.Pencil}" Content="{l:Tr 'Переименовать'}" Margin="8,0,0,0"
                         Command="{Binding DataContext.RenameModCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" />
-                <Button Style="{StaticResource Btn.Danger}" ctl:Btn.Icon="{StaticResource Icon.Trash2}" Content="Удалить" Margin="8,0,0,0"
+                <Button Style="{StaticResource Btn.Danger}" ctl:Btn.Icon="{StaticResource Icon.Trash2}" Content="{l:Tr 'Удалить'}" Margin="8,0,0,0"
                         Command="{Binding DataContext.DeleteFromCardCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" />
             </StackPanel>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Visibility="{Binding IsModified, Converter={StaticResource BoolToVisibility}}">
-                <TextBlock Text="Оригинал сохранён" Style="{StaticResource T.Muted}" VerticalAlignment="Center" Margin="0,0,12,0" />
-                <Button Style="{StaticResource Btn.Secondary}" ctl:Btn.Icon="{StaticResource Icon.RotateCcw}" Content="Вернуть оригинал"
+                <TextBlock Text="{l:Tr 'Оригинал сохранён'}" Style="{StaticResource T.Muted}" VerticalAlignment="Center" Margin="0,0,12,0" />
+                <Button Style="{StaticResource Btn.Secondary}" ctl:Btn.Icon="{StaticResource Icon.RotateCcw}" Content="{l:Tr 'Вернуть оригинал'}"
                         Command="{Binding DataContext.RestoreOriginalCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" />
             </StackPanel>
         </Grid>

@@ -27,8 +27,7 @@ public sealed class OverlayHost
     private static readonly IntPtr HWND_MESSAGE = new(-3);
 
     private readonly Func<CheckpointManager?> _manager;
-    private readonly string _logPath = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "SimsModManager", "overlay.log");
+    private readonly string _logPath = Core.AppIdentity.Roaming("overlay.log");
 
     private Dispatcher? _dispatcher;
     private OverlayWindow? _window;
@@ -124,7 +123,7 @@ public sealed class OverlayHost
         _window.ShowActivated = true;
 
         // Невидимое окно только для сообщений о нажатии клавиши
-        _messages = new HwndSource(new HwndSourceParameters("SimsModManagerOverlayHotkey") { ParentWindow = HWND_MESSAGE });
+        _messages = new HwndSource(new HwndSourceParameters("AncoraOverlayHotkey") { ParentWindow = HWND_MESSAGE });
         _messages.AddHook(WndProc);
 
         _hookProc = OnForegroundChanged;
@@ -221,7 +220,7 @@ public sealed class OverlayHost
         if (_registered || _messages is null) return;
 
         _registered = Native.RegisterHotKey(_messages.Handle, HotkeyId, _hotkey.NativeModifiers, _hotkey.VirtualKey);
-        SetProblem(_registered ? null : $"Клавиша {_hotkey} занята другой программой — выбери другую в настройках");
+        SetProblem(_registered ? null : L.F("Клавиша {0} занята другой программой — выбери другую в настройках", _hotkey));
     }
 
     private void Unregister()

@@ -12,8 +12,11 @@ public enum PackState
 
 /// <param name="Code">Код папки в игре: EP05, GP01, SP03…</param>
 /// <param name="Id">Номер дополнения внутри файлов (поле PackID у вещей).</param>
-public sealed record PackInfo(string Code, int Id, string Name)
+/// <param name="RuName">Название по-русски; на экран идёт <see cref="Name"/> — в языке интерфейса.</param>
+public sealed record PackInfo(string Code, int Id, string RuName)
 {
+    public string Name => L.T(RuName);
+
     public bool IsExpansion => Code.StartsWith("EP", StringComparison.Ordinal);
     public bool IsGamePack => Code.StartsWith("GP", StringComparison.Ordinal);
 }

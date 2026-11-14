@@ -1,6 +1,6 @@
-# Sims Mod Manager — мод-помощник.
+# Ancora (раньше Sims Mod Manager) — мод-помощник.
 #
-# Связывает игру с программой Sims Mod Manager через папку bridge рядом с этим файлом:
+# Связывает игру с программой Ancora через папку bridge рядом с этим файлом:
 #   status.json        — игра пишет раз в секунду: жива ли, где сейчас (меню / в игре), какое сохранение, пауза
 #   cmd-<id>.json      — программа кладёт команду
 #   res-<id>.json      — игра отвечает на команду
@@ -21,13 +21,13 @@ import sims4.commands
 from clock import ClockSpeedMode, GameSpeedChangeSource
 from sims4.commands import CommandType
 
-VERSION = 6
+VERSION = 9
 PAUSE_REASON = 'SimsModManager'
 POLL_SECONDS = 0.25
 
 
 def _find_bridge_folder():
-    """Папка bridge рядом с .ts4script (Mods/SimsModManager/bridge)."""
+    """Папка bridge рядом с .ts4script (Mods/Ancora/bridge)."""
     path = os.path.abspath(__file__)
     while True:
         parent = os.path.dirname(path)
@@ -162,11 +162,26 @@ def _save(on_done):
     persistence.save_using(save_gen)
 
 
-# ---------- выход в главное меню через окно игры ----------
+# ---------- выход в главное меню ----------
 #
-# Скрипты не могут сами выйти в главное меню, но у окон игры есть кнопки с «действием интерфейса».
-# Одно из них — TRANSITION_TO_MAIN_MENU_NO_SAVE: игра выходит в меню без сохранения (мы уже
-# сохранили её и сделали копию). Кнопку нажимает игрок — это и есть подтверждение отката.
+# Загрузить сохранение из скриптов нельзя, но можно попросить интерфейс игры выйти в главное меню.
+# У игры есть команда «отправить интерфейсу сообщение по имени» (distributor.ops.SendUIMessage) —
+# так она сама сообщает, например, InventorySellItemsComplete. Сообщение TransitionToMainMenu слушает
+# корневой слой интерфейса: игра уходит в меню без сохранения (мы уже сохранили её и сделали копию).
+# Это тот же путь, что у кнопки в окне ниже, только без окна и без клика.
+
+def _to_main_menu():
+    from distributor.ops import SendUIMessage
+    from distributor.system import Distributor
+    distributor = Distributor.instance()
+    if distributor is None or distributor.client is None:
+        raise RuntimeError('нет связи с интерфейсом игры')
+    distributor.add_op_with_no_owner(SendUIMessage('TransitionToMainMenu'))
+    _log('Откат: попросил игру выйти в главное меню')
+
+
+# Запасной путь — окно игры. У его кнопки есть «действие интерфейса» TRANSITION_TO_MAIN_MENU_NO_SAVE:
+# по нажатию интерфейс отправляет себе то же сообщение TransitionToMainMenu.
 
 def _show_menu_dialog(title, text, ok_text, cancel_text):
     from sims4.localization import LocalizationHelperTuning
@@ -200,6 +215,53 @@ def _show_menu_dialog(title, text, ok_text, cancel_text):
     dialog.show_dialog(on_response=on_response)
 
 
+# ---------- опыт: загрузка сохранения прямо из игры ----------
+#
+# «Продолжить» в главном меню берёт игру из памяти, а «Загрузить игру» читает файл с диска — его
+# интерфейс вызывает у игры службу LoadSaveSlot. Кнопка окна умеет вызвать службу игры по имени
+# (UiSendMessageArgs.CALL_GAME_SERVICE). Проверяем из консоли (smm.loadtest), примет ли игра такой вызов
+# не из главного меню, а прямо из участка.
+
+def _show_load_dialog(slot_id):
+    from protocolbuffers import Dialog_pb2
+    from sims4.localization import LocalizationHelperTuning
+    from ui.ui_dialog import UiDialogOkCancel, UiDialogResponse, ButtonType
+
+    def raw(value):
+        return lambda *_, **__: LocalizationHelperTuning.get_raw_text(value)
+
+    request = UiDialogResponse.UiDialogUiRequest.SEND_UI_MESSAGE
+
+    class _LoadSlotDialog(UiDialogOkCancel):
+        @property
+        def responses(self):
+            return (
+                UiDialogResponse(dialog_response_id=ButtonType.DIALOG_RESPONSE_OK, text=self.text_ok,
+                                 ui_request=request, ui_message_name='LoadSaveSlot'),
+                UiDialogResponse(dialog_response_id=ButtonType.DIALOG_RESPONSE_CANCEL, text=self.text_cancel,
+                                 ui_request=UiDialogResponse.UiDialogUiRequest.NO_REQUEST),
+            )
+
+        def build_msg(self, **kwargs):
+            msg = super().build_msg(**kwargs)
+            for choice in msg.choices:
+                if choice.ui_request == request:
+                    args = choice.ui_message_args
+                    args.action = Dialog_pb2.UiSendMessageArgs.CALL_GAME_SERVICE
+                    args.name = 'LoadSaveSlot'
+                    parameter = args.parameters.add()
+                    parameter.name = 'slot_id'
+                    parameter.value.raw_int = slot_id
+            return msg
+
+    dialog = _LoadSlotDialog.TunableFactory().default(
+        services.active_sim_info(), title=raw('Ancora'),
+        text=raw('Опыт: загрузить сохранение %s с диска прямо из игры?' % slot_id),
+        text_ok=raw('Загрузить'), text_cancel=raw('Отмена'))
+    dialog.show_dialog()
+    _log('Опыт: показал окно загрузки сохранения %s' % slot_id)
+
+
 def _run_cheat(line):
     client = _client()
     sims4.commands.execute(line, client.id if client is not None else None)
@@ -227,6 +289,9 @@ def _handle(command):
         _respond(command_id, True)
     elif name == 'save':
         _save(lambda ok, details: _respond(command_id, ok, details if ok else None, None if ok else str(details)))
+    elif name == 'to_menu':
+        _to_main_menu()
+        _respond(command_id, True)
     elif name == 'menu_dialog':
         _show_menu_dialog(command.get('title', ''), command.get('text', ''),
                           command.get('ok', 'OK'), command.get('cancel', 'Отмена'))
@@ -293,6 +358,19 @@ def _on_zone_ready():
         _log('Не удалось запустить опрос: %s' % e)
 
 
+def _on_leaving():
+    # Участок выгружается: выход в меню, переезд или смена семьи. Команды до новой загрузки не выполняются.
+    with _lock:
+        already = _state['state'] == 'leaving'
+        _state['state'] = 'leaving'
+    try:
+        _write_status()
+        if not already:
+            _log('Участок выгружается')
+    except Exception:
+        pass
+
+
 def _on_main_menu():
     global _alarm
     _alarm = None
@@ -301,6 +379,7 @@ def _on_main_menu():
         _state['paused_by_us'] = False
     try:
         _write_status()
+        _log('Игра в главном меню')
     except Exception:
         pass
 
@@ -328,6 +407,36 @@ def _install():
         _wrap(zone.Zone, 'on_loading_screen_animation_finished', _on_zone_ready)
     except Exception as e:
         _log('Не удалось подключиться к загрузке участка: %s' % e)
+    try:
+        import zone
+        original_teardown = zone.Zone.on_teardown
+
+        def on_teardown(self, *args, **kwargs):
+            try:
+                _on_leaving()
+            except Exception as e:
+                _log('Ошибка в on_teardown: %s' % e)
+            return original_teardown(self, *args, **kwargs)
+
+        zone.Zone.on_teardown = on_teardown
+    except Exception as e:
+        _log('Не удалось подключиться к выгрузке участка: %s' % e)
+    try:
+        from services.persistence_service import PersistenceService
+        original_scratch = PersistenceService.save_to_scratch_slot_gen
+
+        def save_to_scratch_slot_gen(self, *args, **kwargs):
+            # Игра сохраняет рабочую копию перед тем, как выгрузить участок, — выход уже начался
+            try:
+                _on_leaving()
+            except Exception as e:
+                _log('Ошибка в save_to_scratch_slot_gen: %s' % e)
+            result = yield from original_scratch(self, *args, **kwargs)
+            return result
+
+        PersistenceService.save_to_scratch_slot_gen = save_to_scratch_slot_gen
+    except Exception as e:
+        _log('Не удалось подключиться к выходу из участка: %s' % e)
     try:
         from services.persistence_service import PersistenceService
         original_build = PersistenceService.build_caches
@@ -364,24 +473,35 @@ _install()
 
 # ---------- ручная проверка из консоли ----------
 
+@sims4.commands.Command('smm.loadtest', command_type=CommandType.Live)
+def _cmd_loadtest(slot_id: int = 2, _connection=None):
+    out = sims4.commands.CheatOutput(_connection)
+    try:
+        _show_load_dialog(slot_id)
+        out('SimsModManager: окно показано')
+    except Exception as e:
+        _log('Опыт с загрузкой не удался: %s' % e)
+        out('SimsModManager: ошибка — %s' % e)
+
+
 @sims4.commands.Command('smm.status', command_type=CommandType.Live)
 def _cmd_status(_connection=None):
     out = sims4.commands.CheatOutput(_connection)
     _refresh_slot()
-    out('Sims Mod Manager: помощник %s, состояние %s, сохранение %s (%s), пауза %s, связь %s' % (
+    out('Ancora: помощник %s, состояние %s, сохранение %s (%s), пауза %s, связь %s' % (
         VERSION, _state['state'], _state['slot_name'], _state['slot_id'], _is_paused(), BRIDGE))
 
 
 @sims4.commands.Command('smm.start', command_type=CommandType.Live)
 def _cmd_start(_connection=None):
     _on_zone_ready()
-    sims4.commands.CheatOutput(_connection)('Sims Mod Manager: связь запущена')
+    sims4.commands.CheatOutput(_connection)('Ancora: связь запущена')
 
 
 @sims4.commands.Command('smm.save', command_type=CommandType.Live)
 def _cmd_save(_connection=None):
     out = sims4.commands.CheatOutput(_connection)
-    _save(lambda ok, details: out('Sims Mod Manager: сохранение %s — %s' % ('готово' if ok else 'не удалось', details)))
+    _save(lambda ok, details: out('Ancora: сохранение %s — %s' % ('готово' if ok else 'не удалось', details)))
 
 
 @sims4.commands.Command('smm.pause', command_type=CommandType.Live)

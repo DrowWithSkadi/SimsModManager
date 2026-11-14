@@ -42,11 +42,24 @@ public sealed class HelperBridge(string bridgeFolder)
 
     public HelperStatus ReadStatus(DateTime? nowUtc = null)
     {
+        // Помощник раз в секунду заменяет файл; если попали ровно в этот миг — читаем ещё раз,
+        // а не объявляем, что игры нет
+        for (var attempt = 0; ; attempt++)
+        {
+            var status = TryReadStatus(nowUtc, out var busy);
+            if (!busy || attempt >= 2) return status;
+            Thread.Sleep(20);
+        }
+    }
+
+    private HelperStatus TryReadStatus(DateTime? nowUtc, out bool busy)
+    {
+        busy = false;
         var path = Path.Combine(Folder, "status.json");
         try
         {
             if (!File.Exists(path)) return HelperStatus.Offline;
-            var json = JsonNode.Parse(File.ReadAllText(path));
+            var json = JsonNode.Parse(ReadShared(path));
             if (json is null) return HelperStatus.Offline;
 
             var updated = DateTimeOffset.FromUnixTimeMilliseconds((long)(json["time"]!.GetValue<double>() * 1000)).UtcDateTime;
@@ -71,7 +84,8 @@ public sealed class HelperBridge(string bridgeFolder)
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException
                                        or InvalidOperationException or FormatException or NullReferenceException)
         {
-            // Файл как раз перезаписывается — в следующий раз прочитаем
+            // Файл как раз перезаписывается
+            busy = true;
             return HelperStatus.Offline;
         }
     }
@@ -112,11 +126,11 @@ public sealed class HelperBridge(string bridgeFolder)
                 }
                 await Task.Delay(50, cancellation);
             }
-            return HelperResponse.Fail("Игра не ответила");
+            return HelperResponse.Fail(L.T("Игра не ответила"));
         }
         catch (OperationCanceledException)
         {
-            return HelperResponse.Fail("Отменено");
+            return HelperResponse.Fail(L.T("Отменено"));
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
@@ -129,18 +143,26 @@ public sealed class HelperBridge(string bridgeFolder)
         }
     }
 
+    /// <summary>Читает файл, не мешая помощнику в ту же секунду заменить или удалить его.</summary>
+    private static string ReadShared(string path)
+    {
+        using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+        using var reader = new StreamReader(stream);
+        return reader.ReadToEnd();
+    }
+
     private static HelperResponse? TryReadResponse(string path)
     {
         try
         {
-            var json = JsonNode.Parse(File.ReadAllText(path));
+            var json = JsonNode.Parse(ReadShared(path));
             if (json is null) return null;
             return new HelperResponse(
                 json["ok"]?.GetValue<bool>() ?? false,
                 json["result"]?.DeepClone(),
                 (string?)json["error"]);
         }
-        catch (Exception ex) when (ex is IOException or JsonException or InvalidOperationException)
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException or InvalidOperationException)
         {
             return null;
         }

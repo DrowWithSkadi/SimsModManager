@@ -50,20 +50,25 @@ jobs:
           VPK=$(grep -o '"Velopack/[0-9.]*"' src/SimsModManager.App/obj/project.assets.json | head -1 | cut -d/ -f2 | tr -d '"')
           echo "Velopack $VPK"
           dotnet tool install -g vpk --version "$VPK"
+          # packId остаётся прежним (SimsModManager): по нему уже установленные копии находят обновления
+          # и ставятся в ту же папку. Имя программы, exe и ярлыков — Ancora.
           vpk pack \
             --packId SimsModManager \
             --packVersion "$APP_VERSION" \
             --packDir publish \
-            --mainExe SimsModManager.exe \
-            --packTitle "Sims Mod Manager" \
+            --mainExe Ancora.exe \
+            --packTitle "Ancora" \
             --packAuthors "DrowWithSkadi" \
             --icon src/SimsModManager.App/Assets/app.ico \
             --outputDir releases
+          # Файлы для скачивания — с новым именем; пакеты обновлений (nupkg, releases.*.json) не трогаем
+          mv releases/SimsModManager-win-Setup.exe releases/Ancora-win-Setup.exe
+          mv releases/SimsModManager-win-Portable.zip releases/Ancora-win-Portable.zip
           ls -la releases
 
       - uses: actions/upload-artifact@v5
         with:
-          name: SimsModManager
+          name: Ancora
           path: releases/*
 
       # Каждый коммит в main обновляет «тестовую сборку» на странице Releases
@@ -77,7 +82,7 @@ jobs:
             --prerelease \
             --target "$GITHUB_SHA" \
             --title "Тестовая сборка $APP_VERSION" \
-            --notes "Скачайте **SimsModManager-win-Setup.exe** и запустите — программа установится, появится в «Пуске» и на рабочем столе и сама будет предлагать обновления (Настройки → Проверить обновления). Без установки: **SimsModManager-win-Portable.zip**.
+            --notes "Скачайте **Ancora-win-Setup.exe** и запустите — программа установится, появится в «Пуске» и на рабочем столе и сама будет предлагать обновления (Настройки → Проверить обновления). Без установки: **Ancora-win-Portable.zip**.
 
           Сборка коммита $(git log -1 --format=%h): $(git log -1 --format=%s)"
 

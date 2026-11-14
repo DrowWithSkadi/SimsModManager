@@ -67,7 +67,7 @@ public sealed class ModLibrary(SimsPaths paths, IFileDeleter? deleter = null)
             var name = System.IO.Path.GetFileName(dir);
             if (name.StartsWith('.')) continue;
             // Мод-помощник менеджера в списке не показываем — им управляет сама программа
-            if (string.Equals(name, Helper.HelperMod.FolderName, StringComparison.OrdinalIgnoreCase)) continue;
+            if (Helper.HelperMod.IsHelperFolderName(name)) continue;
 
             List<string> files;
             try
@@ -154,7 +154,7 @@ public sealed class ModLibrary(SimsPaths paths, IFileDeleter? deleter = null)
         var tooDeep = files.Where(ModFiles.IsScript)
             .Any(f => !string.Equals(System.IO.Path.GetDirectoryName(f), modDir, StringComparison.OrdinalIgnoreCase));
         if (tooDeep)
-            problems.Add("Скрипт лежит слишком глубоко в подпапках, игра его не загрузит. Переустановите мод через менеджер.");
+            problems.Add(L.T("Скрипт лежит слишком глубоко в подпапках, игра его не загрузит. Переустановите мод через менеджер."));
         return problems;
     }
 
@@ -169,7 +169,7 @@ public sealed class ModLibrary(SimsPaths paths, IFileDeleter? deleter = null)
 
         if (Directory.Exists(target) || File.Exists(target))
             throw new InvalidOperationException(
-                $"Не получилось: в папке {(enabled ? "Mods" : "выключенных модов")} уже есть «{System.IO.Path.GetFileName(mod.Path)}».");
+                L.F("Не получилось: в папке {0} уже есть «{1}».", (enabled ? "Mods" : L.T("выключенных модов")), System.IO.Path.GetFileName(mod.Path)));
 
         if (mod.IsFolder) Directory.Move(mod.Path, target);
         else File.Move(mod.Path, target);
@@ -226,7 +226,7 @@ public sealed class ModLibrary(SimsPaths paths, IFileDeleter? deleter = null)
         {
             var manifest = TrayManifest.Load(paths);
             var entry = manifest.Entries.FirstOrDefault(e => e.Id == mod.TrayId)
-                        ?? throw new InvalidOperationException("Запись не найдена — обновите список.");
+                        ?? throw new InvalidOperationException(L.T("Запись не найдена — обновите список."));
             entry.Name = clean;
             manifest.Save(paths);
             return mod with { Name = clean };
@@ -238,7 +238,7 @@ public sealed class ModLibrary(SimsPaths paths, IFileDeleter? deleter = null)
             : System.IO.Path.Combine(folder, clean + System.IO.Path.GetExtension(mod.Path));
         var sameIgnoringCase = string.Equals(target, mod.Path, StringComparison.OrdinalIgnoreCase);
         if (!sameIgnoringCase && (Directory.Exists(target) || File.Exists(target)))
-            throw new InvalidOperationException($"Мод с именем «{clean}» уже есть.");
+            throw new InvalidOperationException(L.F("Мод с именем «{0}» уже есть.", clean));
 
         if (mod.IsFolder)
         {
@@ -258,14 +258,14 @@ public sealed class ModLibrary(SimsPaths paths, IFileDeleter? deleter = null)
         return mod with { Name = clean, Path = target, Files = [target] };
     }
 
-    /// <summary>Выключенный участок/семья переезжает в «Tray (выключенные)» — игра его не видит.</summary>
+    /// <summary>Выключенный участок/семья переезжает в «Tray (выключенные)» / «Tray (disabled)» — игра его не видит.</summary>
     private ModItem SetTrayEnabled(ModItem mod, bool enabled)
     {
         paths.EnsureTrayCreated();
         var targetRoot = enabled ? paths.Tray : paths.DisabledTray;
         var conflict = mod.Files.FirstOrDefault(f => File.Exists(System.IO.Path.Combine(targetRoot, System.IO.Path.GetFileName(f))));
         if (conflict is not null)
-            throw new InvalidOperationException($"В папке {(enabled ? "Tray" : "выключенных")} уже есть файл {System.IO.Path.GetFileName(conflict)}.");
+            throw new InvalidOperationException(L.F("В папке {0} уже есть файл {1}.", (enabled ? "Tray" : L.T("выключенных")), System.IO.Path.GetFileName(conflict)));
 
         var moved = new List<string>();
         foreach (var file in mod.Files)
@@ -345,7 +345,7 @@ public sealed class ModLibrary(SimsPaths paths, IFileDeleter? deleter = null)
         }
         var original = trashed.Mod.Path;
         if (Directory.Exists(original) || File.Exists(original))
-            throw new InvalidOperationException($"Не получилось вернуть: «{trashed.Mod.Name}» уже снова есть в папке.");
+            throw new InvalidOperationException(L.F("Не получилось вернуть: «{0}» уже снова есть в папке.", trashed.Mod.Name));
         Directory.CreateDirectory(System.IO.Path.GetDirectoryName(original)!);
         if (trashed.Mod.IsFolder) Directory.Move(trashed.TrashPath, original);
         else File.Move(trashed.TrashPath, original);
@@ -361,7 +361,7 @@ public sealed class ModLibrary(SimsPaths paths, IFileDeleter? deleter = null)
             var from = System.IO.Path.Combine(trashed.TrashPath, name);
             if (!File.Exists(from)) continue;
             if (File.Exists(file))
-                throw new InvalidOperationException($"Не получилось вернуть: файл {name} уже снова есть в папке.");
+                throw new InvalidOperationException(L.F("Не получилось вернуть: файл {0} уже снова есть в папке.", name));
             File.Move(from, file);
         }
         if (trashed.TrayEntry is not null)
@@ -453,7 +453,7 @@ public sealed class ModLibrary(SimsPaths paths, IFileDeleter? deleter = null)
             {
                 var others = string.Join(", ", owners.Where(o => o != mod).Select(o => $"«{o.Name}»"));
                 if (!result.TryGetValue(mod.Path, out var msgs)) result[mod.Path] = msgs = [];
-                msgs.Add($"Файл {name} есть также в {others}.");
+                msgs.Add(L.F("Файл {0} есть также в {1}.", name, others));
             }
         }
         return result.ToDictionary(kv => kv.Key, kv => (IReadOnlyList<string>)kv.Value, StringComparer.OrdinalIgnoreCase);
