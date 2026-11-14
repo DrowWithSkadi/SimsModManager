@@ -4,7 +4,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:ctl="clr-namespace:SimsModManager.App.Controls"
              Height="44" MinWidth="168">
-    <!-- Плавающая кнопка «Играть»: ждёт (тёмная, рамка в градиенте сакуры, живой цветок), готовит игру (шаги и прогресс), игра идёт (дышащая точка).
+    <!-- Плавающая кнопка «Играть»: ждёт (молочная, цветная тень, живой цветок), готовит игру (шаги и прогресс), игра идёт (дышащая точка).
          Состояния переключаются в PlayButton.xaml.cs по свойствам IsLaunching и IsRunning. -->
     <UserControl.Resources>
         <Style x:Key="PlayPart" TargetType="Button">
@@ -30,7 +30,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Bg" Property="Background" Value="#14FFFFFF" />
+                                <Setter TargetName="Bg" Property="Background" Value="#1417181B" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -49,7 +49,7 @@
 
         <!-- ═══ Ждёт ═══ -->
         <Grid x:Name="IdleState">
-            <Border x:Name="Pill" CornerRadius="22" Background="{DynamicResource B.PlayFace}" BorderBrush="{DynamicResource B.Play}" BorderThickness="1.5">
+            <Border x:Name="Pill" CornerRadius="22" Background="{DynamicResource B.PlayFace}">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
@@ -68,7 +68,7 @@
                         </StackPanel>
                     </Button>
 
-                    <Border Grid.Column="1" Width="1" Margin="0,12" HorizontalAlignment="Left" Background="#26FFFFFF" />
+                    <Border Grid.Column="1" Width="1" Margin="0,12" HorizontalAlignment="Left" Background="#2617181B" />
                     <Button x:Name="MorePart" Grid.Column="1" Width="38" Style="{StaticResource MorePart}" Click="OnMore" ToolTip="{l:Tr 'Другие варианты запуска'}">
                         <Path Data="M0,0 L5,5 L10,0" Stroke="{DynamicResource B.OnPlay}" StrokeThickness="2" StrokeStartLineCap="Round" StrokeEndLineCap="Round"
                               StrokeLineJoin="Round" Margin="0,0,3,0" />
@@ -76,14 +76,14 @@
                 </Grid>
             </Border>
             <!-- Наведение: вся кнопка чуть светлеет (скругление как у кнопки) -->
-            <Border x:Name="HoverTint" CornerRadius="22" Background="#14FFFFFF" Opacity="0" IsHitTestVisible="False" />
+            <Border x:Name="HoverTint" CornerRadius="22" Background="#59FFFFFF" Opacity="0" IsHitTestVisible="False" />
             <!-- Блик пробегает по кнопке раз в несколько секунд -->
             <Border CornerRadius="22" IsHitTestVisible="False">
                 <Border.Background>
                     <LinearGradientBrush StartPoint="0,0.3" EndPoint="1,0.7">
                         <LinearGradientBrush.RelativeTransform><TranslateTransform x:Name="ShineMove" X="-1.2" /></LinearGradientBrush.RelativeTransform>
                         <GradientStop Color="#00FFFFFF" Offset="0.35" />
-                        <GradientStop Color="#26FFFFFF" Offset="0.5" />
+                        <GradientStop Color="#99FFFFFF" Offset="0.5" />
                         <GradientStop Color="#00FFFFFF" Offset="0.65" />
                     </LinearGradientBrush>
                 </Border.Background>
@@ -104,7 +104,7 @@
         </Border>
 
         <!-- ═══ Игра идёт ═══ -->
-        <Border x:Name="RunState" CornerRadius="22" Background="{DynamicResource B.PlayRun}" BorderBrush="#3A3F55" BorderThickness="1.5"
+        <Border x:Name="RunState" CornerRadius="22" Background="{DynamicResource B.PlayRun}" BorderBrush="#3A3B42" BorderThickness="1.5"
                 Visibility="Collapsed" Opacity="0" ToolTip="{l:Tr 'Игра запущена'}">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                 <Grid Width="20" Height="20">

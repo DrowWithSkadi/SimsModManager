@@ -63,14 +63,14 @@
                             <Border x:Name="Glow" CornerRadius="14" Background="{DynamicResource B.Play}" Margin="4,6,4,0" Opacity="0.3">
                                 <Border.Effect><BlurEffect Radius="16" /></Border.Effect>
                             </Border>
-                            <Border x:Name="Face" CornerRadius="14" Background="{DynamicResource B.PlayFace}" BorderBrush="{DynamicResource B.Play}" BorderThickness="1.5" />
+                            <Border x:Name="Face" CornerRadius="14" Background="{DynamicResource B.PlayFace}" BorderBrush="Transparent" BorderThickness="1.5" />
                             <!-- Блик -->
                             <Border CornerRadius="14" IsHitTestVisible="False">
                                 <Border.Background>
                                     <LinearGradientBrush StartPoint="0,0.2" EndPoint="1,0.8">
                                         <LinearGradientBrush.RelativeTransform><TranslateTransform x:Name="MiniShine" X="-1.2" /></LinearGradientBrush.RelativeTransform>
                                         <GradientStop Color="#00FFFFFF" Offset="0.3" />
-                                        <GradientStop Color="#26FFFFFF" Offset="0.5" />
+                                        <GradientStop Color="#99FFFFFF" Offset="0.5" />
                                         <GradientStop Color="#00FFFFFF" Offset="0.7" />
                                     </LinearGradientBrush>
                                 </Border.Background>
@@ -82,7 +82,7 @@
                                   HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,7,8,0" />
                             <!-- Готовит игру -->
                             <Grid x:Name="Busy" Width="20" Height="20" Visibility="Collapsed">
-                                <Ellipse Stroke="#3A3F55" StrokeThickness="3" />
+                                <Ellipse Stroke="#3A3B42" StrokeThickness="3" />
                                 <Path Data="M10,1.5 A8.5,8.5 0 0 1 18.5,10" Stroke="{DynamicResource B.Accent}" StrokeThickness="3" StrokeStartLineCap="Round"
                                       StrokeEndLineCap="Round" RenderTransformOrigin="0.5,0.5">
                                     <Path.RenderTransform><RotateTransform x:Name="MiniSpinner" /></Path.RenderTransform>
@@ -109,7 +109,7 @@
                             </DataTrigger>
                             <DataTrigger Binding="{Binding IsGameRunning}" Value="True">
                                 <Setter TargetName="Face" Property="Background" Value="{DynamicResource B.PlayRun}" />
-                                <Setter TargetName="Face" Property="BorderBrush" Value="#3A3F55" />
+                                <Setter TargetName="Face" Property="BorderBrush" Value="#3A3B42" />
                                 <Setter TargetName="Glow" Property="Opacity" Value="0" />
                                 <Setter TargetName="Triangle" Property="Visibility" Value="Collapsed" />
                                 <Setter TargetName="Sparkle" Property="Visibility" Value="Collapsed" />
