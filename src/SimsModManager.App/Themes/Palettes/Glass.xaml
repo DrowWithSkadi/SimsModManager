@@ -1,23 +1,23 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <!-- Палитра «Стекло»: полупрозрачные слои поверх системного размытия Windows 11, акцент сиреневый. Все цвета программы берутся отсюда через DynamicResource, поэтому тема меняется на лету. -->
-    <SolidColorBrush x:Key="B.Window" Color="#8C0E1016" />
+    <!-- Палитра «Стекло»: полупрозрачные слои поверх системного размытия Windows 11, акцент почти белый. Все цвета программы берутся отсюда через DynamicResource, поэтому тема меняется на лету. -->
+    <SolidColorBrush x:Key="B.Window" Color="#8C0F1012" />
     <SolidColorBrush x:Key="B.TitleBar" Color="#00000000" />
     <SolidColorBrush x:Key="B.StatusBar" Color="#2E000000" />
     <SolidColorBrush x:Key="B.Background" Color="#2E000000" />
     <SolidColorBrush x:Key="B.Surface" Color="#4D000000" />
-    <SolidColorBrush x:Key="B.Popup" Color="#F21A1D28" />
+    <SolidColorBrush x:Key="B.Popup" Color="#F21C1D21" />
     <SolidColorBrush x:Key="B.Control" Color="#47000000" />
     <SolidColorBrush x:Key="B.Hover" Color="#1AFFFFFF" />
     <SolidColorBrush x:Key="B.Pressed" Color="#29FFFFFF" />
     <SolidColorBrush x:Key="B.Border" Color="#1FFFFFFF" />
     <SolidColorBrush x:Key="B.BorderHover" Color="#3DFFFFFF" />
-    <SolidColorBrush x:Key="B.Text" Color="#F6F6FA" />
-    <SolidColorBrush x:Key="B.TextSecondary" Color="#C4C6D4" />
-    <SolidColorBrush x:Key="B.TextMuted" Color="#8F92A6" />
-    <SolidColorBrush x:Key="B.Accent" Color="#B6AAFF" />
-    <SolidColorBrush x:Key="B.AccentSubtle" Color="#2EA99CFF" />
-    <SolidColorBrush x:Key="B.OnAccent" Color="#15112B" />
+    <SolidColorBrush x:Key="B.Text" Color="#F6F6F8" />
+    <SolidColorBrush x:Key="B.TextSecondary" Color="#C6C6CC" />
+    <SolidColorBrush x:Key="B.TextMuted" Color="#909199" />
+    <SolidColorBrush x:Key="B.Accent" Color="#F0F0F3" />
+    <SolidColorBrush x:Key="B.AccentSubtle" Color="#24FFFFFF" />
+    <SolidColorBrush x:Key="B.OnAccent" Color="#17181B" />
     <SolidColorBrush x:Key="B.Error" Color="#F5A3A3" />
     <SolidColorBrush x:Key="B.ErrorSubtle" Color="#33F18B8B" />
     <SolidColorBrush x:Key="B.ErrorBorder" Color="#66F18B8B" />
@@ -26,25 +26,26 @@
     <SolidColorBrush x:Key="B.WarningSubtle" Color="#2EE7BE78" />
     <SolidColorBrush x:Key="B.WarningBorder" Color="#66E7BE78" />
     <SolidColorBrush x:Key="B.Overlay" Color="#A6000000" />
-    <SolidColorBrush x:Key="B.DropOverlay" Color="#D90C0E14" />
-    <SolidColorBrush x:Key="B.DropFill" Color="#14A99CFF" />
+    <SolidColorBrush x:Key="B.DropOverlay" Color="#D90D0E10" />
+    <SolidColorBrush x:Key="B.DropFill" Color="#14FFFFFF" />
     <SolidColorBrush x:Key="B.HoverOverlay" Color="#FFFFFF" />
-    <SolidColorBrush x:Key="B.SelectionBar" Color="#66141225" />
-    <SolidColorBrush x:Key="B.SuccessTag" Color="#3377E1C7" />
+    <SolidColorBrush x:Key="B.SelectionBar" Color="#33FFFFFF" />
+    <SolidColorBrush x:Key="B.SuccessTag" Color="#335FBFA6" />
     <SolidColorBrush x:Key="B.Thumb" Color="#33FFFFFF" />
     <SolidColorBrush x:Key="B.ThumbHover" Color="#59FFFFFF" />
     <SolidColorBrush x:Key="B.ThumbDrag" Color="#80FFFFFF" />
-    <!-- Боковая панель — тёмная карточка в любой теме; Success — «включено, всё хорошо» -->
+    <!-- Боковая панель — тёмная карточка в любой теме; кнопка «Играть» всегда тёмная -->
     <SolidColorBrush x:Key="B.Success" Color="#82EACF" />
-    <SolidColorBrush x:Key="B.Side" Color="#B31B1E2B" />
+    <SolidColorBrush x:Key="B.Side" Color="#B31C1D21" />
     <SolidColorBrush x:Key="B.SideBorder" Color="#1FFFFFFF" />
-    <SolidColorBrush x:Key="B.SideText" Color="#EEF0F7" />
-    <SolidColorBrush x:Key="B.SideMuted" Color="#9A9FB6" />
-    <SolidColorBrush x:Key="B.SideSelected" Color="#14FFFFFF" />
-    <SolidColorBrush x:Key="B.SideAccent" Color="#C3B9FF" />
-    <SolidColorBrush x:Key="B.OnPlay" Color="#17142B" />
-    <SolidColorBrush x:Key="B.PlayRun" Color="#CC1B1E2B" />
-    <!-- Кнопка «Играть» — градиент цветка сакуры: мятный → голубой → сиреневый → персиковый -->
+    <SolidColorBrush x:Key="B.SideText" Color="#F2F2F4" />
+    <SolidColorBrush x:Key="B.SideMuted" Color="#9C9DA5" />
+    <SolidColorBrush x:Key="B.SideSelected" Color="#17FFFFFF" />
+    <SolidColorBrush x:Key="B.SideAccent" Color="#F6F6F8" />
+    <SolidColorBrush x:Key="B.PlayFace" Color="#E6202126" />
+    <SolidColorBrush x:Key="B.OnPlay" Color="#F2F2F4" />
+    <SolidColorBrush x:Key="B.PlayRun" Color="#CC202126" />
+    <!-- Рамка кнопки «Играть» — градиент цветка сакуры: мятный → голубой → сиреневый → персиковый. Сама кнопка тёмная (B.PlayFace) -->
     <LinearGradientBrush x:Key="B.Play" StartPoint="0,0.5" EndPoint="1,0.5">
         <GradientStop Color="#77E1C7" Offset="0" />
         <GradientStop Color="#8CC8FF" Offset="0.35" />

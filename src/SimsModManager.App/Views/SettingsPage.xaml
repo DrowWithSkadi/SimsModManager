@@ -197,11 +197,11 @@
                                              IsChecked="{Binding Theme, Converter={StaticResource Equals}, ConverterParameter=Dark, Mode=OneWay}"
                                              Command="{Binding SetThemeCommand}" CommandParameter="Dark">
                                     <RadioButton.Tag>
-                                        <Border Background="#0E1016" CornerRadius="4" Padding="5">
+                                        <Border Background="#0F1012" CornerRadius="4" Padding="5">
                                             <StackPanel>
-                                                <Border Height="4" Width="26" Background="#B4B8CC" CornerRadius="1" HorizontalAlignment="Left" />
-                                                <Border Height="10" Background="#1D2130" CornerRadius="2" Margin="0,4,0,0" />
-                                                <Border Height="6" Width="18" Background="#A99CFF" CornerRadius="1" HorizontalAlignment="Left" Margin="0,4,0,0" />
+                                                <Border Height="4" Width="26" Background="#B3B4BA" CornerRadius="1" HorizontalAlignment="Left" />
+                                                <Border Height="10" Background="#1E1F23" CornerRadius="2" Margin="0,4,0,0" />
+                                                <Border Height="6" Width="18" Background="#E6E6EA" CornerRadius="1" HorizontalAlignment="Left" Margin="0,4,0,0" />
                                             </StackPanel>
                                         </Border>
                                     </RadioButton.Tag>
@@ -211,11 +211,11 @@
                                              IsChecked="{Binding Theme, Converter={StaticResource Equals}, ConverterParameter=Light, Mode=OneWay}"
                                              Command="{Binding SetThemeCommand}" CommandParameter="Light">
                                     <RadioButton.Tag>
-                                        <Border Background="#F3F4F8" CornerRadius="4" Padding="5">
+                                        <Border Background="#F4F4F6" CornerRadius="4" Padding="5">
                                             <StackPanel>
-                                                <Border Height="4" Width="26" Background="#4E5366" CornerRadius="1" HorizontalAlignment="Left" />
-                                                <Border Height="10" Background="#FFFFFF" BorderBrush="#E1E4EE" BorderThickness="1" CornerRadius="2" Margin="0,4,0,0" />
-                                                <Border Height="6" Width="18" Background="#6C5CE7" CornerRadius="1" HorizontalAlignment="Left" Margin="0,4,0,0" />
+                                                <Border Height="4" Width="26" Background="#50525A" CornerRadius="1" HorizontalAlignment="Left" />
+                                                <Border Height="10" Background="#FFFFFF" BorderBrush="#E2E2E7" BorderThickness="1" CornerRadius="2" Margin="0,4,0,0" />
+                                                <Border Height="6" Width="18" Background="#1B1C20" CornerRadius="1" HorizontalAlignment="Left" Margin="0,4,0,0" />
                                             </StackPanel>
                                         </Border>
                                     </RadioButton.Tag>
@@ -237,7 +237,7 @@
                                             <StackPanel>
                                                 <Border Height="4" Width="26" Background="#CCFFFFFF" CornerRadius="1" HorizontalAlignment="Left" />
                                                 <Border Height="10" Background="#26FFFFFF" BorderBrush="#40FFFFFF" BorderThickness="1" CornerRadius="2" Margin="0,4,0,0" />
-                                                <Border Height="6" Width="18" Background="#B6AAFF" CornerRadius="1" HorizontalAlignment="Left" Margin="0,4,0,0" />
+                                                <Border Height="6" Width="18" Background="#F0F0F3" CornerRadius="1" HorizontalAlignment="Left" Margin="0,4,0,0" />
                                             </StackPanel>
                                         </Border>
                                     </RadioButton.Tag>
