@@ -56,7 +56,7 @@ def faq(items):
 
 
 RU = {
-    "lang": "ru", "root": "", "og": "og.jpg", "pcPath": "", "ruHref": "./", "enHref": "en/", "isRu": "true", "isEn": "false",
+    "lang": "ru", "root": "", "shots": "img/ru/", "og": "og.jpg", "pcPath": "", "ruHref": "./", "enHref": "en/", "isRu": "true", "isEn": "false",
     "meta.title": "Ancora — клиент для The Sims 4",
     "meta.description": "Бесплатный клиент для The Sims 4: ставит моды из архивов, находит виновника вылета и откатывает сохранения прямо из игры.",
     "nav.label": "Разделы", "nav.ingame": "В игре", "nav.features": "Отличия", "nav.tune": "Настройки", "nav.faq": "Вопросы", "nav.download": "Скачать",
@@ -73,7 +73,7 @@ RU = {
     "mess.h2": "Твоя папка Mods, но без хаоса",
     "mess.p": "Сотни файлов с непонятными именами, дубли, старые версии и архивы, которые забыли распаковать. Потяни ползунок и сравни.",
     "mess.slider": "Сравнение: папка Mods в проводнике и библиотека в программе",
-    "mess.afterAlt": "Та же папка Mods в Ancora: карточки с превью, типы и переключатели",
+    "mess.afterAlt": "Та же папка Mods в Ancora: список модов с типами и переключателями, проблемы отмечены",
     "mess.path": "Документы › Electronic Arts › The Sims 4 › Mods",
     "mess.colName": "Имя", "mess.colDate": "Дата изменения", "mess.colType": "Тип", "mess.colSize": "Размер",
     "mess.before": "Проводник", "mess.after": "Ancora",
@@ -124,7 +124,7 @@ RU = {
 }
 
 EN = {
-    "lang": "en", "root": "../", "og": "og-en.jpg", "pcPath": "en/", "ruHref": "../", "enHref": "./", "isRu": "false", "isEn": "true",
+    "lang": "en", "root": "../", "shots": "img/en/", "og": "og-en.jpg", "pcPath": "en/", "ruHref": "../", "enHref": "./", "isRu": "false", "isEn": "true",
     "meta.title": "Ancora — a client for The Sims 4",
     "meta.description": "A free client for The Sims 4: installs mods from archives, finds the mod that crashed your game and rolls back saves right from inside the game.",
     "nav.label": "Sections", "nav.ingame": "In game", "nav.features": "Why it's different", "nav.tune": "Settings", "nav.faq": "FAQ", "nav.download": "Download",
@@ -141,7 +141,7 @@ EN = {
     "mess.h2": "Your Mods folder, minus the mess",
     "mess.p": "Hundreds of cryptic file names, duplicates, old versions and archives nobody unpacked. Drag the slider to compare.",
     "mess.slider": "Comparison: the Mods folder in File Explorer and the library in the app",
-    "mess.afterAlt": "The same Mods folder in Ancora: cards with previews, types and toggles",
+    "mess.afterAlt": "The same Mods folder in Ancora: a list of mods with types and toggles, problems flagged",
     "mess.path": "Documents › Electronic Arts › The Sims 4 › Mods",
     "mess.colName": "Name", "mess.colDate": "Date modified", "mess.colType": "Type", "mess.colSize": "Size",
     "mess.before": "File Explorer", "mess.after": "Ancora",
