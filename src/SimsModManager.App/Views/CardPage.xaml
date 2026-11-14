@@ -169,7 +169,7 @@
                             <TextBlock Style="{StaticResource TagText}" Text="{l:Tr 'Скрипт'}" Foreground="{DynamicResource B.Accent}" />
                         </Border>
                         <Border Style="{StaticResource Tag}" Background="{DynamicResource B.SuccessTag}" Visibility="{Binding Mod.IsEnabled, Converter={StaticResource BoolToVisibility}}">
-                            <TextBlock Style="{StaticResource TagText}" Text="{l:Tr 'Включён'}" Foreground="{DynamicResource B.Accent}" />
+                            <TextBlock Style="{StaticResource TagText}" Text="{l:Tr 'Включён'}" Foreground="{DynamicResource B.Success}" />
                         </Border>
                         <Border Style="{StaticResource Tag}" Visibility="{Binding Mod.IsEnabled, Converter={StaticResource InverseBoolToVisibility}}">
                             <TextBlock Style="{StaticResource TagText}" Text="{l:Tr 'Выключен'}" Foreground="{DynamicResource B.TextMuted}" />

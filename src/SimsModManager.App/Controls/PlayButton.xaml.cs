@@ -93,13 +93,8 @@ public partial class PlayButton : UserControl
         Show(RunState, next == State.Running, animate);
         Glow.BeginAnimation(OpacityProperty, new DoubleAnimation(next == State.Running ? 0 : 0.3, TimeSpan.FromSeconds(0.3)));
 
-        if (next == State.Busy)
-        {
-            Spinner.BeginAnimation(RotateTransform.AngleProperty,
-                new DoubleAnimation(0, 360, TimeSpan.FromSeconds(0.8)) { RepeatBehavior = RepeatBehavior.Forever });
-            UpdateProgress(animate: false);
-        }
-        else Spinner.BeginAnimation(RotateTransform.AngleProperty, null);
+        // Пока игра готовится, кружится сама сакура (SakuraMark с Spinning) — отдельный спиннер не нужен
+        if (next == State.Busy) UpdateProgress(animate: false);
 
         if (next == State.Running)
         {
@@ -172,15 +167,11 @@ public partial class PlayButton : UserControl
         Glow.BeginAnimation(OpacityProperty, new DoubleAnimation(over ? 0.6 : 0.3, TimeSpan.FromSeconds(0.25)));
         HoverTint.BeginAnimation(OpacityProperty, new DoubleAnimation(over ? 1 : 0, TimeSpan.FromSeconds(0.2)));
         if (!over) return;
-        var spin = new DoubleAnimationUsingKeyFrames();
-        const int steps = 20;
-        for (var i = 0; i <= steps; i++)
+        // Цветок поворачивается на один лепесток (72°) — у пятилепестковой сакуры это выглядит как «подмигнул»
+        FlowerTurn.BeginAnimation(RotateTransform.AngleProperty, new DoubleAnimation(0, 72, TimeSpan.FromSeconds(0.7))
         {
-            var t = (double)i / steps;
-            var eased = 1 - Math.Pow(1 - t, 3);
-            spin.KeyFrames.Add(new LinearDoubleKeyFrame(Math.Cos(eased * 2 * Math.PI), KeyTime.FromTimeSpan(TimeSpan.FromSeconds(0.6 * t))));
-        }
-        CrystalSpin.BeginAnimation(ScaleTransform.ScaleXProperty, spin);
+            EasingFunction = new BackEase { EasingMode = EasingMode.EaseOut, Amplitude = 0.3 },
+        });
     }
 
     private void Squeeze()

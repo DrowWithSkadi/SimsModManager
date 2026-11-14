@@ -76,7 +76,7 @@ public sealed partial class MainViewModel : ObservableObject
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsLibraryPage), nameof(IsInstallResultPage), nameof(IsSettingsPage), nameof(IsNotFoundPage),
-        nameof(ShowLibraryChrome), nameof(IsCardPage), nameof(IsEditorPage), nameof(IsHealthPage), nameof(SideLibrarySelected), nameof(IsPacksPage))]
+        nameof(ShowLibraryChrome), nameof(IsCardPage), nameof(IsEditorPage), nameof(IsHealthPage), nameof(SideLibrarySelected), nameof(IsPacksPage), nameof(PageTitle))]
     private AppPage _page = AppPage.Library;
 
     public bool IsLibraryPage => Page == AppPage.Library;
@@ -96,6 +96,16 @@ public sealed partial class MainViewModel : ObservableObject
     private void GoLibrary() => Page = _library is null ? AppPage.NotFound : AppPage.Library;
 
     public bool IsPacksPage => Page == AppPage.Packs;
+
+    /// <summary>Заголовок в шапке — название открытой страницы.</summary>
+    public string PageTitle => Page switch
+    {
+        AppPage.Health => L.T("Состояние"),
+        AppPage.Packs => L.T("Дополнения"),
+        AppPage.Settings => L.T("Настройки"),
+        AppPage.NotFound => Core.AppIdentity.Name,
+        _ => L.T("Моды"),
+    };
 
     [RelayCommand]
     private void OpenPacks() => Page = AppPage.Packs;
