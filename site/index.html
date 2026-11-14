@@ -213,6 +213,12 @@
         <h2 id="tune-h">Настраивается под тебя</h2>
         <p>Клавиша, пауза, правила хранения точек, тема и даже Коробок — всё меняется в настройках, без правки файлов. Попробуй прямо здесь.</p>
       </div>
+      <!-- Окно программы: меняет тему вместе с переключателем «Оформление» ниже -->
+      <figure class="theme-preview" id="theme-preview" data-theme="glass">
+        <img class="t-dark" src="img/ru/library-dark.webp" width="2000" height="1309" loading="lazy" alt="Ancora в тёмной теме">
+        <img class="t-light" src="img/ru/library-light.webp" width="2000" height="1309" loading="lazy" alt="Ancora в светлой теме">
+        <img class="t-glass" src="img/ru/library.webp" width="2000" height="1309" loading="lazy" alt="Ancora в теме «Стекло» — сквозь окно видно размытые обои">
+      </figure>
       <div class="tune">
         <div class="panel">
           <h3>Оверлей в игре</h3>
@@ -237,7 +243,7 @@
           </div>
           <div class="opt">
             <span class="lbl"><b>Оформление</b><small>Стекло — на Windows 11</small></span>
-            <span class="seg" role="group" aria-label="Оформление"><button type="button" aria-pressed="false">Тёмная</button><button type="button" aria-pressed="false">Светлая</button><button type="button" aria-pressed="true">Стекло</button></span>
+            <span class="seg" role="group" aria-label="Оформление" id="theme-seg"><button type="button" data-theme="dark" aria-pressed="false">Тёмная</button><button type="button" data-theme="light" aria-pressed="false">Светлая</button><button type="button" data-theme="glass" aria-pressed="true">Стекло</button></span>
           </div>
           <div class="opt">
             <span class="lbl"><b>Коробок</b><small>Выключи — и он спрячется</small></span>

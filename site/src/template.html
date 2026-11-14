@@ -199,6 +199,12 @@
         <h2 id="tune-h">{{tune.h2}}</h2>
         <p>{{tune.p}}</p>
       </div>
+      <!-- Окно программы: меняет тему вместе с переключателем «Оформление» ниже -->
+      <figure class="theme-preview" id="theme-preview" data-theme="glass">
+        <img class="t-dark" src="{{root}}{{shots}}library-dark.webp" width="2000" height="1309" loading="lazy" alt="{{tune.altDark}}">
+        <img class="t-light" src="{{root}}{{shots}}library-light.webp" width="2000" height="1309" loading="lazy" alt="{{tune.altLight}}">
+        <img class="t-glass" src="{{root}}{{shots}}library.webp" width="2000" height="1309" loading="lazy" alt="{{tune.altGlass}}">
+      </figure>
       <div class="tune">
         <div class="panel">
           <h3>{{tune.overlay}}</h3>
@@ -223,7 +229,7 @@
           </div>
           <div class="opt">
             <span class="lbl"><b>{{tune.theme}}</b><small>{{tune.themeNote}}</small></span>
-            <span class="seg" role="group" aria-label="{{tune.theme}}"><button type="button" aria-pressed="false">{{tune.dark}}</button><button type="button" aria-pressed="false">{{tune.light}}</button><button type="button" aria-pressed="true">{{tune.glass}}</button></span>
+            <span class="seg" role="group" aria-label="{{tune.theme}}" id="theme-seg"><button type="button" data-theme="dark" aria-pressed="false">{{tune.dark}}</button><button type="button" data-theme="light" aria-pressed="false">{{tune.light}}</button><button type="button" data-theme="glass" aria-pressed="true">{{tune.glass}}</button></span>
           </div>
           <div class="opt">
             <span class="lbl"><b>{{tune.buddy}}</b><small>{{tune.buddyNote}}</small></span>

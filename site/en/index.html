@@ -213,6 +213,12 @@
         <h2 id="tune-h">Tuned to you</h2>
         <p>Hotkey, pause, save point rules, theme — even Boxy. Everything lives in the settings, no file editing. Try it right here.</p>
       </div>
+      <!-- Окно программы: меняет тему вместе с переключателем «Оформление» ниже -->
+      <figure class="theme-preview" id="theme-preview" data-theme="glass">
+        <img class="t-dark" src="../img/en/library-dark.webp" width="2000" height="1309" loading="lazy" alt="Ancora in the dark theme">
+        <img class="t-light" src="../img/en/library-light.webp" width="2000" height="1309" loading="lazy" alt="Ancora in the light theme">
+        <img class="t-glass" src="../img/en/library.webp" width="2000" height="1309" loading="lazy" alt="Ancora in the Glass theme — the blurred wallpaper shows through">
+      </figure>
       <div class="tune">
         <div class="panel">
           <h3>In-game overlay</h3>
@@ -237,7 +243,7 @@
           </div>
           <div class="opt">
             <span class="lbl"><b>Theme</b><small>Glass needs Windows 11</small></span>
-            <span class="seg" role="group" aria-label="Theme"><button type="button" aria-pressed="false">Dark</button><button type="button" aria-pressed="false">Light</button><button type="button" aria-pressed="true">Glass</button></span>
+            <span class="seg" role="group" aria-label="Theme" id="theme-seg"><button type="button" data-theme="dark" aria-pressed="false">Dark</button><button type="button" data-theme="light" aria-pressed="false">Light</button><button type="button" data-theme="glass" aria-pressed="true">Glass</button></span>
           </div>
           <div class="opt">
             <span class="lbl"><b>Boxy</b><small>Turn him off and he hides</small></span>
