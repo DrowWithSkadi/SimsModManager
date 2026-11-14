@@ -189,7 +189,7 @@ public sealed partial class MainViewModel
         // 3. Архивы — обычной установкой (сама покажет итог)
         if (plan.Archives.Count > 0)
         {
-            var temp = Path.Combine(Path.GetTempPath(), "SimsModManager", Guid.NewGuid().ToString("N"));
+            var temp = Core.AppIdentity.NewTempFolder();
             Directory.CreateDirectory(temp);
             var copies = new List<string>();
             foreach (var archive in plan.Archives)

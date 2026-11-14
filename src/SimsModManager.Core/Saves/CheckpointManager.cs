@@ -162,7 +162,7 @@ public sealed class CheckpointManager(SimsPaths paths, CheckpointStore store, He
     {
         var response = await bridge.SendAsync("menu_dialog", TimeSpan.FromSeconds(10), new Dictionary<string, object?>
         {
-            ["title"] = "Sims Mod Manager",
+            ["title"] = AppIdentity.Name,
             ["text"] = L.F("Вернуться к точке «{0}»?\n\nТекущая игра уже сохранена отдельной точкой «Перед откатом» — к ней тоже можно вернуться.\n\nИгра выйдет в главное меню. Там нажми «Загрузить игру» и выбери своё сохранение.", checkpoint.Name),
             ["ok"] = L.T("Вернуться к точке"),
             ["cancel"] = L.T("Остаться"),

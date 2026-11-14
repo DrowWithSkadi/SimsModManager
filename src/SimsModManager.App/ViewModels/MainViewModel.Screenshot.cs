@@ -42,7 +42,7 @@ public sealed partial class MainViewModel
             var bitmap = new RenderTargetBitmap(width, height, 96 * ScreenshotScale, 96 * ScreenshotScale, PixelFormats.Pbgra32);
             bitmap.Render(root);
 
-            var folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), "Sims Mod Manager");
+            var folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), Core.AppIdentity.Name);
             Directory.CreateDirectory(folder);
             var file = Path.Combine(folder, $"screenshot-{DateTime.Now:yyyyMMdd-HHmmss}.png");
             var encoder = new PngBitmapEncoder();

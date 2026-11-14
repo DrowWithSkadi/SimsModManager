@@ -43,7 +43,7 @@ public sealed record RetentionRules(int? MaxAgeDays = null, int? MaxCount = null
 public sealed class InvalidSaveException(string message) : Exception(message);
 
 /// <summary>
-/// Хранилище точек сохранения: %AppData%\SimsModManager\Checkpoints\&lt;id&gt;\ (checkpoint.json + save.zip).
+/// Хранилище точек сохранения: %AppData%\Ancora\Checkpoints\&lt;id&gt;\ (checkpoint.json + save.zip).
 /// Игра их не видит — в папку saves попадает только та точка, к которой откатываются.
 /// </summary>
 public sealed class CheckpointStore(string folder)
@@ -56,8 +56,7 @@ public sealed class CheckpointStore(string folder)
         Converters = { new JsonStringEnumConverter() },
     };
 
-    public static string DefaultFolder => Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "SimsModManager", "Checkpoints");
+    public static string DefaultFolder => AppIdentity.Roaming("Checkpoints");
 
     public string Folder { get; } = folder;
 

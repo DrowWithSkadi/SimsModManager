@@ -1,6 +1,6 @@
-# Sims Mod Manager — мод-помощник.
+# Ancora (раньше Sims Mod Manager) — мод-помощник.
 #
-# Связывает игру с программой Sims Mod Manager через папку bridge рядом с этим файлом:
+# Связывает игру с программой Ancora через папку bridge рядом с этим файлом:
 #   status.json        — игра пишет раз в секунду: жива ли, где сейчас (меню / в игре), какое сохранение, пауза
 #   cmd-<id>.json      — программа кладёт команду
 #   res-<id>.json      — игра отвечает на команду
@@ -21,13 +21,13 @@ import sims4.commands
 from clock import ClockSpeedMode, GameSpeedChangeSource
 from sims4.commands import CommandType
 
-VERSION = 8
+VERSION = 9
 PAUSE_REASON = 'SimsModManager'
 POLL_SECONDS = 0.25
 
 
 def _find_bridge_folder():
-    """Папка bridge рядом с .ts4script (Mods/SimsModManager/bridge)."""
+    """Папка bridge рядом с .ts4script (Mods/Ancora/bridge)."""
     path = os.path.abspath(__file__)
     while True:
         parent = os.path.dirname(path)
@@ -255,7 +255,7 @@ def _show_load_dialog(slot_id):
             return msg
 
     dialog = _LoadSlotDialog.TunableFactory().default(
-        services.active_sim_info(), title=raw('Sims Mod Manager'),
+        services.active_sim_info(), title=raw('Ancora'),
         text=raw('Опыт: загрузить сохранение %s с диска прямо из игры?' % slot_id),
         text_ok=raw('Загрузить'), text_cancel=raw('Отмена'))
     dialog.show_dialog()
@@ -488,20 +488,20 @@ def _cmd_loadtest(slot_id: int = 2, _connection=None):
 def _cmd_status(_connection=None):
     out = sims4.commands.CheatOutput(_connection)
     _refresh_slot()
-    out('Sims Mod Manager: помощник %s, состояние %s, сохранение %s (%s), пауза %s, связь %s' % (
+    out('Ancora: помощник %s, состояние %s, сохранение %s (%s), пауза %s, связь %s' % (
         VERSION, _state['state'], _state['slot_name'], _state['slot_id'], _is_paused(), BRIDGE))
 
 
 @sims4.commands.Command('smm.start', command_type=CommandType.Live)
 def _cmd_start(_connection=None):
     _on_zone_ready()
-    sims4.commands.CheatOutput(_connection)('Sims Mod Manager: связь запущена')
+    sims4.commands.CheatOutput(_connection)('Ancora: связь запущена')
 
 
 @sims4.commands.Command('smm.save', command_type=CommandType.Live)
 def _cmd_save(_connection=None):
     out = sims4.commands.CheatOutput(_connection)
-    _save(lambda ok, details: out('Sims Mod Manager: сохранение %s — %s' % ('готово' if ok else 'не удалось', details)))
+    _save(lambda ok, details: out('Ancora: сохранение %s — %s' % ('готово' if ok else 'не удалось', details)))
 
 
 @sims4.commands.Command('smm.pause', command_type=CommandType.Live)

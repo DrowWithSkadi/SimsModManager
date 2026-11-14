@@ -67,7 +67,7 @@ public sealed class ModLibrary(SimsPaths paths, IFileDeleter? deleter = null)
             var name = System.IO.Path.GetFileName(dir);
             if (name.StartsWith('.')) continue;
             // Мод-помощник менеджера в списке не показываем — им управляет сама программа
-            if (string.Equals(name, Helper.HelperMod.FolderName, StringComparison.OrdinalIgnoreCase)) continue;
+            if (Helper.HelperMod.IsHelperFolderName(name)) continue;
 
             List<string> files;
             try
