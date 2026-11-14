@@ -40,6 +40,12 @@ public sealed partial class MainViewModel
             var width = (int)Math.Ceiling(root.ActualWidth * ScreenshotScale);
             var height = (int)Math.Ceiling(root.ActualHeight * ScreenshotScale);
             var bitmap = new RenderTargetBitmap(width, height, 96 * ScreenshotScale, 96 * ScreenshotScale, PixelFormats.Pbgra32);
+            // Фон окна рисует Windows (Mica, размытие «Стекла»), а не сам интерфейс — без подложки на снимке
+            // вместо него была бы прозрачность. Подкладываем непрозрачный цвет окна текущей темы.
+            var backdrop = new DrawingVisual();
+            using (var dc = backdrop.RenderOpen())
+                dc.DrawRectangle(new SolidColorBrush(BackdropColor(root)), null, new Rect(0, 0, root.ActualWidth, root.ActualHeight));
+            bitmap.Render(backdrop);
             bitmap.Render(root);
 
             var folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyPictures), Core.AppIdentity.Name);
@@ -61,5 +67,16 @@ public sealed partial class MainViewModel
         {
             ScreenshotMode = false;
         }
+    }
+
+    /// <summary>Цвет окна темы, без прозрачности: у «Стекла» он полупрозрачный — смешиваем с графитом.</summary>
+    private static Color BackdropColor(FrameworkElement root)
+    {
+        var window = root.TryFindResource("B.Window") is SolidColorBrush b ? b.Color : Color.FromRgb(0x0F, 0x10, 0x12);
+        if (window.A == 255) return window;
+        var under = Color.FromRgb(0x1C, 0x1D, 0x21);
+        double a = window.A / 255.0;
+        byte Mix(byte top, byte bottom) => (byte)Math.Round(top * a + bottom * (1 - a));
+        return Color.FromRgb(Mix(window.R, under.R), Mix(window.G, under.G), Mix(window.B, under.B));
     }
 }

@@ -285,7 +285,7 @@ public sealed class ModHealthChecker(SimsPaths paths)
         foreach (var ((a, b), count) in shared)
         {
             if (duplicates.Contains((a, b))) continue;
-            var (newer, older) = a.ModifiedAt >= b.ModifiedAt ? (a, b) : (b, a);
+            var (newer, older) = NewerOf(a, b);
             var sameMod = LooksLikeSameMod(a.Name, b.Name);
             issues.Add(new HealthIssue(HealthIssueKind.ScriptConflict, HealthSeverity.Problem,
                 L.F("«{0}» и «{1}» — похоже, один и тот же скрипт", a.Name, b.Name),
@@ -402,7 +402,7 @@ public sealed class ModHealthChecker(SimsPaths paths)
     private static HealthIssue ConflictIssue(ModItem a, ModItem b, PairInfo info)
     {
         var main = info.Areas.Keys.Max();
-        var (newer, older) = a.ModifiedAt >= b.ModifiedAt ? (a, b) : (b, a);
+        var (newer, older) = NewerOf(a, b);
         var sameMod = LooksLikeSameMod(a.Name, b.Name);
         var n = info.Count;
 
@@ -632,6 +632,36 @@ public sealed class ModHealthChecker(SimsPaths paths)
 
     private static (ModItem, ModItem) Order(ModItem a, ModItem b) =>
         string.Compare(a.Path, b.Path, StringComparison.OrdinalIgnoreCase) <= 0 ? (a, b) : (b, a);
+
+    /// <summary>
+    /// Какая из двух версий одного мода новее. Дата файла не всегда помогает: скопированные или распакованные
+    /// разом файлы получают одну и ту же дату. Поэтому сначала смотрим на имя: «_OLD», «старое», «backup» —
+    /// точно старая; потом на дату, если она заметно отличается; потом на номер версии в имени (v2 новее 1.2).
+    /// </summary>
+    internal static (ModItem Newer, ModItem Older) NewerOf(ModItem a, ModItem b)
+    {
+        var aOld = LooksOld(a.Name);
+        var bOld = LooksOld(b.Name);
+        if (aOld != bOld) return aOld ? (b, a) : (a, b);
+        if (Math.Abs((a.ModifiedAt - b.ModifiedAt).TotalMinutes) > 1)
+            return a.ModifiedAt > b.ModifiedAt ? (a, b) : (b, a);
+        if (VersionIn(a.Name) is { } va && VersionIn(b.Name) is { } vb && va != vb)
+            return va > vb ? (a, b) : (b, a);
+        return a.ModifiedAt >= b.ModifiedAt ? (a, b) : (b, a);
+    }
+
+    private static bool LooksOld(string name) =>
+        Regex.IsMatch(name, @"(?i)(^|[^a-zа-яё])(old|older|backup|bak|стар\w*|копия)([^a-zа-яё]|$)");
+
+    /// <summary>Последнее число в имени как версия: «v2» → 2.0, «1.2» → 1.2, «2024.3» → 2024.3.</summary>
+    private static Version? VersionIn(string name)
+    {
+        var matches = Regex.Matches(name, @"\d+(?:[._]\d+){0,3}");
+        if (matches.Count == 0) return null;
+        var parts = matches[^1].Value.Replace('_', '.').Split('.');
+        if (parts.Length == 1) parts = [parts[0], "0"];
+        return Version.TryParse(string.Join('.', parts), out var v) ? v : null;
+    }
 
     /// <summary>«MCCC 2024.1» и «mc_cmd_center 2024.3» не узнаем, а «WickedWhims v170» и «WickedWhims_v172» — да.</summary>
     internal static bool LooksLikeSameMod(string a, string b)
