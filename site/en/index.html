@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ancora — a client for The Sims 4</title>
+<meta name="description" content="A free client for The Sims 4: installs mods from archives, finds the mod that crashed your game and rolls back saves right from inside the game.">
+<meta name="theme-color" content="#0D1020">
+<link rel="icon" href="../img/mark.svg" type="image/svg+xml">
+<link rel="icon" href="../logo.png" type="image/png">
+<link rel="alternate" hreflang="ru" href="https://drowwithskadi.github.io/SimsModManager/">
+<link rel="alternate" hreflang="en" href="https://drowwithskadi.github.io/SimsModManager/en/">
+<link rel="alternate" hreflang="x-default" href="https://drowwithskadi.github.io/SimsModManager/en/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Ancora — a client for The Sims 4">
+<meta property="og:description" content="A free client for The Sims 4: installs mods from archives, finds the mod that crashed your game and rolls back saves right from inside the game.">
+<meta property="og:image" content="https://drowwithskadi.github.io/SimsModManager/og-en.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..700&display=swap" rel="stylesheet">
+<link rel="preload" as="image" href="../img/library.webp">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<div class="wallpaper" aria-hidden="true"><i></i><i></i><i></i></div>
+<div class="sky" id="sky" aria-hidden="true"></div>
+
+<template id="sakura-svg"><svg viewBox="0 0 120 120" class="mk sk idle on" aria-hidden="true"><defs><linearGradient id="g__ID__" gradientUnits="userSpaceOnUse" x1="14" y1="106" x2="106" y2="14"><stop offset="0" stop-color="#77E1C7"/><stop offset=".4" stop-color="#9CC9FF"/><stop offset=".72" stop-color="#D4AEFF"/><stop offset="1" stop-color="#FFC4B0"/><animateTransform attributeName="gradientTransform" type="rotate" values="0 60 60;360 60 60" dur="30s" repeatCount="indefinite"/></linearGradient><radialGradient id="c__ID__" gradientUnits="userSpaceOnUse" cx="60" cy="60" r="17"><stop offset="0" stop-color="#fff" stop-opacity=".9"/><stop offset=".45" stop-color="#fff" stop-opacity=".25"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient></defs><mask id="pm__ID__" maskUnits="userSpaceOnUse" x="0" y="0" width="120" height="120"><g class="rot"><g transform="rotate(-2 60 60)"><g class="pe pe0" style="animation-delay:0.0s"><path transform="translate(60 60)" d="M0 -5 C-15.00 -14.00 -22.00 -33.00 -11.00 -47.00 Q-5.00 -48.00 0 -41.00 Q5.00 -48.00 11.00 -47.00 C22.00 -33.00 15.00 -14.00 0 -5Z" fill="#fff"/></g></g><g transform="rotate(75 60 60)"><g class="pe pe1" style="animation-delay:-1.1s"><path transform="translate(60 60)" d="M0 -5 C-13.95 -13.02 -20.46 -30.69 -10.23 -43.71 Q-4.65 -44.64 0 -38.13 Q4.65 -44.64 10.23 -43.71 C20.46 -30.69 13.95 -13.02 0 -5Z" fill="#fff"/></g></g><g transform="rotate(143 60 60)"><g class="pe pe2" style="animation-delay:-2.2s"><path transform="translate(60 60)" d="M0 -5 C-14.55 -13.58 -21.34 -32.01 -10.67 -45.59 Q-4.85 -46.56 0 -39.77 Q4.85 -46.56 10.67 -45.59 C21.34 -32.01 14.55 -13.58 0 -5Z" fill="#fff"/></g></g><g transform="rotate(218 60 60)"><g class="pe pe3" style="animation-delay:-3.3s"><path transform="translate(60 60)" d="M0 -5 C-13.50 -12.60 -19.80 -29.70 -9.90 -42.30 Q-4.50 -43.20 0 -36.90 Q4.50 -43.20 9.90 -42.30 C19.80 -29.70 13.50 -12.60 0 -5Z" fill="#fff"/></g></g><g transform="rotate(285 60 60)"><g class="pe pe4" style="animation-delay:-4.4s"><path transform="translate(60 60)" d="M0 -5 C-14.40 -13.44 -21.12 -31.68 -10.56 -45.12 Q-4.80 -46.08 0 -39.36 Q4.80 -46.08 10.56 -45.12 C21.12 -31.68 14.40 -13.44 0 -5Z" fill="#fff"/></g></g></g></mask><g class="fl"><rect x="0" y="0" width="120" height="120" fill="url(#g__ID__)" mask="url(#pm__ID__)"/><g mask="url(#pm__ID__)"><circle cx="60" cy="60" r="17" fill="url(#c__ID__)"/></g><path class="cs" d="M60 51.5 Q61.36 58.64 68.5 60 Q61.36 61.36 60 68.5 Q58.64 61.36 51.5 60 Q58.64 58.64 60 51.5Z" fill="#FFFFFF"/></g><g class="fall"><path transform="translate(96 30) rotate(30) scale(.28)" d="M0 -5 C-15.00 -14.00 -22.00 -33.00 -11.00 -47.00 Q-5.00 -48.00 0 -41.00 Q5.00 -48.00 11.00 -47.00 C22.00 -33.00 15.00 -14.00 0 -5Z" fill="url(#g__ID__)"/></g></svg></template>
+
+<template id="buddy-svg">
+  <svg viewBox="0 -4 120 66" aria-hidden="true">
+    <rect x="34" y="44" width="11" height="13" rx="4" fill="#4A5654"/>
+    <rect x="75" y="44" width="11" height="13" rx="4" fill="#4A5654"/>
+    <g class="body">
+      <polygon class="flap-l" points="18,14 3,27 5,35 18,26" fill="#B07D46"/>
+      <polygon class="flap-r" points="102,14 117,27 115,35 102,26" fill="#B07D46"/>
+      <rect x="16" y="6" width="88" height="42" rx="6" fill="#C9935A"/>
+      <rect x="16" y="42" width="88" height="6" rx="3" fill="#B5824B"/>
+      <rect x="56" y="6" width="8" height="42" fill="#9E6D3A"/>
+      <g class="eyes">
+        <ellipse cx="40" cy="24" rx="7" ry="8" fill="#141817"/><circle class="pupil" cx="40" cy="24" r="3" fill="#F2F2EE"/>
+        <ellipse cx="80" cy="24" rx="7" ry="8" fill="#141817"/><circle class="pupil" cx="80" cy="24" r="3" fill="#F2F2EE"/>
+      </g>
+      <path class="happy" d="M34,27 Q40,19 46,27 M74,27 Q80,19 86,27" stroke="#141817" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+      <g class="blush"><ellipse cx="29" cy="33" rx="5" ry="2.5" fill="#F08FA6"/><ellipse cx="91" cy="33" rx="5" ry="2.5" fill="#F08FA6"/></g>
+    </g>
+  </svg>
+</template>
+
+<nav class="nav" aria-label="Sections">
+  <a class="brand" href="#top"><img src="../img/mark.svg" alt=""><span>Ancora</span></a>
+  <a class="link" href="#ingame">In game</a>
+  <a class="link" href="#features">Why it&#x27;s different</a>
+  <a class="link" href="#tune">Settings</a>
+  <a class="link" href="#faq">FAQ</a>
+  <span class="lang"><a href="../" hreflang="ru" data-lang="ru" aria-current="false">RU</a><a href="./" hreflang="en" data-lang="en" aria-current="true">EN</a></span>
+  <a class="btn btn-mint" href="#download">Download</a>
+</nav>
+
+<main id="top">
+  <section class="hero">
+    <div class="wrap intro">
+      <div class="app-icon" data-sakura><img src="../img/mark.svg" width="256" height="256" alt=""></div>
+      <h1><span>The Sims 4 client</span> <span>that keeps your game safe</span></h1>
+      <p class="lead">Installs mods from any archive, finds what crashed your game and rolls back your save right inside the game. Everything else is yours to tune.</p>
+      <div class="actions">
+        <a class="dl is-desktop-only" href="https://github.com/DrowWithSkadi/SimsModManager/releases/download/dev/Ancora-win-Setup.exe">
+          <span class="ic"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2v10m0 0l-4-4m4 4l4-4M3 16h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <span><b>Download for Windows</b><small>Installer, about 70 MB</small></span>
+        </a>
+        <a class="btn btn-glass" href="#ingame">See it in game</a>
+      </div>
+      <p class="meta">Free. Open source, no account, no ads.</p>
+    </div>
+
+    <div class="showcase" id="showcase">
+      <div class="window" id="window">
+        <img src="../img/library.webp" width="1373" height="903" alt="Ancora window: a mod library with cards, type filters and a drop zone for archives">
+        <div class="dropzone" aria-hidden="true"></div>
+        <div class="box-buddy" data-buddy id="hero-buddy"><span class="bubble">Pet me</span></div>
+        <div class="toast" id="toast" role="status"><b>✓</b>Installed 3 mods from “summer-dresses.zip”</div>
+      </div>
+      <button class="zip is-desktop-only" id="zip" type="button" aria-label="Sample mod archive: drag it into the app window or press it">
+        <span class="hint">Drop me in the window
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 4c6 1 10 6 11 14m0 0l3-4m-3 4l-4-2"/></svg>
+        </span>
+        <svg class="file" viewBox="0 0 64 80" aria-hidden="true">
+          <path d="M6 2h36l18 18v54a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V6a4 4 0 0 1 4-4z" fill="#F1E8D6"/>
+          <path d="M42 2v14a4 4 0 0 0 4 4h14" fill="#D9CDB4"/>
+          <path d="M25 2h8v4h-8zm0 8h8v4h-8zm0 8h8v4h-8zm0 8h8v4h-8z" fill="#8F7A55"/>
+          <rect x="22" y="34" width="14" height="16" rx="3" fill="#8F7A55"/><rect x="26" y="40" width="6" height="4" rx="1" fill="#F1E8D6"/>
+          <text x="32" y="68" text-anchor="middle" font-family="Inter, sans-serif" font-size="11" font-weight="700" fill="#6B5B3E">ZIP</text>
+        </svg>
+        <span class="name">summer-dresses.zip</span>
+      </button>
+    </div>
+  </section>
+
+  <section class="sec" id="mess" aria-labelledby="mess-h">
+    <div class="wrap">
+      <div class="sec-head center">
+        <h2 id="mess-h">Your Mods folder, minus the mess</h2>
+        <p>Hundreds of cryptic file names, duplicates, old versions and archives nobody unpacked. Drag the slider to compare.</p>
+      </div>
+      <div class="compare" id="compare" role="slider" tabindex="0" aria-label="Comparison: the Mods folder in File Explorer and the library in the app" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
+        <div class="after"><img src="../img/library.webp" width="1373" height="903" loading="lazy" alt="The same Mods folder in Ancora: cards with previews, types and toggles"></div>
+        <div class="before" aria-hidden="true">
+          <div class="explorer">
+            <div class="tb"><span>📁</span><span>Mods</span><span class="ctl">— ▢ ✕</span></div>
+            <div class="addr"><i>›</i> Documents › Electronic Arts › The Sims 4 › Mods</div>
+            <div class="files">
+              <div class="hdr"><span>Name</span><span>Date modified</span><span>Type</span><span>Size</span></div>
+              <div class="f"><span><i class="ico dir"></i>New folder (3)</span><small>12.03.2026 22:14</small><small>File folder</small><small></small></div>
+              <div class="f"><span><i class="ico dir"></i>!!!_DO_NOT_DELETE</span><small>02.01.2026 18:40</small><small>File folder</small><small></small></div>
+              <div class="f"><span><i class="ico dir"></i>_old_check_later</span><small>19.11.2025 13:02</small><small>File folder</small><small></small></div>
+              <div class="f"><span><i class="ico pkg"></i>hair_wavy_bob_fixed_fixed.package</span><small>08.11.2026 21:35</small><small>PACKAGE File</small><small>4 812 KB</small></div>
+              <div class="f"><span><i class="ico pkg"></i>lashes_3D_v2_FINAL(1).package</span><small>08.11.2026 21:35</small><small>PACKAGE File</small><small>733 KB</small></div>
+              <div class="f"><span><i class="ico pkg"></i>lashes_3D_v2_FINAL.package</span><small>08.11.2026 21:34</small><small>PACKAGE File</small><small>733 KB</small></div>
+              <div class="f"><span><i class="ico pkg"></i>sofa_merged_OLD.package</span><small>14.06.2025 10:11</small><small>PACKAGE File</small><small>21 330 KB</small></div>
+              <div class="f sel"><span><i class="ico zipf"></i>eyebrows_pack.zip</span><small>07.11.2026 19:58</small><small>Compressed (zipped) Folder</small><small>18 204 KB</small></div>
+              <div class="f"><span><i class="ico scr"></i>ui_tweaks_OLD.ts4script</span><small>22.02.2024 16:47</small><small>TS4SCRIPT File</small><small>312 KB</small></div>
+              <div class="f"><span><i class="ico scr"></i>ui_tweaks.ts4script</span><small>03.10.2026 12:05</small><small>TS4SCRIPT File</small><small>318 KB</small></div>
+              <div class="f"><span><i class="ico txt"></i>readme (2).txt</span><small>07.11.2026 19:58</small><small>Text Document</small><small>2 KB</small></div>
+              <div class="f"><span><i class="ico pkg"></i>summer_dress_v3.package</span><small>05.11.2026 23:11</small><small>PACKAGE File</small><small>6 120 KB</small></div>
+              <div class="f"><span><i class="ico sys"></i>Thumbs.db</span><small>12.03.2026 22:14</small><small>Data Base File</small><small>96 KB</small></div>
+              <div class="f"><span><i class="ico pkg"></i>kitchen_set_part2_of_5.package</span><small>28.09.2026 17:30</small><small>PACKAGE File</small><small>11 404 KB</small></div>
+              <div class="f"><span><i class="ico txt"></i>lastException_2611.txt</span><small>26.11.2025 01:12</small><small>Text Document</small><small>4 KB</small></div>
+            </div>
+          </div>
+        </div>
+        <span class="tag l">File Explorer</span>
+        <span class="tag r">Ancora</span>
+        <div class="handle" aria-hidden="true"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l-6 6 6 6M15 6l6 6-6 6"/></svg></span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="ingame" aria-labelledby="ingame-h">
+    <div class="wrap">
+      <div class="sec-head center">
+        <h2 id="ingame-h">Save points right in the game</h2>
+        <p>Press F9 and a panel slides in from the left. Make a save point before a wedding, a move or a cheat experiment — and come back to it whenever you like.</p>
+      </div>
+
+      <div class="ingame" id="ingame-demo" data-phase="0">
+        <figure>
+          <img src="../img/ingame.webp" width="1544" height="1029" loading="lazy" alt="The Sims 4 with the Ancora panel open on the left: a list of save points with Roll back buttons">
+          <span class="focus-ring" aria-hidden="true"></span>
+          <span class="ripple" id="ripple" aria-hidden="true"></span>
+          <div class="dim" aria-hidden="true"></div>
+          <div class="sims-dialog" aria-hidden="true">
+            <h4>Ancora</h4>
+            <p>Go back to the save point? Your current game is already saved as a separate point. The game will exit to the main menu — press Continue there.</p>
+            <div class="btns"><span>Go back</span><span>Stay</span></div>
+          </div>
+          <svg class="cursor" id="cursor" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 2l16 9.5-7 1.6 3.9 7.4-3 1.5-3.8-7.5L4 19z" fill="#fff" stroke="#111" stroke-width="1.2" stroke-linejoin="round"/></svg>
+        </figure>
+        <span class="keycap" id="keycap" aria-hidden="true">F9</span>
+      </div>
+
+      <div class="timeline" id="timeline" aria-label="How rolling back works">
+        <div class="track">
+          <div class="ghost"></div>
+          <div class="fill"></div>
+          <span class="rewind-tip" aria-hidden="true"></span>
+          <span class="mark" data-at="0" style="left:0%"></span>
+          <span class="mark" data-at="1" style="left:45%"></span>
+          <span class="mark" data-at="2" style="left:100%"></span>
+          <svg class="rewind-arc" viewBox="0 0 600 74" preserveAspectRatio="none" aria-hidden="true">
+            <path d="M596 70 C 480 -6, 120 -6, 4 66" fill="none" stroke="#77E1C7" stroke-width="2" vector-effect="non-scaling-stroke"/>
+          </svg>
+          <span class="rewind-label">Back to the save point</span>
+          <span class="head" aria-hidden="true"><svg viewBox="0 0 14 14"><path d="M3 1.5l9 5.5-9 5.5z" fill="currentColor"/></svg></span>
+        </div>
+        <div class="moments">
+          <div class="moment first" data-m="0" style="left:0%"><span class="when">Friday, 6:40 PM</span><h3>Make a save point</h3><p>The game saves itself, and the copy is kept separately so your save list stays clean.</p></div>
+          <div class="moment" data-m="1" style="left:45%"><span class="when">Saturday, 9:10 PM</span><h3>Keep playing</h3><p>A wedding, a move, cheats — anything. Pin the points that matter.</p></div>
+          <div class="moment last" data-m="2" style="left:100%"><span class="when">Now</span><h3>Didn&#x27;t like it? Go back</h3><p>Confirm in the game&#x27;s own dialog and press Continue. Your current game is saved too.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="features" aria-labelledby="features-h">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2 id="features-h">How it differs from a regular mod manager</h2>
+        <p>A regular manager just sorts files. Ancora also works inside the game, watches your mods and protects your saves.</p>
+      </div>
+      <div class="features">
+        <div class="f-list">
+          <article class="f-item on" data-f="0"><h3>Works inside the game</h3><p>An overlay on a hotkey: save points and rollback without leaving the game. A built-in helper mod saves the game and shows dialogs right in The Sims.</p><img class="f-shot" src="../img/ingame.webp" width="1544" height="1029" loading="lazy" alt=""></article>
+          <article class="f-item" data-f="1"><h3>Installs from any archive</h3><p>Zip, rar or 7z — it unpacks, puts every file where it belongs and shows what&#x27;s new. Clothes, hair, objects and scripts each get their own tab.</p><img class="f-shot" src="../img/toolbar.webp" width="1485" height="572" loading="lazy" alt=""></article>
+          <article class="f-item" data-f="2"><h3>A Play button with a safety net</h3><p>Backs up your saves before every launch. Two clicks to start the game without mods or without scripts — to find the culprit fast.</p><img class="f-shot tall" src="../img/sidebar.webp" width="344" height="1030" loading="lazy" alt=""></article>
+          <article class="f-item" data-f="3"><h3>Finds what broke</h3><p>Reads the game&#x27;s crash reports, names the culprit and offers to turn it off. Mods and scripts switch on with one toggle — no editing Options.ini.</p><img class="f-shot" src="../img/game-switches.webp" width="812" height="250" loading="lazy" alt=""></article>
+        </div>
+        <div class="f-stage" aria-hidden="true">
+          <figure class="wide on" data-f="0"><img src="../img/ingame.webp" width="1544" height="1029" loading="lazy" alt=""></figure>
+          <figure class="wide" data-f="1"><img src="../img/toolbar.webp" width="1485" height="572" loading="lazy" alt=""></figure>
+          <figure class="tall" data-f="2"><img src="../img/sidebar.webp" width="344" height="1030" loading="lazy" alt=""></figure>
+          <figure class="wide" data-f="3"><img src="../img/game-switches.webp" width="812" height="250" loading="lazy" alt=""></figure>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="tune" aria-labelledby="tune-h">
+    <div class="wrap">
+      <div class="sec-head center">
+        <h2 id="tune-h">Tuned to you</h2>
+        <p>Hotkey, pause, save point rules, theme — even Boxy. Everything lives in the settings, no file editing. Try it right here.</p>
+      </div>
+      <div class="tune">
+        <div class="panel">
+          <h3>In-game overlay</h3>
+          <div class="opt">
+            <span class="lbl"><b>Hotkey</b><small>Click and pick any key</small></span>
+            <button class="key-pick" id="key-pick" type="button">F9</button>
+          </div>
+          <div class="opt">
+            <span class="lbl"><b>Pause the game</b><small>While the panel is open</small></span>
+            <button class="switch" role="switch" aria-checked="true" aria-label="Pause the game"></button>
+          </div>
+          <div class="opt">
+            <span class="lbl"><b>Hide on stream</b><small>OBS and screen recording won&#x27;t see it</small></span>
+            <button class="switch" role="switch" aria-checked="false" aria-label="Hide on stream"></button>
+          </div>
+        </div>
+        <div class="panel">
+          <h3>App</h3>
+          <div class="opt">
+            <span class="lbl"><b>Keep save points</b><small>Pinned ones — forever</small></span>
+            <span class="range"><input type="range" id="keep" min="7" max="98" step="7" value="98" aria-label="Keep save points"><output id="keep-out">forever</output></span>
+          </div>
+          <div class="opt">
+            <span class="lbl"><b>Theme</b><small>Glass needs Windows 11</small></span>
+            <span class="seg" role="group" aria-label="Theme"><button type="button" aria-pressed="false">Dark</button><button type="button" aria-pressed="false">Light</button><button type="button" aria-pressed="true">Glass</button></span>
+          </div>
+          <div class="opt">
+            <span class="lbl"><b>Boxy</b><small>Turn him off and he hides</small></span>
+            <button class="switch" role="switch" aria-checked="true" id="buddy-switch" aria-label="Boxy"></button>
+          </div>
+        </div>
+      </div>
+      <p class="tune-note center-text">That&#x27;s only some of the settings — the app has more.</p>
+    </div>
+  </section>
+
+  <section class="sec" id="faq" aria-labelledby="faq-h">
+    <div class="wrap faq-wrap">
+      <h2 id="faq-h">FAQ</h2>
+      <div class="faq">
+        <details><summary>Windows says “Windows protected your PC”. Is that okay?</summary>
+          <p>Yes. Windows shows this for any new app without a paid code-signing certificate. Click “More info”, then “Run anyway”. The source code is open on GitHub for anyone to check.</p></details>
+        <details><summary>Will it delete my mods?</summary>
+          <p>Not unless you ask. Fixes only turn mods off by moving them to a “Mods (disabled)” folder. One click turns them back on.</p></details>
+        <details><summary>Can the overlay break the game?</summary>
+          <p>No. It's a separate window on top of the game: it doesn't hook into the game or touch its files. Use “Windowed Fullscreen” or “Windowed” display mode.</p></details>
+        <details><summary>Does it work with the EA app and Steam?</summary>
+          <p>Yes. It finds the game on its own and launches it through the right launcher. If it can't, it asks once where the game is.</p></details>
+        <details><summary>Do I need internet or an account?</summary>
+          <p>No. Everything runs on your computer with no sign-up. Internet is only used for app updates.</p></details>
+        <details><summary>How much space do save points take?</summary>
+          <p>One point is about the size of the save itself — usually a few megabytes. You set limits by count, age or size in the settings.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="download" id="download" aria-labelledby="dl-h">
+    <div class="wrap">
+      <div class="scene">
+        <div class="crystal" id="crystal" data-sakura><img src="../img/mark.svg" width="256" height="256" alt=""></div>
+        <div class="box-buddy" data-buddy><span class="bubble">Waiting for you!</span></div>
+      </div>
+      <h2 id="dl-h">Grab it — it&#x27;s free</h2>
+      <p>Installs in a minute and updates itself. Boxy is already waiting and will be the first to tell you if a mod starts misbehaving.</p>
+      <div class="actions is-desktop-only">
+        <a class="dl" href="https://github.com/DrowWithSkadi/SimsModManager/releases/download/dev/Ancora-win-Setup.exe">
+          <span class="ic"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 2v10m0 0l-4-4m4 4l4-4M3 16h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <span><b>Download for Windows</b><small>Installer, about 70 MB</small></span>
+        </a>
+        <a class="dl-alt" href="https://github.com/DrowWithSkadi/SimsModManager/releases/download/dev/Ancora-win-Portable.zip">
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 2h7l4 4v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1zM9 2v2m0 2v2m0 2v2" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span><b>Portable</b><small>.zip — unpack and run</small></span>
+        </a>
+      </div>
+      <div class="to-pc">
+        <p>Ancora runs on Windows PCs. Copy the link and open it on your computer.</p>
+        <div class="row"><input id="pc-link" readonly value="https://drowwithskadi.github.io/SimsModManager/en/" aria-label="Site link"><button type="button" id="pc-copy">Copy</button></div>
+      </div>
+      <p class="release" id="release"></p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Fan project. Not affiliated with Electronic Arts or Maxis. The Sims is a trademark of Electronic Arts.</span>
+    <a href="https://github.com/DrowWithSkadi/SimsModManager">Source code on GitHub</a>
+  </div>
+</footer>
+
+<script id="i18n" type="application/json">{"lang": "en", "pet": "Pet me", "installed": "Unpacked! It's in the game", "listen": "Press a key…", "forever": "forever", "days": "{n} days", "copied": "Copied", "release": "Version {v} · updated {when}", "today": "today", "yesterday": "yesterday", "daysAgo": "{n} days ago", "downloads": " · downloaded {n} times"}</script>
+<script src="../app.js"></script>
+</body>
+</html>
