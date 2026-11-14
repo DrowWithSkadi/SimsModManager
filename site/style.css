@@ -97,13 +97,16 @@ p { margin: 0; }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 
 /* Архив, который можно взять мышкой и бросить в окно */
-.zip { position: absolute; z-index: 5; left: -2%; top: 3%; width: 92px; text-align: center; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none;
+/* слева от окна, на свободном поле; если поля мало — заходит на край окна, но не на панель с логотипом */
+.zip { position: absolute; z-index: 5; left: max(-104px, calc((min(1180px, 100vw - 32px) - 100vw) / 2 + 6px)); top: 7%; width: 92px; text-align: center; cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none;
   background: none; border: 0; padding: 0; color: inherit; font: inherit; }
 .zip:focus-visible { outline-offset: 6px; }
 .zip .file { width: 64px; margin: 0 auto; filter: drop-shadow(0 14px 22px rgba(0,0,0,.5)); animation: float 3.4s ease-in-out infinite; }
 .zip .name { display: inline-block; margin-top: 6px; font-size: 12.5px; padding: 3px 8px; border-radius: 6px; background: rgba(13,18,17,.75); color: var(--text); }
-.zip .hint { position: absolute; left: 50%; bottom: calc(100% + 8px); transform: translateX(-50%); white-space: nowrap; font-size: 13px; color: var(--mint); }
-.zip .hint svg { display: block; margin: 4px auto 0; width: 22px; height: 22px; }
+.zip .hint { position: absolute; left: 10px; bottom: calc(100% + 8px); white-space: nowrap; font-size: 13px; color: var(--mint); text-align: left; }
+.zip .hint svg { display: block; margin: 4px 0 0 24px; width: 22px; height: 22px; }
+/* Узкий экран: поля слева мало — архив поменьше, чтобы почти не заходил на окно */
+@media (max-width: 1399px) { .zip { scale: .78; transform-origin: 0 0; } }
 .zip.dragging { cursor: grabbing; z-index: 60; }
 .zip.dragging .file { animation: none; transform: scale(1.08) rotate(-6deg); }
 .zip.dragging .hint, .zip.gone .hint { opacity: 0; }
@@ -131,7 +134,7 @@ p { margin: 0; }
 @keyframes hop { 0% { transform: translateY(0) scale(1.06, .9); } 40% { transform: translateY(-16px) scale(.95, 1.06); } 100% { transform: translateY(0); } }
 .heart { position: absolute; pointer-events: none; font-size: 15px; color: #F08FA6; animation: heart 1s ease-out forwards; }
 @keyframes heart { from { opacity: 1; transform: translate(-50%, 0) scale(.6); } to { opacity: 0; transform: translate(-50%, -46px) scale(1.2); } }
-.window .box-buddy { left: 63.7%; top: 9.4%; width: 5.6%; }
+.window .box-buddy { left: 67%; top: 9.4%; width: 5.4%; }
 .bubble { position: absolute; left: 50%; bottom: calc(100% + 12px); transform: translateX(-50%) translateY(6px) scale(.96); transform-origin: 50% 100%;
   white-space: nowrap; font-size: 13.5px; font-weight: 500; background: #F3F1EA; color: #1C1F1E; padding: 8px 12px; border-radius: 13px;
   opacity: 0; transition: opacity .2s, transform .3s var(--ease); pointer-events: none; }
