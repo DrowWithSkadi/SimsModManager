@@ -17,13 +17,13 @@
     <!-- Оверлей работает в своём потоке, поэтому все ресурсы — свои, без общих ресурсов программы.
          Окно непрозрачное: прозрачные окна WPF рисуются процессором и подтормаживают поверх игры. -->
     <Window.Resources>
-        <SolidColorBrush x:Key="Muted" Color="#9A9EB2" />
+        <SolidColorBrush x:Key="Muted" Color="#9A9BA3" />
         <SolidColorBrush x:Key="Card" Color="#14FFFFFF" />
         <SolidColorBrush x:Key="CardHover" Color="#1FFFFFFF" />
         <SolidColorBrush x:Key="Line" Color="#1AFFFFFF" />
-        <SolidColorBrush x:Key="Accent" Color="#A99CFF" />
-        <SolidColorBrush x:Key="AccentSubtle" Color="#262241" />
-        <SolidColorBrush x:Key="OnAccent" Color="#15112B" />
+        <SolidColorBrush x:Key="Accent" Color="#E6E6EA" />
+        <SolidColorBrush x:Key="AccentSubtle" Color="#1FFFFFFF" />
+        <SolidColorBrush x:Key="OnAccent" Color="#17181B" />
         <SolidColorBrush x:Key="Danger" Color="#F08A7E" />
         <SolidColorBrush x:Key="DangerSubtle" Color="#3A2422" />
         <BooleanToVisibilityConverter x:Key="Vis" />

@@ -31,7 +31,7 @@
                                 <Setter Property="Foreground" Value="{DynamicResource B.SideText}" />
                             </Trigger>
                             <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="True">
-                                <!-- Выбранная вкладка: светлая плашка и сиреневая иконка -->
+                                <!-- Выбранная вкладка: светлая плашка и белая иконка -->
                                 <Setter TargetName="Bg" Property="Background" Value="{DynamicResource B.SideSelected}" />
                                 <Setter TargetName="Icon" Property="Foreground" Value="{DynamicResource B.SideAccent}" />
                                 <Setter Property="Foreground" Value="#FFFFFF" />
@@ -60,17 +60,17 @@
                     <ControlTemplate TargetType="Button">
                         <Grid x:Name="Root" RenderTransformOrigin="0.5,0.5">
                             <Grid.RenderTransform><ScaleTransform x:Name="Scale" /></Grid.RenderTransform>
-                            <Border x:Name="Glow" CornerRadius="14" Background="{DynamicResource B.Accent}" Margin="4,6,4,0" Opacity="0.3">
+                            <Border x:Name="Glow" CornerRadius="14" Background="{DynamicResource B.Play}" Margin="4,6,4,0" Opacity="0.3">
                                 <Border.Effect><BlurEffect Radius="16" /></Border.Effect>
                             </Border>
-                            <Border x:Name="Face" CornerRadius="14" Background="{DynamicResource B.Play}" BorderBrush="#99FFFFFF" BorderThickness="1.5" />
+                            <Border x:Name="Face" CornerRadius="14" Background="{DynamicResource B.PlayFace}" BorderBrush="{DynamicResource B.Play}" BorderThickness="1.5" />
                             <!-- Блик -->
                             <Border CornerRadius="14" IsHitTestVisible="False">
                                 <Border.Background>
                                     <LinearGradientBrush StartPoint="0,0.2" EndPoint="1,0.8">
                                         <LinearGradientBrush.RelativeTransform><TranslateTransform x:Name="MiniShine" X="-1.2" /></LinearGradientBrush.RelativeTransform>
                                         <GradientStop Color="#00FFFFFF" Offset="0.3" />
-                                        <GradientStop Color="#80FFFFFF" Offset="0.5" />
+                                        <GradientStop Color="#26FFFFFF" Offset="0.5" />
                                         <GradientStop Color="#00FFFFFF" Offset="0.7" />
                                     </LinearGradientBrush>
                                 </Border.Background>

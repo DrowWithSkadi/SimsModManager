@@ -187,7 +187,7 @@
         </Storyboard>
     </Window.Resources>
 
-    <Border Margin="12" CornerRadius="28" Background="#141722" BorderBrush="#262B3B" BorderThickness="1">
+    <Border Margin="12" CornerRadius="28" Background="#17181B" BorderBrush="#2A2B30" BorderThickness="1">
         <Border.Effect>
             <DropShadowEffect BlurRadius="24" ShadowDepth="4" Opacity="0.5" Color="Black" />
         </Border.Effect>
