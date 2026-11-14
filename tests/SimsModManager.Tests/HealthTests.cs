@@ -200,6 +200,26 @@ public class HealthTests
         Assert.True(ModHealthChecker.LooksLikeSameMod("WickedWhims v170", "WickedWhims_v172b"));
         Assert.False(ModHealthChecker.LooksLikeSameMod("Better Cooking", "Chef Mod"));
     }
+
+    private static ModItem Mod(string name, DateTime at) => new(name, name, true, false, [], 1, at, []);
+
+    [Fact]
+    public void NewerVersionIsPickedByNameWhenDatesMatch()
+    {
+        var at = new DateTime(2026, 11, 14, 16, 50, 0);
+        // одинаковая дата (скопировали разом): «_OLD» — старая
+        Assert.Equal("ui_tweaks", ModHealthChecker.NewerOf(Mod("ui_tweaks_OLD", at), Mod("ui_tweaks", at)).Newer.Name);
+        Assert.Equal("ui_tweaks", ModHealthChecker.NewerOf(Mod("ui_tweaks", at), Mod("ui_tweaks_OLD", at)).Newer.Name);
+        // номер версии в имени
+        Assert.Equal("WickedWhims_v172", ModHealthChecker.NewerOf(Mod("WickedWhims_v170", at), Mod("WickedWhims_v172", at)).Newer.Name);
+        Assert.Equal("Mod 2.0", ModHealthChecker.NewerOf(Mod("Mod 1.10", at), Mod("Mod 2.0", at)).Newer.Name);
+        // заметно разные даты решают, если в имени нет подсказки
+        Assert.Equal("b", ModHealthChecker.NewerOf(Mod("a", at), Mod("b", at.AddDays(1))).Newer.Name);
+        // «_OLD» старее, даже если файл свежее
+        Assert.Equal("hair", ModHealthChecker.NewerOf(Mod("hair_old", at.AddDays(2)), Mod("hair", at)).Newer.Name);
+        // слова, в которых «old» — часть другого слова, не считаются
+        Assert.Equal("Bold Hair v2", ModHealthChecker.NewerOf(Mod("Bold Hair v1", at), Mod("Bold Hair v2", at)).Newer.Name);
+    }
 }
 
 public class BisectTests
