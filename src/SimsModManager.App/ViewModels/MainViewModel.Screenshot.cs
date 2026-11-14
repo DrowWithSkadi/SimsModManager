@@ -33,6 +33,10 @@ public sealed partial class MainViewModel
     {
         try
         {
+            // Сначала то, что за интерфейсом: фон окна рисует Windows (Mica, размытие «Стекла» поверх обоев),
+            // сам интерфейс его не содержит. На мгновение прячем интерфейс и снимаем этот участок экрана.
+            var behind = await CaptureBehindAsync(root);
+
             ScreenshotMode = true;
             // даём разметке обновиться (путь без имени пользователя) перед снимком
             await root.Dispatcher.InvokeAsync(() => root.UpdateLayout(), DispatcherPriority.Render);
@@ -40,11 +44,15 @@ public sealed partial class MainViewModel
             var width = (int)Math.Ceiling(root.ActualWidth * ScreenshotScale);
             var height = (int)Math.Ceiling(root.ActualHeight * ScreenshotScale);
             var bitmap = new RenderTargetBitmap(width, height, 96 * ScreenshotScale, 96 * ScreenshotScale, PixelFormats.Pbgra32);
-            // Фон окна рисует Windows (Mica, размытие «Стекла»), а не сам интерфейс — без подложки на снимке
-            // вместо него была бы прозрачность. Подкладываем непрозрачный цвет окна текущей темы.
+            // Подложка: снятый фон окна (растянутый — он и так размытый), а если снять не вышло — цвет окна темы
             var backdrop = new DrawingVisual();
+            var area = new Rect(0, 0, root.ActualWidth, root.ActualHeight);
             using (var dc = backdrop.RenderOpen())
-                dc.DrawRectangle(new SolidColorBrush(BackdropColor(root)), null, new Rect(0, 0, root.ActualWidth, root.ActualHeight));
+            {
+                dc.DrawRectangle(new SolidColorBrush(BackdropColor(root)), null, area);
+                if (behind is not null) dc.DrawImage(behind, area);
+            }
+            RenderOptions.SetBitmapScalingMode(backdrop, BitmapScalingMode.HighQuality);
             bitmap.Render(backdrop);
             bitmap.Render(root);
 
@@ -66,6 +74,29 @@ public sealed partial class MainViewModel
         finally
         {
             ScreenshotMode = false;
+        }
+    }
+
+    private static async Task<BitmapSource?> CaptureBehindAsync(FrameworkElement root)
+    {
+        if (PresentationSource.FromVisual(root) is null) return null;
+        var topLeft = root.PointToScreen(new Point(0, 0));
+        var bottomRight = root.PointToScreen(new Point(root.ActualWidth, root.ActualHeight));
+        var rect = new Int32Rect((int)Math.Round(topLeft.X), (int)Math.Round(topLeft.Y),
+            (int)Math.Round(bottomRight.X - topLeft.X), (int)Math.Round(bottomRight.Y - topLeft.Y));
+
+        var opacity = root.Opacity;
+        root.Opacity = 0;
+        try
+        {
+            // ждём, пока Windows покажет кадр без интерфейса
+            await root.Dispatcher.InvokeAsync(() => { }, DispatcherPriority.Render);
+            await Task.Delay(150);
+            return Services.ScreenCapture.Capture(rect);
+        }
+        finally
+        {
+            root.Opacity = opacity;
         }
     }
 
