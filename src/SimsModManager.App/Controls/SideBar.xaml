@@ -5,7 +5,8 @@
              xmlns:ctl="clr-namespace:SimsModManager.App.Controls"
              xmlns:b="clr-namespace:SimsModManager.App.Behaviors"
              x:Name="Self">
-    <!-- Боковая панель — тёмная скруглённая «капсула» с отступами от краёв окна (во всех темах тёмная и непрозрачная).
+    <!-- Боковая панель — тёмная скруглённая «капсула» с отступами от краёв окна: во всех темах тёмная и непрозрачная,
+         в тёмной теме — светлее фона окна, с тонкой рамкой и тенью, чтобы всегда читалась отдельным элементом. Цвета — B.Side*.
          Свёрнута — 64 px: иконки и квадратная кнопка ▶. Наводишь мышку — раздвигается до 220 px и сдвигает страницу:
          видны названия вкладок и полная кнопка «Играть». Логика раскрытия — в SideBar.xaml.cs. -->
     <UserControl.Resources>
@@ -14,7 +15,7 @@
             <Setter Property="Margin" Value="8,2" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Focusable" Value="False" />
-            <Setter Property="Foreground" Value="#A3ADAA" />
+            <Setter Property="Foreground" Value="{DynamicResource B.SideMuted}" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
@@ -27,12 +28,12 @@
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="Bg" Property="Background" Value="#17FFFFFF" />
-                                <Setter Property="Foreground" Value="#F1F4F3" />
+                                <Setter Property="Foreground" Value="{DynamicResource B.SideText}" />
                             </Trigger>
                             <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="True">
-                                <!-- Выбранная вкладка: светлая плашка и мятная иконка -->
-                                <Setter TargetName="Bg" Property="Background" Value="#2E3533" />
-                                <Setter TargetName="Icon" Property="Foreground" Value="#77E1C7" />
+                                <!-- Выбранная вкладка: светлая плашка и сиреневая иконка -->
+                                <Setter TargetName="Bg" Property="Background" Value="{DynamicResource B.SideSelected}" />
+                                <Setter TargetName="Icon" Property="Foreground" Value="{DynamicResource B.SideAccent}" />
                                 <Setter Property="Foreground" Value="#FFFFFF" />
                             </DataTrigger>
                         </ControlTemplate.Triggers>
@@ -62,7 +63,7 @@
                             <Border x:Name="Glow" CornerRadius="14" Background="{DynamicResource B.Accent}" Margin="4,6,4,0" Opacity="0.3">
                                 <Border.Effect><BlurEffect Radius="16" /></Border.Effect>
                             </Border>
-                            <Border x:Name="Face" CornerRadius="14" Background="{DynamicResource B.Accent}" BorderBrush="#99FFFFFF" BorderThickness="1.5" />
+                            <Border x:Name="Face" CornerRadius="14" Background="{DynamicResource B.Play}" BorderBrush="#99FFFFFF" BorderThickness="1.5" />
                             <!-- Блик -->
                             <Border CornerRadius="14" IsHitTestVisible="False">
                                 <Border.Background>
@@ -75,13 +76,13 @@
                                 </Border.Background>
                             </Border>
                             <!-- Ждёт: треугольник и искорка в углу -->
-                            <Path x:Name="Triangle" Data="M0,0 L0,16 L13,8 Z" Fill="{DynamicResource B.OnAccent}" Margin="3,0,0,0"
+                            <Path x:Name="Triangle" Data="M0,0 L0,16 L13,8 Z" Fill="{DynamicResource B.OnPlay}" Margin="3,0,0,0"
                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
-                            <Path x:Name="Sparkle" Data="M4,0 L5,3 L8,4 L5,5 L4,8 L3,5 L0,4 L3,3 Z" Fill="{DynamicResource B.OnAccent}" Opacity="0.55"
+                            <Path x:Name="Sparkle" Data="M4,0 L5,3 L8,4 L5,5 L4,8 L3,5 L0,4 L3,3 Z" Fill="{DynamicResource B.OnPlay}" Opacity="0.55"
                                   HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,7,8,0" />
                             <!-- Готовит игру -->
                             <Grid x:Name="Busy" Width="20" Height="20" Visibility="Collapsed">
-                                <Ellipse Stroke="#3C5A52" StrokeThickness="3" />
+                                <Ellipse Stroke="#3A3F55" StrokeThickness="3" />
                                 <Path Data="M10,1.5 A8.5,8.5 0 0 1 18.5,10" Stroke="{DynamicResource B.Accent}" StrokeThickness="3" StrokeStartLineCap="Round"
                                       StrokeEndLineCap="Round" RenderTransformOrigin="0.5,0.5">
                                     <Path.RenderTransform><RotateTransform x:Name="MiniSpinner" /></Path.RenderTransform>
@@ -100,15 +101,15 @@
                                 </Setter>
                             </Trigger>
                             <DataTrigger Binding="{Binding IsLaunching}" Value="True">
-                                <Setter TargetName="Face" Property="Background" Value="#1F3A33" />
+                                <Setter TargetName="Face" Property="Background" Value="{DynamicResource B.PlayRun}" />
                                 <Setter TargetName="Face" Property="BorderBrush" Value="{DynamicResource B.Accent}" />
                                 <Setter TargetName="Triangle" Property="Visibility" Value="Collapsed" />
                                 <Setter TargetName="Sparkle" Property="Visibility" Value="Collapsed" />
                                 <Setter TargetName="Busy" Property="Visibility" Value="Visible" />
                             </DataTrigger>
                             <DataTrigger Binding="{Binding IsGameRunning}" Value="True">
-                                <Setter TargetName="Face" Property="Background" Value="#1A2421" />
-                                <Setter TargetName="Face" Property="BorderBrush" Value="#3C5A52" />
+                                <Setter TargetName="Face" Property="Background" Value="{DynamicResource B.PlayRun}" />
+                                <Setter TargetName="Face" Property="BorderBrush" Value="#3A3F55" />
                                 <Setter TargetName="Glow" Property="Opacity" Value="0" />
                                 <Setter TargetName="Triangle" Property="Visibility" Value="Collapsed" />
                                 <Setter TargetName="Sparkle" Property="Visibility" Value="Collapsed" />
@@ -121,10 +122,10 @@
         </Style>
     </UserControl.Resources>
 
-    <Border x:Name="Panel" Width="64" HorizontalAlignment="Left" CornerRadius="24" Background="#121514"
-            BorderBrush="#1FFFFFFF" BorderThickness="1">
+    <Border x:Name="Panel" Width="64" HorizontalAlignment="Left" CornerRadius="24" Background="{DynamicResource B.Side}"
+            BorderBrush="{DynamicResource B.SideBorder}" BorderThickness="1">
         <Border.Effect>
-            <DropShadowEffect BlurRadius="20" ShadowDepth="4" Direction="270" Opacity="0.35" Color="Black" />
+            <DropShadowEffect BlurRadius="28" ShadowDepth="6" Direction="270" Opacity="0.45" Color="Black" />
         </Border.Effect>
         <Grid ClipToBounds="True">
             <Grid>
@@ -139,9 +140,8 @@
                 <!-- Логотип -->
                 <Border>
                     <StackPanel Orientation="Horizontal" Margin="9,0,0,0" VerticalAlignment="Center">
-                        <Image Source="pack://application:,,,/Assets/logo-mark.png" Width="44" Height="44"
-                               RenderOptions.BitmapScalingMode="HighQuality" />
-                        <TextBlock Text="Sims Mod" FontSize="16" FontWeight="Bold" Foreground="#F1F4F3" Margin="12,0,0,0"
+                        <ctl:SakuraMark Width="44" Height="44" />
+                        <TextBlock Text="Ancora" FontSize="17" FontWeight="Bold" Foreground="{DynamicResource B.SideText}" Margin="12,0,0,0"
                                    VerticalAlignment="Center" Opacity="{Binding LabelOpacity, ElementName=Self}" />
                     </StackPanel>
                 </Border>

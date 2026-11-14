@@ -1,0 +1,91 @@
+<UserControl x:Class="SimsModManager.App.Controls.SakuraMark"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             IsHitTestVisible="False">
+    <!-- Знак Ancora — живая сакура. Пять лепестков дышат каждый в своём ритме, цветок очень медленно вращается,
+         звезда в центре мерцает. Spinning = true — цветок кружится быстрее (идёт работа, например запуск игры).
+         Animated = false — неподвижный знак (для совсем маленьких размеров). Анимации — в SakuraMark.xaml.cs. -->
+    <Viewbox Stretch="Uniform">
+        <Canvas Width="120" Height="120">
+            <Canvas.RenderTransform><RotateTransform x:Name="Spin" CenterX="60" CenterY="60" /></Canvas.RenderTransform>
+            <Path x:Name="Petals">
+                <Path.Fill>
+                    <!-- Градиент через весь цветок, а не по каждому лепестку отдельно -->
+                    <LinearGradientBrush MappingMode="Absolute" StartPoint="14,106" EndPoint="106,14">
+                        <GradientStop Color="#77E1C7" Offset="0" />
+                        <GradientStop Color="#9CC9FF" Offset="0.4" />
+                        <GradientStop Color="#D4AEFF" Offset="0.72" />
+                        <GradientStop Color="#FFC4B0" Offset="1" />
+                    </LinearGradientBrush>
+                </Path.Fill>
+                <Path.Data>
+                    <GeometryGroup FillRule="Nonzero">
+                    <PathGeometry Figures="M0 -5 C-15.00 -14.00 -22.00 -33.00 -11.00 -47.00 Q-5.00 -48.00 0 -41.00 Q5.00 -48.00 11.00 -47.00 C22.00 -33.00 15.00 -14.00 0 -5Z">
+                        <PathGeometry.Transform>
+                            <TransformGroup>
+                                <ScaleTransform x:Name="Petal0" />
+                                <RotateTransform Angle="-2" />
+                                <TranslateTransform X="60" Y="60" />
+                            </TransformGroup>
+                        </PathGeometry.Transform>
+                    </PathGeometry>
+                    <PathGeometry Figures="M0 -5 C-13.95 -13.02 -20.46 -30.69 -10.23 -43.71 Q-4.65 -44.64 0 -38.13 Q4.65 -44.64 10.23 -43.71 C20.46 -30.69 13.95 -13.02 0 -5Z">
+                        <PathGeometry.Transform>
+                            <TransformGroup>
+                                <ScaleTransform x:Name="Petal1" />
+                                <RotateTransform Angle="75" />
+                                <TranslateTransform X="60" Y="60" />
+                            </TransformGroup>
+                        </PathGeometry.Transform>
+                    </PathGeometry>
+                    <PathGeometry Figures="M0 -5 C-14.55 -13.58 -21.34 -32.01 -10.67 -45.59 Q-4.85 -46.56 0 -39.77 Q4.85 -46.56 10.67 -45.59 C21.34 -32.01 14.55 -13.58 0 -5Z">
+                        <PathGeometry.Transform>
+                            <TransformGroup>
+                                <ScaleTransform x:Name="Petal2" />
+                                <RotateTransform Angle="143" />
+                                <TranslateTransform X="60" Y="60" />
+                            </TransformGroup>
+                        </PathGeometry.Transform>
+                    </PathGeometry>
+                    <PathGeometry Figures="M0 -5 C-13.50 -12.60 -19.80 -29.70 -9.90 -42.30 Q-4.50 -43.20 0 -36.90 Q4.50 -43.20 9.90 -42.30 C19.80 -29.70 13.50 -12.60 0 -5Z">
+                        <PathGeometry.Transform>
+                            <TransformGroup>
+                                <ScaleTransform x:Name="Petal3" />
+                                <RotateTransform Angle="218" />
+                                <TranslateTransform X="60" Y="60" />
+                            </TransformGroup>
+                        </PathGeometry.Transform>
+                    </PathGeometry>
+                    <PathGeometry Figures="M0 -5 C-14.40 -13.44 -21.12 -31.68 -10.56 -45.12 Q-4.80 -46.08 0 -39.36 Q4.80 -46.08 10.56 -45.12 C21.12 -31.68 14.40 -13.44 0 -5Z">
+                        <PathGeometry.Transform>
+                            <TransformGroup>
+                                <ScaleTransform x:Name="Petal4" />
+                                <RotateTransform Angle="285" />
+                                <TranslateTransform X="60" Y="60" />
+                            </TransformGroup>
+                        </PathGeometry.Transform>
+                    </PathGeometry>
+                    </GeometryGroup>
+                </Path.Data>
+            </Path>
+            <!-- Свет из середины цветка — только на лепестках -->
+            <Path Data="M60,60 m-17,0 a17,17 0 1,0 34,0 a17,17 0 1,0 -34,0" Clip="{Binding Data, ElementName=Petals}">
+                <Path.Fill>
+                    <RadialGradientBrush>
+                        <GradientStop Color="#E6FFFFFF" Offset="0" />
+                        <GradientStop Color="#40FFFFFF" Offset="0.45" />
+                        <GradientStop Color="#00FFFFFF" Offset="1" />
+                    </RadialGradientBrush>
+                </Path.Fill>
+            </Path>
+            <Path Data="M60 51.5 Q61.36 58.64 68.5 60 Q61.36 61.36 60 68.5 Q58.64 61.36 51.5 60 Q58.64 58.64 60 51.5Z" Fill="White">
+                <Path.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform x:Name="StarScale" CenterX="60" CenterY="60" />
+                        <RotateTransform x:Name="StarTurn" CenterX="60" CenterY="60" />
+                    </TransformGroup>
+                </Path.RenderTransform>
+            </Path>
+        </Canvas>
+    </Viewbox>
+</UserControl>

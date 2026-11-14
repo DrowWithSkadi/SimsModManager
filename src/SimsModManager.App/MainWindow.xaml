@@ -61,7 +61,8 @@
             <Border Grid.Row="1" Grid.Column="1" Height="72" BorderBrush="{DynamicResource B.Hover}" BorderThickness="0,0,0,1" Padding="24,0">
                 <Grid>
                     <StackPanel x:Name="HeaderTexts" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="0,0,16,0">
-                        <TextBlock Text="Ancora" Style="{StaticResource T.Title}" />
+                        <!-- Название открытой страницы; имя программы — в боковой панели рядом с цветком -->
+                        <TextBlock Text="{Binding PageTitle}" Style="{StaticResource T.Title}" />
                         <TextBlock Text="{Binding SimsFolderShown}" FontSize="11" Foreground="{DynamicResource B.TextMuted}" Margin="0,4,0,0"
                                    TextTrimming="CharacterEllipsis" Visibility="{Binding HasGame, Converter={StaticResource BoolToVisibility}}" />
                     </StackPanel>
