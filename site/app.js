@@ -201,6 +201,9 @@
   document.querySelectorAll('.seg').forEach(seg => seg.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
     seg.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
   })));
+  // «Оформление» в панели настроек переключает тему у окна над панелями
+  const themePreview = document.getElementById('theme-preview');
+  document.querySelectorAll('#theme-seg button').forEach(b => b.addEventListener('click', () => { themePreview.dataset.theme = b.dataset.theme; }));
   const keep = document.getElementById('keep'), keepOut = document.getElementById('keep-out');
   keep.addEventListener('input', () => { keepOut.textContent = +keep.value >= 98 ? T.forever : fmt(T.days, { n: keep.value }); });
   // Выбор клавиши: следующая нажатая клавиша становится клавишей оверлея — и в демо выше тоже

@@ -365,8 +365,13 @@ footer a { color: var(--muted); }
 .ico.pkg { background: #6C8EBF; } .ico.scr { background: #B07CC6; } .ico.zipf { background: #C9A86A; } .ico.txt { background: #BDBDBD; } .ico.sys { background: #5A5A5A; }
 
 /* ── Настрой под себя: настройки можно потрогать ── */
-.tune { margin-top: 56px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
-.panel { border-radius: 24px; background: rgba(20, 26, 25, .72); box-shadow: 0 0 0 1px var(--line-strong) inset; padding: 8px 22px; }
+/* Окно над настройками: три снимка лежат друг на друге, виден тот, что выбран в «Оформлении» */
+.theme-preview { position: relative; margin: 48px auto 0; width: min(860px, 100%); aspect-ratio: 2000 / 1309; border-radius: 14px; overflow: hidden;
+  box-shadow: 0 0 0 1px var(--line-strong), 0 40px 90px -30px rgba(0,0,0,.75); }
+.theme-preview img { position: absolute; inset: 0; width: 100%; height: 100%; display: block; opacity: 0; transition: opacity .45s var(--ease), transform .6s var(--ease); transform: scale(1.015); }
+.theme-preview[data-theme="dark"] .t-dark, .theme-preview[data-theme="light"] .t-light, .theme-preview[data-theme="glass"] .t-glass { opacity: 1; transform: none; }
+.tune { margin-top: 24px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.panel { border-radius: 24px; background: rgba(20, 22, 34, .72); box-shadow: 0 0 0 1px var(--line-strong) inset; padding: 8px 22px; }
 .panel h3 { font-size: 18px; letter-spacing: -0.01em; padding: 18px 0 6px; }
 .opt { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 16px 0; border-bottom: 1px solid var(--line); }
 .opt:last-child { border-bottom: 0; }
