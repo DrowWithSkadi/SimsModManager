@@ -10,8 +10,7 @@ public static class SaveBackup
 {
     public const int DefaultKeep = 10;
 
-    public static string DefaultFolder => Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "SimsModManager", "SaveBackups");
+    public static string DefaultFolder => AppIdentity.Roaming("SaveBackups");
 
     /// <summary>Копии, самые новые первыми.</summary>
     public static IReadOnlyList<string> List(string backupFolder) =>

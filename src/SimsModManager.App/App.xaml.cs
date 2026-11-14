@@ -14,6 +14,11 @@ public partial class App : Application
         // при установке, обновлении и удалении (создание и удаление ярлыков).
         VelopackApp.Build().Run();
 
+        // Программа переименована в Ancora: переносим данные из старых папок SimsModManager и чиним ярлыки.
+        // Делаем до чтения настроек — иначе прочитали бы пустые.
+        try { Core.AppIdentity.MigrateLegacyFolders(); } catch (Exception) { }
+        Services.LegacyShortcuts.Fix();
+
         // Язык — до создания окон: разметка и тексты сразу берутся на нужном языке
         var settings = Core.AppSettings.Load();
         Core.L.SetLanguage(Core.L.Resolve(settings.Language));

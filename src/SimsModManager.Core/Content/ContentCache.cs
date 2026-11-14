@@ -25,8 +25,7 @@ public sealed class ContentCache
 
     public ContentCache(string? folder = null)
     {
-        _folder = folder ?? Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "SimsModManager", "cache");
+        _folder = folder ?? AppIdentity.Local("cache");
         _entries = Load();
     }
 

@@ -5,7 +5,7 @@
     <TargetFramework>net10.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
     <RootNamespace>SimsModManager.App</RootNamespace>
-    <AssemblyName>SimsModManager</AssemblyName>
+    <AssemblyName>Ancora</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <!-- Значок программы: exe, панель задач, ярлыки -->
     <ApplicationIcon>Assets\app.ico</ApplicationIcon>

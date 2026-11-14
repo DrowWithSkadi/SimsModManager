@@ -253,7 +253,7 @@ public sealed partial class MainViewModel
                     return;
                 }
                 // Копируем архив во временную папку, ставим как обычно и убираем исходник из Mods.
-                var temp = Path.Combine(Path.GetTempPath(), "SimsModManager", Guid.NewGuid().ToString("N"));
+                var temp = Core.AppIdentity.NewTempFolder();
                 Directory.CreateDirectory(temp);
                 var copy = Path.Combine(temp, Path.GetFileName(archive));
                 try

@@ -61,7 +61,7 @@ public sealed class ModInstaller(SimsPaths paths, IArchiveExtractor extractor)
             ? new DirectoryInfo(source).Name
             : Path.GetFileNameWithoutExtension(source));
 
-        var workDir = Path.Combine(Path.GetTempPath(), "SimsModManager", Guid.NewGuid().ToString("N"));
+        var workDir = AppIdentity.NewTempFolder();
         try
         {
             var files = new List<string>();

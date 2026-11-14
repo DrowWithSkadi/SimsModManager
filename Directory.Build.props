@@ -7,6 +7,6 @@
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <Version>0.2.0</Version>
     <Authors>DrowWithSkadi</Authors>
-    <Product>Sims Mod Manager</Product>
+    <Product>Ancora</Product>
   </PropertyGroup>
 </Project>

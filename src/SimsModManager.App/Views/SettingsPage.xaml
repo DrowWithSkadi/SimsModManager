@@ -380,7 +380,7 @@
                         <StackPanel>
                             <TextBlock Text="{l:Tr 'О программе'}" Style="{StaticResource T.Section}" />
                             <Grid Margin="0,12,0,6">
-                                <TextBlock Text="Sims Mod Manager" Style="{StaticResource T.Strong}" FontSize="12" VerticalAlignment="Center" />
+                                <TextBlock Text="Ancora" Style="{StaticResource T.Strong}" FontSize="12" VerticalAlignment="Center" />
                                 <Border Style="{StaticResource Tag}" HorizontalAlignment="Right">
                                     <TextBlock Style="{StaticResource TagText}" Text="{Binding VersionText}" />
                                 </Border>

@@ -227,7 +227,7 @@ public sealed partial class MainViewModel
         try
         {
             using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
-            http.DefaultRequestHeaders.UserAgent.ParseAdd("SimsModManager");
+            http.DefaultRequestHeaders.UserAgent.ParseAdd(Core.AppIdentity.FolderName);
             using var response = await http.GetAsync("https://api.github.com/repos/DrowWithSkadi/SimsModManager/releases/latest");
             var when = L.F("Последняя проверка: сегодня, {0:HH:mm}", DateTime.Now);
             if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
