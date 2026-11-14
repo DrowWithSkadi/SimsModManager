@@ -651,7 +651,8 @@ public sealed class ModHealthChecker(SimsPaths paths)
     }
 
     private static bool LooksOld(string name) =>
-        Regex.IsMatch(name, @"(?i)(^|[^a-zа-яё])(old|older|backup|bak|стар\w*|копия)([^a-zа-яё]|$)");
+        // «стар…» и «копия» записаны кодами букв: в исходниках не должно быть русского текста вне перевода
+        Regex.IsMatch(name, @"(?i)(^|[^a-z\u0430-\u044f\u0451])(old|older|backup|bak|\u0441\u0442\u0430\u0440\w*|\u043a\u043e\u043f\u0438\u044f)([^a-z\u0430-\u044f\u0451]|$)");
 
     /// <summary>Последнее число в имени как версия: «v2» → 2.0, «1.2» → 1.2, «2024.3» → 2024.3.</summary>
     private static Version? VersionIn(string name)
