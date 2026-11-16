@@ -148,7 +148,7 @@
             </Border>
 
             <!-- ═══ Боковая панель: отдельная капсула с отступами от краёв; раскрываясь, сдвигает страницу ═══ -->
-            <ctl:SideBar Grid.Row="1" Grid.RowSpan="3" Margin="12,4,0,12" HorizontalAlignment="Left" />
+            <ctl:SideBar x:Name="Side" Grid.Row="1" Grid.RowSpan="3" Margin="12,4,0,12" HorizontalAlignment="Left" />
 
             <!-- ═══ Перетаскивание файлов ═══ -->
             <Grid Grid.Row="1" Grid.RowSpan="3" Grid.ColumnSpan="2" Background="{DynamicResource B.DropOverlay}" IsHitTestVisible="False"

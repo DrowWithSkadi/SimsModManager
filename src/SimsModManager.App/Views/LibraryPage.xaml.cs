@@ -42,6 +42,31 @@ public partial class LibraryPage : UserControl
         TileImageHeight = Math.Round((item - TileMargin - TilePadding * 2) * ImageRatio);
     }
 
+    // ---------- Плитки во время выдвижения боковой панели ----------
+
+    /// <summary>
+    /// Пока панель меняет ширину, сетка плиток держит постоянную ширину: страница сдвигается,
+    /// а плитки едут целым блоком (лишнее справа обрезает рамка списка). Иначе на каждом кадре
+    /// WPF заново мерил бы и раскладывал все плитки, и анимация дёргалась бы на сотне модов.
+    /// Ширина берётся не меньше итоговой, чтобы справа не появлялась пустая полоса.
+    /// </summary>
+    public void FreezeTiles(double pageWidthChange)
+    {
+        if (!ModGrid.IsVisible || ModGrid.Parent is not FrameworkElement host) return;
+        var finalWidth = host.ActualWidth + pageWidthChange;
+        var current = double.IsNaN(ModGrid.Width) ? ModGrid.ActualWidth : ModGrid.Width;
+        ModGrid.HorizontalAlignment = HorizontalAlignment.Left;
+        ModGrid.Width = Math.Max(current, finalWidth);
+    }
+
+    /// <summary>Панель доехала — сетка снова по ширине страницы, плитки перестраиваются один раз.</summary>
+    public void ReleaseTiles()
+    {
+        if (double.IsNaN(ModGrid.Width)) return;
+        ModGrid.ClearValue(WidthProperty);
+        ModGrid.ClearValue(HorizontalAlignmentProperty);
+    }
+
     public LibraryPage()
     {
         InitializeComponent();
