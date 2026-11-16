@@ -249,10 +249,12 @@
     <DataTemplate x:Key="ModTile" DataType="{x:Type vm:ModItemViewModel}">
         <!-- Ширина плитки подстраивается под окно (LibraryPage.TileItemWidth), картинка сохраняет пропорции -->
         <Grid b:Anim.Appear="{Binding IsNew}">
+            <!-- Высоты строк под названием и метками — фиксированные: по ним считается размер плитки
+                 для виртуализирующей панели (LibraryPage.TileChromeHeight). Меняешь здесь — поменяй и там. -->
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="Auto" />
+                <RowDefinition Height="32" />
+                <RowDefinition Height="20" />
             </Grid.RowDefinitions>
             <!-- Вспышка после установки (на всю плитку, за содержимым) -->
             <Border x:Name="Flash" Grid.RowSpan="3" Margin="-10" CornerRadius="8" Background="{DynamicResource B.AccentSubtle}"

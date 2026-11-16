@@ -15,6 +15,9 @@ public partial class LibraryPage : UserControl
     private const double TileMargin = 12;      // отступ справа и снизу у плитки
     private const double TilePadding = 10;     // внутренний отступ плитки
     private const double ImageRatio = 132.0 / 156.0;
+    // Всё в плитке, кроме картинки: строка названия 32 + строка меток 20 (Themes/Templates.xaml, ModTile),
+    // внутренний отступ 10 сверху и снизу, отступ 12 снизу до следующей плитки
+    private const double TileChromeHeight = 32 + 20 + TilePadding * 2 + TileMargin;
 
     public static readonly DependencyProperty TileItemWidthProperty = DependencyProperty.Register(
         nameof(TileItemWidth), typeof(double), typeof(LibraryPage), new PropertyMetadata(TileMinWidth));
@@ -26,6 +29,12 @@ public partial class LibraryPage : UserControl
         nameof(TileImageHeight), typeof(double), typeof(LibraryPage), new PropertyMetadata(132.0));
 
     public double TileImageHeight { get => (double)GetValue(TileImageHeightProperty); set => SetValue(TileImageHeightProperty, value); }
+
+    public static readonly DependencyProperty TileItemSizeProperty = DependencyProperty.Register(
+        nameof(TileItemSize), typeof(Size), typeof(LibraryPage), new PropertyMetadata(new Size(TileMinWidth, 132.0 + TileChromeHeight)));
+
+    /// <summary>Место под одну плитку вместе с отступами — для виртуализирующей панели плиток.</summary>
+    public Size TileItemSize { get => (Size)GetValue(TileItemSizeProperty); set => SetValue(TileItemSizeProperty, value); }
 
     /// <summary>
     /// Сколько колонок влезает — столько и ставим, а оставшееся место делим между ними поровну,
@@ -40,6 +49,7 @@ public partial class LibraryPage : UserControl
         if (Math.Abs(item - TileItemWidth) < 0.5) return;
         TileItemWidth = item;
         TileImageHeight = Math.Round((item - TileMargin - TilePadding * 2) * ImageRatio);
+        TileItemSize = new Size(item, TileImageHeight + TileChromeHeight);
     }
 
     // ---------- Плитки во время выдвижения боковой панели ----------
