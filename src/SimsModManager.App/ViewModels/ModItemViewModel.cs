@@ -117,10 +117,45 @@ public sealed partial class ModItemViewModel : ObservableObject
     public bool ShowScriptBadge => HasScripts;
 
     [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(HasThumbnail))]
+    [NotifyPropertyChangedFor(nameof(HasThumbnail), nameof(GrayThumbnail))]
     private ImageSource? _thumbnail;
 
     public bool HasThumbnail => Thumbnail is not null;
+
+    private ImageSource? _gray;
+    private ImageSource? _graySource;
+
+    /// <summary>
+    /// Чёрно-белая копия картинки для выключенного мода. Делается только когда мод выключен
+    /// (у включённых её нет вовсе — не тратим память и время), а после включения остаётся,
+    /// чтобы картинка плавно вернула цвет.
+    /// </summary>
+    public ImageSource? GrayThumbnail
+    {
+        get
+        {
+            if (ReferenceEquals(_graySource, Thumbnail) && _gray is not null) return _gray;
+            if (IsEnabled) return null;
+            _graySource = Thumbnail;
+            _gray = MakeGray(Thumbnail);
+            return _gray;
+        }
+    }
+
+    private static ImageSource? MakeGray(ImageSource? image)
+    {
+        if (image is not System.Windows.Media.Imaging.BitmapSource source) return null;
+        try
+        {
+            var gray = new System.Windows.Media.Imaging.FormatConvertedBitmap(source, PixelFormats.Gray8, null, 0);
+            gray.Freeze();
+            return gray;
+        }
+        catch (Exception)
+        {
+            return null; // необычный формат картинки — просто без серой версии
+        }
+    }
 
     /// <summary>Для модов без картинки: скрипт показываем значком кода, остальное — значком картинки.</summary>
     public bool IsScriptOnly => !Model.IsTray && (Model.HasScripts && Model.PackageCount == 0 || Category == ModCategory.Scripts);
@@ -160,6 +195,7 @@ public sealed partial class ModItemViewModel : ObservableObject
     [ObservableProperty] private bool _isRemoving;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(GrayThumbnail))]
     private bool _isEnabled;
 
     partial void OnIsEnabledChanged(bool value)

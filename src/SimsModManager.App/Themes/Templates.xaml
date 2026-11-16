@@ -21,8 +21,9 @@
                 <Grid>
                     <Image Source="{Binding Thumbnail}" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality" />
                     <!-- Выключенный мод — картинка плавно становится чёрно-белой -->
-                    <Image x:Name="GrayPic" Source="{Binding Thumbnail, Converter={StaticResource Grayscale}}" Stretch="UniformToFill"
-                           RenderOptions.BitmapScalingMode="HighQuality" Opacity="0" />
+                    <!-- Серая копия есть только у выключенных модов (ModItemViewModel.GrayThumbnail), слой включается анимацией -->
+                    <Image x:Name="GrayPic" Source="{Binding GrayThumbnail}" Stretch="UniformToFill"
+                           RenderOptions.BitmapScalingMode="HighQuality" Opacity="0" Visibility="Collapsed" />
                 </Grid>
             </Border>
         </Grid>
@@ -37,6 +38,9 @@
                 <DataTrigger.EnterActions>
                     <BeginStoryboard>
                         <Storyboard>
+                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="GrayPic" Storyboard.TargetProperty="Visibility">
+                                <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{x:Static Visibility.Visible}" />
+                            </ObjectAnimationUsingKeyFrames>
                             <DoubleAnimation Storyboard.TargetName="GrayPic" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.3" />
                         </Storyboard>
                     </BeginStoryboard>
@@ -45,6 +49,9 @@
                     <BeginStoryboard>
                         <Storyboard>
                             <DoubleAnimation Storyboard.TargetName="GrayPic" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.3" />
+                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="GrayPic" Storyboard.TargetProperty="Visibility">
+                                <DiscreteObjectKeyFrame KeyTime="0:0:0.3" Value="{x:Static Visibility.Collapsed}" />
+                            </ObjectAnimationUsingKeyFrames>
                         </Storyboard>
                     </BeginStoryboard>
                 </DataTrigger.ExitActions>
@@ -148,7 +155,7 @@
             </Grid.ColumnDefinitions>
 
             <!-- Вспышка после установки -->
-            <Border x:Name="Flash" Grid.ColumnSpan="5" Margin="-12,0" Background="{DynamicResource B.AccentSubtle}" Opacity="0" IsHitTestVisible="False" />
+            <Border x:Name="Flash" Grid.ColumnSpan="5" Margin="-12,0" Background="{DynamicResource B.AccentSubtle}" Opacity="0" Visibility="Collapsed" IsHitTestVisible="False" />
 
             <!-- Галочка выбора — выезжает, когда выбрано больше одного мода -->
             <Border x:Name="SelectHolder" Width="0" ClipToBounds="True" VerticalAlignment="Center">
@@ -160,7 +167,7 @@
                 <ContentPresenter x:Name="Preview" Content="{Binding}" ContentTemplate="{StaticResource ModPreview}" />
                 <!-- Галочка «установлен» — выпрыгивает с пружинкой и исчезает -->
                 <Border x:Name="NewBadge" Width="16" Height="16" CornerRadius="8" Background="{DynamicResource B.Accent}"
-                        HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-5,-4" Opacity="0"
+                        HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,-5,-4" Opacity="0" Visibility="Collapsed"
                         RenderTransformOrigin="0.5,0.5" IsHitTestVisible="False">
                     <Border.RenderTransform><ScaleTransform ScaleX="0" ScaleY="0" /></Border.RenderTransform>
                     <ctl:IconView Data="{StaticResource Icon.Check}" Foreground="{DynamicResource B.OnAccent}" Width="10" Height="10" StrokeThickness="2.6" />
@@ -196,6 +203,15 @@
                 <DataTrigger.EnterActions>
                     <BeginStoryboard>
                         <Storyboard>
+                            <!-- Вспышка и галочка существуют в раскладке только на время анимации -->
+                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Flash" Storyboard.TargetProperty="Visibility">
+                                <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{x:Static Visibility.Visible}" />
+                                <DiscreteObjectKeyFrame KeyTime="0:0:1.8" Value="{x:Static Visibility.Collapsed}" />
+                            </ObjectAnimationUsingKeyFrames>
+                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="NewBadge" Storyboard.TargetProperty="Visibility">
+                                <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{x:Static Visibility.Visible}" />
+                                <DiscreteObjectKeyFrame KeyTime="0:0:1.8" Value="{x:Static Visibility.Collapsed}" />
+                            </ObjectAnimationUsingKeyFrames>
                             <!-- Вспышка цвета акцента -->
                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Flash" Storyboard.TargetProperty="Opacity">
                                 <EasingDoubleKeyFrame KeyTime="0:0:0.15" Value="1" />
@@ -258,12 +274,12 @@
             </Grid.RowDefinitions>
             <!-- Вспышка после установки (на всю плитку, за содержимым) -->
             <Border x:Name="Flash" Grid.RowSpan="3" Margin="-10" CornerRadius="8" Background="{DynamicResource B.AccentSubtle}"
-                    BorderBrush="{DynamicResource B.Accent}" BorderThickness="1" Opacity="0" IsHitTestVisible="False" />
+                    BorderBrush="{DynamicResource B.Accent}" BorderThickness="1" Opacity="0" Visibility="Collapsed" IsHitTestVisible="False" />
             <ContentPresenter x:Name="Preview" Content="{Binding}" ContentTemplate="{StaticResource ModPreview}"
                               Height="{Binding TileImageHeight, RelativeSource={RelativeSource AncestorType=UserControl}}" />
                 <!-- Галочка «установлен» — выпрыгивает с пружинкой и исчезает -->
                 <Border x:Name="NewBadge" Width="26" Height="26" CornerRadius="13" Background="{DynamicResource B.Accent}"
-                        HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,8,8" Opacity="0"
+                        HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,8,8" Opacity="0" Visibility="Collapsed"
                         RenderTransformOrigin="0.5,0.5" IsHitTestVisible="False">
                     <Border.RenderTransform><ScaleTransform ScaleX="0" ScaleY="0" /></Border.RenderTransform>
                     <ctl:IconView Data="{StaticResource Icon.Check}" Foreground="{DynamicResource B.OnAccent}" Width="15" Height="15" StrokeThickness="2.6" />
@@ -287,6 +303,15 @@
                 <DataTrigger.EnterActions>
                     <BeginStoryboard>
                         <Storyboard>
+                            <!-- Вспышка и галочка существуют в раскладке только на время анимации -->
+                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Flash" Storyboard.TargetProperty="Visibility">
+                                <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{x:Static Visibility.Visible}" />
+                                <DiscreteObjectKeyFrame KeyTime="0:0:1.8" Value="{x:Static Visibility.Collapsed}" />
+                            </ObjectAnimationUsingKeyFrames>
+                            <ObjectAnimationUsingKeyFrames Storyboard.TargetName="NewBadge" Storyboard.TargetProperty="Visibility">
+                                <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{x:Static Visibility.Visible}" />
+                                <DiscreteObjectKeyFrame KeyTime="0:0:1.8" Value="{x:Static Visibility.Collapsed}" />
+                            </ObjectAnimationUsingKeyFrames>
                             <!-- Вспышка цвета акцента -->
                             <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Flash" Storyboard.TargetProperty="Opacity">
                                 <EasingDoubleKeyFrame KeyTime="0:0:0.15" Value="1" />
@@ -426,7 +451,7 @@
                     <Grid x:Name="Card">
                         <Grid.RenderTransform><TranslateTransform /></Grid.RenderTransform>
                         <!-- Тень появляется, когда плитка приподнимается -->
-                        <Border x:Name="Shadow" Background="{DynamicResource B.Surface}" CornerRadius="8" Opacity="0">
+                        <Border x:Name="Shadow" Background="{DynamicResource B.Surface}" CornerRadius="8" Opacity="0" Visibility="Collapsed">
                             <Border.Effect>
                                 <DropShadowEffect BlurRadius="22" ShadowDepth="6" Direction="270" Opacity="0.45" Color="Black" />
                             </Border.Effect>
@@ -443,6 +468,9 @@
                                 <BeginStoryboard>
                                     <Storyboard>
                                         <DoubleAnimation Storyboard.TargetName="HoverBg" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.12" />
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Shadow" Storyboard.TargetProperty="Visibility">
+                                            <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{x:Static Visibility.Visible}" />
+                                        </ObjectAnimationUsingKeyFrames>
                                         <DoubleAnimation Storyboard.TargetName="Shadow" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.2" />
                                         <DoubleAnimation Storyboard.TargetName="Card" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
                                                          To="-4" Duration="0:0:0.25">
@@ -456,6 +484,9 @@
                                     <Storyboard>
                                         <DoubleAnimation Storyboard.TargetName="HoverBg" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.25" />
                                         <DoubleAnimation Storyboard.TargetName="Shadow" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.25" />
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="Shadow" Storyboard.TargetProperty="Visibility">
+                                            <DiscreteObjectKeyFrame KeyTime="0:0:0.25" Value="{x:Static Visibility.Collapsed}" />
+                                        </ObjectAnimationUsingKeyFrames>
                                         <DoubleAnimation Storyboard.TargetName="Card" Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
                                                          To="0" Duration="0:0:0.25">
                                             <DoubleAnimation.EasingFunction><CubicEase EasingMode="EaseOut" /></DoubleAnimation.EasingFunction>
