@@ -25,6 +25,8 @@
 
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.3.2" />
+    <!-- Плитки модов: панель-«перенос», которая создаёт только видимые плитки -->
+    <PackageReference Include="VirtualizingWrapPanel" Version="2.5.4" />
     <!-- Установщик и автообновление через GitHub Releases -->
     <PackageReference Include="Velopack" Version="0.0.*" />
   </ItemGroup>

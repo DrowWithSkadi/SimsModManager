@@ -4,6 +4,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:ctl="clr-namespace:SimsModManager.App.Controls"
              xmlns:b="clr-namespace:SimsModManager.App.Behaviors"
+             xmlns:vwp="clr-namespace:WpfToolkit.Controls;assembly=VirtualizingWrapPanel"
              xmlns:sys="clr-namespace:System;assembly=System.Runtime">
     <Grid>
         <Grid.RowDefinitions>
@@ -308,11 +309,16 @@
                              Background="{DynamicResource B.Background}" BorderThickness="0" Padding="0,0,0,8"
                              ScrollViewer.HorizontalScrollBarVisibility="Disabled" SelectionChanged="OnSelectionChanged"
                              PreviewMouseLeftButtonUp="OnItemClick" KeyDown="OnListKeyDown"
+                             VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Standard"
+                             VirtualizingPanel.ScrollUnit="Pixel"
                              Visibility="{Binding IsGridView, Converter={StaticResource BoolToVisibility}}">
                         <ListBox.ItemsPanel>
                             <ItemsPanelTemplate>
-                                <!-- Плитки растягиваются на всю ширину: колонок столько, сколько влезает, без пустоты справа -->
-                                <WrapPanel Margin="12,12,0,0" ItemWidth="{Binding TileItemWidth, RelativeSource={RelativeSource AncestorType=UserControl}}" />
+                                <!-- Плитки растягиваются на всю ширину: колонок столько, сколько влезает, без пустоты справа.
+                                     Панель создаёт только видимые плитки (и запас на экран выше и ниже), поэтому
+                                     сотни модов не тормозят раскладку. Размер плитки задаётся явно — LibraryPage.TileItemSize. -->
+                                <vwp:VirtualizingWrapPanel Margin="12,12,0,0" SpacingMode="None" StretchItems="False"
+                                                           ItemSize="{Binding TileItemSize, RelativeSource={RelativeSource AncestorType=UserControl}}" />
                             </ItemsPanelTemplate>
                         </ListBox.ItemsPanel>
                     </ListBox>
