@@ -15,6 +15,16 @@ public partial class SideBar : UserControl
     private readonly DispatcherTimer _openTimer = new() { Interval = TimeSpan.FromMilliseconds(120) };
     private readonly DispatcherTimer _closeTimer = new() { Interval = TimeSpan.FromMilliseconds(220) };
     private bool _expanded;
+    private int _resizeId;
+
+    /// <summary>
+    /// Панель начинает менять ширину. Аргумент — насколько страница справа станет шире (минус — уже)
+    /// к концу анимации. Нужен странице, чтобы не перестраивать плитки на каждом кадре.
+    /// </summary>
+    public event Action<double>? ResizeStarted;
+
+    /// <summary>Панель закончила менять ширину (не вызывается для анимации, которую перебила новая).</summary>
+    public event Action? ResizeCompleted;
 
     public SideBar()
     {
@@ -74,7 +84,15 @@ public partial class SideBar : UserControl
         DoubleAnimation Anim(double to, TimeSpan time, double delay = 0, IEasingFunction? e = null) =>
             new(to, time) { BeginTime = TimeSpan.FromSeconds(delay), EasingFunction = e };
 
-        Panel.BeginAnimation(WidthProperty, Anim(expand ? ExpandedWidth : CollapsedWidth, duration, 0, ease));
+        var target = expand ? ExpandedWidth : CollapsedWidth;
+        var widthAnim = Anim(target, duration, 0, ease);
+        var id = ++_resizeId;
+        widthAnim.Completed += (_, _) =>
+        {
+            if (id == _resizeId) ResizeCompleted?.Invoke();
+        };
+        ResizeStarted?.Invoke(Panel.ActualWidth - target);
+        Panel.BeginAnimation(WidthProperty, widthAnim);
 
         // Подписи: при раскрытии — когда панель почти выехала, при сворачивании — сразу
         BeginAnimation(LabelOpacityProperty, expand

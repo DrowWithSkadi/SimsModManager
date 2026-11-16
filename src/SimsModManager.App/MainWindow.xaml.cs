@@ -15,6 +15,9 @@ public partial class MainWindow : Window
         StateChanged += (_, _) => OnStateChanged();
         SizeChanged += (_, _) => ViewModel.IsCompact = ActualWidth < 1076; // ~76 px занимает боковая панель
         PreviewKeyDown += OnPreviewKeyDown;
+        // Пока боковая панель выдвигается, плитки не перестраиваются на каждом кадре
+        Side.ResizeStarted += Library.FreezeTiles;
+        Side.ResizeCompleted += Library.ReleaseTiles;
     }
 
     private MainViewModel ViewModel => (MainViewModel)DataContext;
